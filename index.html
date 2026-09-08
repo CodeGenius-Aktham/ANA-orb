@@ -108,7 +108,7 @@
         </div>
     </footer>
 
-    <!-- Script de animación del orbe verde puro y estructura para conectar tu modelo -->
+    <!-- Script de animación del orbe verde puro y conexión con el backend Flask -->
     <script>
         // Elementos UI
         const canvas = document.getElementById('orbCanvas');
@@ -218,19 +218,18 @@
         animateOrb();
 
         // ==========================================
-        // ZONA DE CONEXIÓN CON TU MODELO DE IA (backend Flask)
-        // Rutas del blueprint 'input':
+        // ZONA DE CONEXIÓN CON EL BACKEND FLASK (blueprint 'input')
+        //   POST /into      -> ingreso de audio, devuelve el texto transcrito
         //   POST /response  -> recibe { texto } y devuelve la respuesta del modelo
-        //   POST /generate  -> recibe { output } y genera el resultado final (ej. audio)
-        //   POST /into      -> captura de audio en backend (no usado aquí, ver nota abajo)
+        //   POST /generate  -> recibe { output } y devuelve la voz (texto a voz)
         // ==========================================
+
+        // 2. Texto del usuario -> respuesta del modelo -> voz de salida
         async function conectarConMiModelo(promptTexto) {
-            // 1. Mostrar estado pensando
             setOrbState('thinking');
             mostrarProceso(true, "Procesando solicitud...");
 
             try {
-                // 2. Enviar el texto del usuario a /response y obtener la respuesta del modelo
                 const resResponse = await fetch('/response', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -243,30 +242,16 @@
 
                 const dataResponse = await resResponse.json();
                 // NOTA: ajusta esta clave según lo que realmente devuelva response_modelo()
-                // (por ejemplo si retorna {"respuesta": "..."} o {"texto": "..."} en vez de {"output": "..."})
                 const respuestaIA = dataResponse.output ?? dataResponse.respuesta ?? dataResponse.texto ?? JSON.stringify(dataResponse);
 
-                // 3. Mostrar la respuesta con el orbe activo
                 mostrarProceso(false);
                 setOrbState('speaking');
-                await efectoEscribirSubtitulos(respuestaIA);
 
-                // 4. Enviar la respuesta a /generate (ej. para generar audio/voz de salida)
-                const resGenerate = await fetch('/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ output: respuestaIA })
-                });
-
-                if (resGenerate.ok) {
-                    const dataGenerate = await resGenerate.json();
-                    // NOTA: si generate_model() devuelve una URL de audio o base64, se reproduce aquí.
-                    // Ajusta la clave 'audio_url' según lo que realmente devuelva tu backend.
-                    if (dataGenerate.audio_url) {
-                        const audio = new Audio(dataGenerate.audio_url);
-                        audio.play().catch(err => console.error("No se pudo reproducir el audio:", err));
-                    }
-                }
+                // Subtítulos en pantalla y generación de voz en paralelo
+                await Promise.all([
+                    efectoEscribirSubtitulos(respuestaIA),
+                    generarVoz(respuestaIA)
+                ]);
 
             } catch (error) {
                 console.error("Error al conectar con el modelo:", error);
@@ -274,6 +259,43 @@
                 subtitlesText.innerText = "Error de conexión con el modelo.";
             } finally {
                 setOrbState('idle');
+            }
+        }
+
+        // 3. Texto a voz vía /generate
+        async function generarVoz(texto) {
+            try {
+                const resGenerate = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ output: texto })
+                });
+
+                if (!resGenerate.ok) {
+                    throw new Error(`Error en /generate: ${resGenerate.status}`);
+                }
+
+                const contentType = resGenerate.headers.get('Content-Type') || '';
+
+                if (contentType.startsWith('audio/')) {
+                    // generate_model() devuelve el audio directamente como binario
+                    const audioBlob = await resGenerate.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    await audio.play();
+                } else {
+                    // generate_model() devuelve JSON con audio_url o audio en base64
+                    // NOTA: ajusta estas claves según lo que realmente devuelva tu backend
+                    const dataGenerate = await resGenerate.json();
+                    const audioSrc = dataGenerate.audio_url
+                        ?? (dataGenerate.audio_base64 ? `data:audio/mpeg;base64,${dataGenerate.audio_base64}` : null);
+                    if (audioSrc) {
+                        const audio = new Audio(audioSrc);
+                        await audio.play();
+                    }
+                }
+            } catch (error) {
+                console.error("Error al generar voz en /generate:", error);
             }
         }
 
@@ -317,7 +339,7 @@
             }
         }
 
-        // Eventos de interacción
+        // Eventos de interacción (texto escrito)
         sendBtn.addEventListener('click', () => {
             const texto = userInput.value.trim();
             if (texto) {
@@ -333,95 +355,94 @@
         });
 
         // ==========================================
-        // RECONOCIMIENTO DE VOZ REAL (Web Speech API)
-        // Transcribe lo que el usuario dice al input,
-        // y al detectar que dejó de hablar, envía automáticamente.
-        // (Esto reemplaza en el navegador lo que haría /into en el backend;
-        //  si prefieres capturar audio en servidor con /into, hay que
-        //  grabar el audio con MediaRecorder y enviarlo como FormData/Blob).
+        // 1. CAPTURA DE AUDIO -> /into (ingreso de info)
+        // Se graba con MediaRecorder, se sube el blob a /into,
+        // y el texto transcrito que devuelve se manda a conectarConMiModelo().
         // ==========================================
-        const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition = null;
+        let mediaRecorder = null;
+        let mediaStream = null;
+        let audioChunks = [];
         let isRecording = false;
 
-        if (SpeechRecognitionAPI) {
-            recognition = new SpeechRecognitionAPI();
-            recognition.lang = 'es-ES';
-            recognition.continuous = true;      // sigue escuchando aunque haya pausas cortas
-            recognition.interimResults = true;  // muestra la transcripción en vivo mientras habla
-            recognition.maxAlternatives = 1;
+        async function iniciarGrabacion() {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(mediaStream);
+                audioChunks = [];
 
-            let finalTranscript = '';
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) audioChunks.push(e.data);
+                };
 
-            recognition.onstart = () => {
-                isRecording = true;
-                finalTranscript = '';
-                userInput.value = '';
-                voiceBtn.classList.add('recording');
-                subtitlesText.innerText = "Escuchando... habla ahora.";
-                setOrbState('thinking');
-                mostrarProceso(true, "Escuchando audio...");
-            };
+                mediaRecorder.onstop = async () => {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    voiceBtn.classList.remove('recording');
+                    setOrbState('thinking');
+                    mostrarProceso(true, "Transcribiendo audio...");
 
-            recognition.onresult = (event) => {
-                let interimTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript;
-                    if (event.results[i].isFinal) {
-                        finalTranscript += transcript + ' ';
-                    } else {
-                        interimTranscript += transcript;
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const formData = new FormData();
+                    // NOTA: ajusta el nombre del campo ('audio') según lo que espere captura_audio()
+                    formData.append('audio', audioBlob, 'grabacion.webm');
+
+                    try {
+                        const resInto = await fetch('/into', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (!resInto.ok) {
+                            throw new Error(`Error en /into: ${resInto.status}`);
+                        }
+
+                        const dataInto = await resInto.json();
+                        // NOTA: ajusta esta clave según lo que realmente devuelva captura_audio()
+                        const textoTranscrito = dataInto.texto ?? dataInto.transcripcion ?? dataInto.output ?? "";
+
+                        mostrarProceso(false);
+
+                        if (textoTranscrito) {
+                            await conectarConMiModelo(textoTranscrito);
+                        } else {
+                            setOrbState('idle');
+                            subtitlesText.innerText = "No se pudo transcribir el audio.";
+                        }
+                    } catch (error) {
+                        console.error("Error al enviar audio a /into:", error);
+                        mostrarProceso(false);
+                        setOrbState('idle');
+                        subtitlesText.innerText = "Error al procesar el audio.";
                     }
-                }
-                // Refleja en vivo, de forma correcta y eficiente, lo dicho en el campo de texto
-                userInput.value = (finalTranscript + interimTranscript).trim();
-            };
+                };
 
-            recognition.onerror = (event) => {
-                console.error("Error de reconocimiento de voz:", event.error);
-                mostrarProceso(false);
-                setOrbState('idle');
-                voiceBtn.classList.remove('recording');
+                mediaRecorder.start();
+                isRecording = true;
+                voiceBtn.classList.add('recording');
+                subtitlesText.innerText = "Escuchando... presiona de nuevo para detener.";
+            } catch (err) {
+                console.error("No se pudo acceder al micrófono:", err);
+                subtitlesText.innerText = "Permiso de micrófono denegado o no disponible.";
+            }
+        }
+
+        function detenerGrabacion() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
                 isRecording = false;
-                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-                    subtitlesText.innerText = "Permiso de micrófono denegado. Actívalo para hablar con el asistente.";
-                } else if (event.error === 'no-speech') {
-                    subtitlesText.innerText = "No se detectó voz. Intenta de nuevo.";
-                } else {
-                    subtitlesText.innerText = "Error al capturar audio.";
-                }
-            };
+            }
+        }
 
-            recognition.onend = () => {
-                isRecording = false;
-                voiceBtn.classList.remove('recording');
-                mostrarProceso(false);
-
-                const texto = userInput.value.trim();
-                if (texto) {
-                    // Al finalizar de hablar, se envía automáticamente
-                    userInput.value = "";
-                    conectarConMiModelo(texto);
-                } else {
-                    setOrbState('idle');
-                }
-            };
-
+        if (navigator.mediaDevices && window.MediaRecorder) {
             voiceBtn.addEventListener('click', () => {
                 if (isRecording) {
-                    recognition.stop(); // detener manualmente dispara onend -> auto-envío si hay texto
+                    detenerGrabacion();
                 } else {
-                    try {
-                        recognition.start();
-                    } catch (e) {
-                        console.error("No se pudo iniciar el reconocimiento:", e);
-                    }
+                    iniciarGrabacion();
                 }
             });
         } else {
-            // Navegador sin soporte para Web Speech API
             voiceBtn.addEventListener('click', () => {
-                subtitlesText.innerText = "Tu navegador no soporta reconocimiento de voz. Prueba con Chrome.";
+                subtitlesText.innerText = "Tu navegador no soporta grabación de audio.";
             });
         }
     </script>
