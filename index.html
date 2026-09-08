@@ -218,7 +218,11 @@
         animateOrb();
 
         // ==========================================
-        // ZONA DE CONEXIÓN CON TU MODELO DE IA
+        // ZONA DE CONEXIÓN CON TU MODELO DE IA (backend Flask)
+        // Rutas del blueprint 'input':
+        //   POST /response  -> recibe { texto } y devuelve la respuesta del modelo
+        //   POST /generate  -> recibe { output } y genera el resultado final (ej. audio)
+        //   POST /into      -> captura de audio en backend (no usado aquí, ver nota abajo)
         // ==========================================
         async function conectarConMiModelo(promptTexto) {
             // 1. Mostrar estado pensando
@@ -226,14 +230,43 @@
             mostrarProceso(true, "Procesando solicitud...");
 
             try {
-                // TODO: Conecta aquí tu modelo personalizado
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                const respuestaIA = "Esta es una respuesta simulada de tu modelo de inteligencia artificial. Cada palabra se muestra perfectamente separada y legible.";
+                // 2. Enviar el texto del usuario a /response y obtener la respuesta del modelo
+                const resResponse = await fetch('/response', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ texto: promptTexto })
+                });
 
-                // 2. Mostrar respuesta hablando con el orbe activo
+                if (!resResponse.ok) {
+                    throw new Error(`Error en /response: ${resResponse.status}`);
+                }
+
+                const dataResponse = await resResponse.json();
+                // NOTA: ajusta esta clave según lo que realmente devuelva response_modelo()
+                // (por ejemplo si retorna {"respuesta": "..."} o {"texto": "..."} en vez de {"output": "..."})
+                const respuestaIA = dataResponse.output ?? dataResponse.respuesta ?? dataResponse.texto ?? JSON.stringify(dataResponse);
+
+                // 3. Mostrar la respuesta con el orbe activo
                 mostrarProceso(false);
                 setOrbState('speaking');
                 await efectoEscribirSubtitulos(respuestaIA);
+
+                // 4. Enviar la respuesta a /generate (ej. para generar audio/voz de salida)
+                const resGenerate = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ output: respuestaIA })
+                });
+
+                if (resGenerate.ok) {
+                    const dataGenerate = await resGenerate.json();
+                    // NOTA: si generate_model() devuelve una URL de audio o base64, se reproduce aquí.
+                    // Ajusta la clave 'audio_url' según lo que realmente devuelva tu backend.
+                    if (dataGenerate.audio_url) {
+                        const audio = new Audio(dataGenerate.audio_url);
+                        audio.play().catch(err => console.error("No se pudo reproducir el audio:", err));
+                    }
+                }
 
             } catch (error) {
                 console.error("Error al conectar con el modelo:", error);
@@ -303,6 +336,9 @@
         // RECONOCIMIENTO DE VOZ REAL (Web Speech API)
         // Transcribe lo que el usuario dice al input,
         // y al detectar que dejó de hablar, envía automáticamente.
+        // (Esto reemplaza en el navegador lo que haría /into en el backend;
+        //  si prefieres capturar audio en servidor con /into, hay que
+        //  grabar el audio con MediaRecorder y enviarlo como FormData/Blob).
         // ==========================================
         const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
