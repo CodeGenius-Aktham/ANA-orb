@@ -219,10 +219,12 @@
 
         // ==========================================
         // ZONA DE CONEXIÓN CON EL BACKEND FLASK (blueprint 'input')
-        //   POST /into      -> ingreso de audio, devuelve el texto transcrito
-        //   POST /response  -> recibe { texto } y devuelve la respuesta del modelo,
-        //                       también se usa para obtener la voz (texto a voz)
+        //   POST /query/into      -> ingreso de audio, devuelve el texto transcrito
+        //   POST /query/response  -> recibe { texto } y devuelve la respuesta del modelo,
+        //                             también se usa para obtener la voz (texto a voz)
         // ==========================================
+        // NOTA: si cambia la URL de ngrok, solo hay que actualizar esta constante.
+        const API_BASE = 'https://dd76-190-24-70-29.ngrok-free.app/query';
 
         // 2. Texto del usuario -> respuesta del modelo -> voz de salida
         async function conectarConMiModelo(promptTexto) {
@@ -230,7 +232,7 @@
             mostrarProceso(true, "Procesando solicitud...");
 
             try {
-                const resResponse = await fetch('/response', {
+                const resResponse = await fetch(`${API_BASE}/response`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ texto: promptTexto })
@@ -265,7 +267,7 @@
         // 3. Texto a voz vía /response
         async function generarVoz(texto) {
             try {
-                const resVoz = await fetch('/response', {
+                const resVoz = await fetch(`${API_BASE}/response`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ texto: texto })
@@ -386,7 +388,7 @@
                     formData.append('audio', audioBlob, 'grabacion.webm');
 
                     try {
-                        const resInto = await fetch('/into', {
+                        const resInto = await fetch(`${API_BASE}/into`, {
                             method: 'POST',
                             body: formData
                         });
