@@ -267,14 +267,14 @@
         // 3. Texto a voz vía /response
         async function generarVoz(texto) {
             try {
-                const resVoz = await fetch(`${API_BASE}/response`, {
+                const resVoz = await fetch(`${API_BASE}/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ texto: texto })
                 });
 
                 if (!resVoz.ok) {
-                    throw new Error(`Error en /response (voz): ${resVoz.status}`);
+                    throw new Error(`Error en /generate (voz): ${resVoz.status}`);
                 }
 
                 const contentType = resVoz.headers.get('Content-Type') || '';
