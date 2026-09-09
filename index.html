@@ -267,7 +267,7 @@
         // 3. Texto a voz vía /response
         async function generarVoz(texto) {
             try {
-                const resVoz = await fetch(`${API_BASE}/response`, {
+                const resVoz = await fetch(`${API_BASE}/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ texto: texto })
