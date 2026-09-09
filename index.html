@@ -23,6 +23,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        html, body {
+            height: 100%;
+        }
         body {
             font-family: 'Outfit', sans-serif;
         }
@@ -44,34 +47,94 @@
             70%  { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
+
+        /* Transición suave del orbe entre tamaño grande (bienvenida) y chico (chat) */
+        #orbWrap {
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                        height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .orb-size-hero {
+            width: 18rem;
+            height: 18rem;
+        }
+        @media (min-width: 640px) {
+            .orb-size-hero { width: 24rem; height: 24rem; }
+        }
+        .orb-size-mini {
+            width: 4.5rem;
+            height: 4.5rem;
+        }
+
+        #topArea {
+            transition: padding 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Burbujas de chat */
+        .bubble-user {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-radius: 1.1rem 1.1rem 0.25rem 1.1rem;
+        }
+        .bubble-ia {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #1e293b;
+            border-radius: 1.1rem 1.1rem 1.1rem 0.25rem;
+        }
+
+        /* Puntos de "escribiendo..." */
+        .typing-dots span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            margin-right: 3px;
+            border-radius: 50%;
+            background-color: #10b981;
+            animation: typingBounce 1.2s infinite ease-in-out;
+        }
+        .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-4px); opacity: 1; }
+        }
+
+        #chatMessages::-webkit-scrollbar,
+        #sidebarList::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chatMessages::-webkit-scrollbar-thumb,
+        #sidebarList::-webkit-scrollbar-thumb {
+            background-color: rgba(16, 185, 129, 0.25);
+            border-radius: 999px;
+        }
     </style>
 </head>
-<body class="bg-white text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-emerald-500 selection:text-white">
+<body class="bg-white text-slate-800 h-screen flex flex-col overflow-hidden selection:bg-emerald-500 selection:text-white">
 
-
-    <p style="color: #16a34a; font-size: 0.875rem; text-align: center; margin-bottom: 1rem;">
+    <p style="color: #16a34a; font-size: 0.8rem; text-align: center; padding: 0.5rem 0 0 0;">
         Esta version es una DEMO, por lo cual algunas funciones pueden no estar disponibles y otras pueden cometer errores.
     </p>
+
     <!-- Header vacío y limpio sin datos adicionales -->
-    <header class="w-full p-6 flex justify-between items-center z-10">
+    <header class="w-full px-6 pt-4 pb-1 flex justify-between items-center z-10 flex-shrink-0">
         <div></div>
         <div></div>
     </header>
 
-    <!-- Main Content: Orbe Verde y Subtítulos -->
-    <main class="flex-1 flex flex-col items-center justify-center px-4 -mt-12">
-        
+    <!-- ZONA SUPERIOR: orbe + estado. Empieza grande y centrada (bienvenida), luego se hace chica y sube -->
+    <div id="topArea" class="flex-shrink-0 flex flex-col items-center justify-center px-4 py-10 gap-4">
+
         <!-- Contenedor del Orbe -->
-        <div class="relative w-72 h-72 sm:w-96 sm:h-96 flex items-center justify-center mb-10">
+        <div id="orbWrap" class="orb-size-hero relative flex items-center justify-center">
             <!-- Resplandor ambiental verde dinámico -->
             <div id="ambientGlow" class="absolute inset-0 rounded-full bg-emerald-400/20 blur-3xl transition-all duration-700 pointer-events-none scale-90"></div>
-            
             <!-- Lienzo para la animación fluida tipo plastilina/líquido -->
             <canvas id="orbCanvas" class="w-full h-full cursor-pointer z-10"></canvas>
         </div>
 
         <!-- Proceso actual / Pensamiento -->
-        <div class="h-8 flex items-center justify-center mb-4">
+        <div class="h-6 flex items-center justify-center">
             <div id="thoughtProcess" class="text-xs sm:text-sm text-emerald-600 font-medium tracking-wide flex items-center space-x-2 transition-all duration-300 opacity-0">
                 <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -81,17 +144,29 @@
             </div>
         </div>
 
-        <!-- Subtítulos / Texto hablado con word-spacing adecuado -->
-        <div class="max-w-2xl w-full text-center px-4 min-h-[5rem] flex items-center justify-center">
-            <p id="subtitlesText" class="text-lg sm:text-2xl font-light text-slate-700 tracking-normal leading-relaxed transition-opacity duration-300 whitespace-pre-wrap">
-                Hola, escribe tu consulta o habla directamente para comenzar.
-            </p>
+        <!-- Mensaje de bienvenida, solo visible antes del primer mensaje -->
+        <div id="welcomeText" class="max-w-2xl w-full text-center px-4">
+            <p class="text-2xl sm:text-3xl font-light text-slate-700">Bienvenido nuevamente</p>
+            <p class="text-sm sm:text-base text-slate-400 mt-2">Escribe tu consulta o habla directamente para comenzar.</p>
         </div>
+    </div>
 
-    </main>
+    <!-- ZONA DE CHAT: conversación al centro + historial de mensajes a la derecha. Oculta hasta el primer mensaje -->
+    <div id="chatArea" class="hidden flex-1 min-h-0 w-full">
+        <div class="flex h-full w-full max-w-6xl mx-auto">
+            <!-- Conversación en el centro -->
+            <div id="chatMessages" class="flex-1 min-w-0 overflow-y-auto px-4 sm:px-8 py-6 space-y-4"></div>
+
+            <!-- Historial de mensajes a la derecha -->
+            <aside class="hidden md:flex md:w-72 flex-shrink-0 flex-col border-l border-emerald-100 px-4 py-6">
+                <h2 class="text-xs font-semibold uppercase tracking-wide text-emerald-600 mb-3">Mensajes</h2>
+                <div id="sidebarList" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
+            </aside>
+        </div>
+    </div>
 
     <!-- Controls & Prompt Input Footer con Liquid Glass Verde y botones ordenados -->
-    <footer class="w-full p-6 z-10 flex flex-col items-center">
+    <footer class="w-full p-6 z-10 flex flex-col items-center flex-shrink-0">
         <div class="max-w-3xl w-full flex items-center gap-3 liquid-glass rounded-2xl p-2.5 transition-all focus-within:ring-2 focus-within:ring-emerald-500/30">
             <input type="text" id="userInput" placeholder="Escribe un mensaje..." 
                 class="flex-1 bg-transparent border-none px-4 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none">
@@ -113,13 +188,19 @@
         // Elementos UI
         const canvas = document.getElementById('orbCanvas');
         const ctx = canvas.getContext('2d');
-        const subtitlesText = document.getElementById('subtitlesText');
         const thoughtProcess = document.getElementById('thoughtProcess');
         const thoughtText = document.getElementById('thoughtText');
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
         const voiceBtn = document.getElementById('voiceBtn');
         const ambientGlow = document.getElementById('ambientGlow');
+
+        const topArea = document.getElementById('topArea');
+        const orbWrap = document.getElementById('orbWrap');
+        const welcomeText = document.getElementById('welcomeText');
+        const chatArea = document.getElementById('chatArea');
+        const chatMessages = document.getElementById('chatMessages');
+        const sidebarList = document.getElementById('sidebarList');
 
         // Configuración de Canvas Retina Display
         function resizeCanvas() {
@@ -218,6 +299,93 @@
         animateOrb();
 
         // ==========================================
+        // MODO CHAT: pasa de pantalla de bienvenida (orbe grande centrado)
+        // a orbe chico arriba + conversación en el centro + historial a la derecha.
+        // ==========================================
+        let chatStarted = false;
+
+        function iniciarModoChat() {
+            if (chatStarted) return;
+            chatStarted = true;
+
+            orbWrap.classList.remove('orb-size-hero');
+            orbWrap.classList.add('orb-size-mini');
+            topArea.classList.add('py-3');
+            topArea.classList.remove('py-10');
+            welcomeText.classList.add('hidden');
+
+            chatArea.classList.remove('hidden');
+            chatArea.classList.add('flex');
+
+            resizeCanvas();
+        }
+
+        function scrollChatAbajo() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Crea una burbuja de usuario (a la derecha) con el texto ya completo
+        function agregarMensajeUsuario(texto) {
+            iniciarModoChat();
+
+            const row = document.createElement('div');
+            row.className = 'flex justify-end';
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble-user max-w-[75%] px-4 py-2.5 text-sm sm:text-base shadow-sm';
+            bubble.innerText = texto;
+            row.appendChild(bubble);
+            chatMessages.appendChild(row);
+            scrollChatAbajo();
+
+            agregarAlHistorial('Tú', texto);
+        }
+
+        // Crea una burbuja de IA con puntos de "escribiendo..." y devuelve el nodo de texto para rellenarlo luego
+        function agregarBurbujaIAPendiente() {
+            const row = document.createElement('div');
+            row.className = 'flex justify-start';
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble-ia max-w-[75%] px-4 py-2.5 text-sm sm:text-base shadow-sm whitespace-pre-wrap';
+            bubble.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span>';
+            row.appendChild(bubble);
+            chatMessages.appendChild(row);
+            scrollChatAbajo();
+            return bubble;
+        }
+
+        // Efecto de escritura letra por letra dentro de una burbuja del chat
+        function escribirEnBurbuja(bubbleEl, texto) {
+            return new Promise((resolve) => {
+                bubbleEl.innerText = '';
+                let i = 0;
+                const velocidad = 20;
+
+                function escribir() {
+                    if (i < texto.length) {
+                        bubbleEl.innerText += texto.charAt(i);
+                        audioLevel = Math.sin(i * 0.4) * 0.5 + 0.5;
+                        i++;
+                        scrollChatAbajo();
+                        setTimeout(escribir, velocidad);
+                    } else {
+                        audioLevel = 0;
+                        resolve();
+                    }
+                }
+                escribir();
+            });
+        }
+
+        function agregarAlHistorial(rol, texto) {
+            const item = document.createElement('div');
+            item.className = 'text-xs bg-emerald-50/60 rounded-lg px-3 py-2 border border-emerald-100';
+            const truncado = texto.length > 60 ? texto.slice(0, 60) + '…' : texto;
+            item.innerHTML = `<span class="font-semibold text-emerald-700">${rol}:</span> <span class="text-slate-600">${truncado}</span>`;
+            sidebarList.appendChild(item);
+            sidebarList.scrollTop = sidebarList.scrollHeight;
+        }
+
+        // ==========================================
         // ZONA DE CONEXIÓN CON EL BACKEND FLASK (blueprint 'input')
         //   POST /query/into      -> ingreso de audio, devuelve el texto transcrito
         //   POST /query/response  -> recibe { texto } y devuelve la respuesta del modelo
@@ -233,6 +401,8 @@
         async function conectarConMiModelo(promptTexto) {
             setOrbState('thinking');
             mostrarProceso(true, "Procesando solicitud...");
+
+            const bubbleIA = agregarBurbujaIAPendiente();
 
             try {
                 const resResponse = await fetch(`${API_BASE}/response`, {
@@ -255,16 +425,18 @@
                 mostrarProceso(false);
                 setOrbState('speaking');
 
-                // Subtítulos en pantalla y generación de voz en paralelo
+                // Texto en la burbuja y generación de voz en paralelo
                 await Promise.all([
-                    efectoEscribirSubtitulos(respuestaIA),
+                    escribirEnBurbuja(bubbleIA, respuestaIA),
                     generarVoz(respuestaIA)
                 ]);
+
+                agregarAlHistorial('IA', respuestaIA);
 
             } catch (error) {
                 console.error("Error al conectar con el modelo:", error);
                 mostrarProceso(false);
-                subtitlesText.innerText = "Error de conexión con el modelo.";
+                bubbleIA.innerText = "Error de conexión con el modelo.";
             } finally {
                 setOrbState('idle');
             }
@@ -310,33 +482,6 @@
             }
         }
 
-        // Efecto visual palabra por palabra / letra por letra garantizando espacios limpios
-        function efectoEscribirSubtitulos(texto) {
-            return new Promise((resolve) => {
-                subtitlesText.style.opacity = '0';
-                setTimeout(() => {
-                    subtitlesText.innerText = "";
-                    subtitlesText.style.opacity = '1';
-                    
-                    let i = 0;
-                    const velocidad = 20;
-                    
-                    function escribir() {
-                        if (i < texto.length) {
-                            subtitlesText.innerText += texto.charAt(i);
-                            audioLevel = Math.sin(i * 0.4) * 0.5 + 0.5;
-                            i++;
-                            setTimeout(escribir, velocidad);
-                        } else {
-                            audioLevel = 0;
-                            resolve();
-                        }
-                    }
-                    escribir();
-                }, 200);
-            });
-        }
-
         function setOrbState(state) {
             orbState = state;
         }
@@ -355,6 +500,7 @@
             const texto = userInput.value.trim();
             if (texto) {
                 userInput.value = "";
+                agregarMensajeUsuario(texto);
                 conectarConMiModelo(texto);
             }
         });
@@ -414,26 +560,28 @@
                         mostrarProceso(false);
 
                         if (textoTranscrito) {
+                            agregarMensajeUsuario(textoTranscrito);
                             await conectarConMiModelo(textoTranscrito);
                         } else {
                             setOrbState('idle');
-                            subtitlesText.innerText = "No se pudo transcribir el audio.";
+                            mostrarProceso(true, "No se pudo transcribir el audio.");
+                            setTimeout(() => mostrarProceso(false), 2500);
                         }
                     } catch (error) {
                         console.error("Error al enviar audio a /into:", error);
                         mostrarProceso(false);
                         setOrbState('idle');
-                        subtitlesText.innerText = "Error al procesar el audio.";
                     }
                 };
 
                 mediaRecorder.start();
                 isRecording = true;
                 voiceBtn.classList.add('recording');
-                subtitlesText.innerText = "Escuchando... presiona de nuevo para detener.";
+                mostrarProceso(true, "Escuchando... presiona de nuevo para detener.");
             } catch (err) {
                 console.error("No se pudo acceder al micrófono:", err);
-                subtitlesText.innerText = "Permiso de micrófono denegado o no disponible.";
+                mostrarProceso(true, "Permiso de micrófono denegado o no disponible.");
+                setTimeout(() => mostrarProceso(false), 3000);
             }
         }
 
@@ -454,7 +602,8 @@
             });
         } else {
             voiceBtn.addEventListener('click', () => {
-                subtitlesText.innerText = "Tu navegador no soporta grabación de audio.";
+                mostrarProceso(true, "Tu navegador no soporta grabación de audio.");
+                setTimeout(() => mostrarProceso(false), 3000);
             });
         }
     </script>
