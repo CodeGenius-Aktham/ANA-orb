@@ -220,12 +220,15 @@
         // ==========================================
         // ZONA DE CONEXIÓN CON EL BACKEND FLASK (blueprint 'input')
         //   POST /query/into      -> ingreso de audio, devuelve el texto transcrito
-        //   POST /query/response  -> recibe { texto } y devuelve la respuesta del modelo,
-        //                             también se usa para obtener la voz (texto a voz)
+        //   POST /query/response  -> recibe { texto } y devuelve la respuesta del modelo
+        //   POST /query/generate  -> recibe { texto } y devuelve la voz (texto a voz)
         // ==========================================
         // NOTA: si cambia la URL de ngrok, solo hay que actualizar esta constante.
         const API_BASE = 'https://dc76-190-24-70-29.ngrok-free.app/query';
+
+        // Header requerido por ngrok free para evitar la página de advertencia del navegador
         const NGROK_HEADERS = { 'ngrok-skip-browser-warning': 'true' };
+
         // 2. Texto del usuario -> respuesta del modelo -> voz de salida
         async function conectarConMiModelo(promptTexto) {
             setOrbState('thinking');
@@ -234,7 +237,10 @@
             try {
                 const resResponse = await fetch(`${API_BASE}/response`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...NGROK_HEADERS
+                    },
                     body: JSON.stringify({ texto: promptTexto })
                 });
 
@@ -264,12 +270,15 @@
             }
         }
 
-        // 3. Texto a voz vía /response
+        // 3. Texto a voz vía /generate
         async function generarVoz(texto) {
             try {
                 const resVoz = await fetch(`${API_BASE}/generate`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...NGROK_HEADERS
+                    },
                     body: JSON.stringify({ texto: texto })
                 });
 
@@ -280,13 +289,13 @@
                 const contentType = resVoz.headers.get('Content-Type') || '';
 
                 if (contentType.startsWith('audio/')) {
-                    // response_modelo() devuelve el audio directamente como binario
+                    // generate_model() devuelve el audio directamente como binario
                     const audioBlob = await resVoz.blob();
                     const audioUrl = URL.createObjectURL(audioBlob);
                     const audio = new Audio(audioUrl);
                     await audio.play();
                 } else {
-                    // response_modelo() devuelve JSON con audio_url o audio en base64
+                    // generate_model() devuelve JSON con audio_url o audio en base64
                     // NOTA: ajusta estas claves según lo que realmente devuelva tu backend
                     const dataVoz = await resVoz.json();
                     const audioSrc = dataVoz.audio_url
@@ -297,7 +306,7 @@
                     }
                 }
             } catch (error) {
-                console.error("Error al generar voz en /response:", error);
+                console.error("Error al generar voz en /generate:", error);
             }
         }
 
@@ -390,6 +399,7 @@
                     try {
                         const resInto = await fetch(`${API_BASE}/into`, {
                             method: 'POST',
+                            headers: { ...NGROK_HEADERS },
                             body: formData
                         });
 
