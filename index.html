@@ -224,8 +224,8 @@
         //                             también se usa para obtener la voz (texto a voz)
         // ==========================================
         // NOTA: si cambia la URL de ngrok, solo hay que actualizar esta constante.
-        const API_BASE = 'https://6396-190-24-70-29.ngrok-free.app/query';
-
+        const API_BASE = 'https://dc76-190-24-70-29.ngrok-free.app/query';
+        const NGROK_HEADERS = { 'ngrok-skip-browser-warning': 'true' };
         // 2. Texto del usuario -> respuesta del modelo -> voz de salida
         async function conectarConMiModelo(promptTexto) {
             setOrbState('thinking');
