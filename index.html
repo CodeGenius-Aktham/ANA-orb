@@ -3,36 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- ================= SEGURIDAD ================= -->
-    <!-- CSP: solo permite cargar scripts/estilos/fuentes de los orígenes que realmente usamos.
-         'unsafe-inline' en script-src es necesario porque el JS está inline en este archivo;
-         si lo mueves a un .js externo, puedes quitarlo y quedar con una CSP mucho más estricta. -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com;
-        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-        font-src https://fonts.gstatic.com;
-        img-src 'self' data: blob:;
-        media-src 'self' blob: https:;
-        connect-src 'self' https://782d-190-24-70-29.ngrok-free.app;
-        object-src 'none';
-        base-uri 'self';
-        form-action 'self';
-        frame-ancestors 'none';
-    ">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <!-- Nota: X-Frame-Options y Strict-Transport-Security no se pueden fijar por <meta>,
-         deben ir como cabeceras HTTP reales desde el servidor (ver notas al final). -->
-
-    <title>ANA AI</title>
-
-    <!-- Icono que se ve en la pestaña del navegador (favicon).
-         Cambia "favicon.png" por la ruta real de tu imagen, o reemplaza el archivo en esa ruta. -->
-    <link rel="icon" type="image/png" href="Logo Bytes-46.png">
-    <link rel="apple-touch-icon" href="favicon.png">
-
+    <title>Asistente IA - Orbe Verde Líquido</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -79,10 +50,13 @@
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
+        /* Transición suave del orbe: grande en bienvenida, un poco más chico al conversar (siempre centrado) */
         #orbWrap {
             transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
                         height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
                         filter 0.5s ease;
+            /* clamp() da una escala fluida y precisa entre celulares chicos, tablets y monitores grandes,
+               en vez de saltar entre 2-3 breakpoints fijos */
             filter: drop-shadow(0 10px 40px rgba(16, 185, 129, 0.18));
         }
         .orb-size-hero {
@@ -93,6 +67,8 @@
             width: clamp(7rem, 28vw, 15rem);
             height: clamp(7rem, 28vw, 15rem);
         }
+        /* En pantallas muy bajas de altura (celular en horizontal, ventanas chicas) priorizamos que
+           todo quepa sin cortar el input de abajo */
         @media (max-height: 560px) {
             .orb-size-hero { width: clamp(7rem, 22vh, 20rem); height: clamp(7rem, 22vh, 20rem); }
             .orb-size-active { width: clamp(5.5rem, 16vh, 15rem); height: clamp(5.5rem, 16vh, 15rem); }
@@ -102,16 +78,19 @@
             filter: blur(48px);
         }
 
+        /* Texto de lo que dijo el usuario, arriba de la respuesta */
         #userQueryText {
             transition: opacity 0.4s ease;
             font-size: clamp(0.8rem, 1.6vw + 0.5rem, 1rem);
         }
 
+        /* Texto de la respuesta del modelo */
         #aiResponseText {
             min-height: 1.75em;
             font-size: clamp(1.05rem, 1.4vw + 0.75rem, 1.35rem);
         }
 
+        /* Cursor parpadeante mientras "habla" el modelo */
         .speaking-cursor {
             display: inline-block;
             width: 2px;
@@ -125,11 +104,6 @@
             0%, 50% { opacity: 1; }
             51%, 100% { opacity: 0; }
         }
-
-        #sendBtn:disabled, #voiceBtn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
     </style>
 </head>
 <body class="bg-white text-slate-800 flex flex-col overflow-hidden selection:bg-emerald-500 selection:text-white" style="height: 100svh; height: 100dvh;">
@@ -138,18 +112,24 @@
         Esta version es una DEMO, por lo cual algunas funciones pueden no estar disponibles y otras pueden cometer errores.
     </p>
 
+    <!-- Header vacío y limpio sin datos adicionales -->
     <header class="w-full px-4 sm:px-6 pt-2 sm:pt-4 pb-1 flex justify-between items-center z-10 flex-shrink-0">
         <div></div>
         <div></div>
     </header>
 
+    <!-- ZONA CENTRAL: orbe siempre en el medio de la pantalla, cara a cara, sin historial de chat -->
     <div id="mainArea" class="flex-1 min-h-0 w-full flex flex-col items-center justify-center px-4 sm:px-8 py-3 sm:py-6 gap-3 sm:gap-5 overflow-hidden">
 
+        <!-- Contenedor del Orbe -->
         <div id="orbWrap" class="orb-size-hero relative flex items-center justify-center flex-shrink-0">
+            <!-- Resplandor ambiental verde dinámico -->
             <div id="ambientGlow" class="absolute inset-0 rounded-full bg-emerald-400/20 blur-3xl transition-all duration-700 pointer-events-none scale-90"></div>
+            <!-- Lienzo para la animación fluida tipo plastilina/líquido -->
             <canvas id="orbCanvas" class="w-full h-full cursor-pointer z-10"></canvas>
         </div>
 
+        <!-- Proceso actual / Pensamiento -->
         <div class="h-6 flex items-center justify-center flex-shrink-0">
             <div id="thoughtProcess" class="text-xs sm:text-sm text-emerald-600 font-medium tracking-wide flex items-center space-x-2 transition-all duration-300 opacity-0">
                 <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -160,34 +140,40 @@
             </div>
         </div>
 
+        <!-- Mensaje de bienvenida, solo visible antes del primer mensaje -->
         <div id="welcomeText" class="max-w-2xl w-full text-center px-4">
             <p class="font-light text-slate-700" style="font-size: clamp(1.4rem, 3vw + 0.8rem, 1.875rem);">Bienvenido nuevamente</p>
             <p class="text-slate-400 mt-2" style="font-size: clamp(0.8rem, 1.2vw + 0.5rem, 1rem);">Escribe tu consulta o habla directamente para comenzar.</p>
         </div>
 
+        <!-- Intercambio actual: lo que tú dijiste arriba, la respuesta del modelo abajo. Sin historial, sin burbujas. -->
         <div id="exchangeArea" class="hidden w-full max-w-2xl flex-1 min-h-0 flex flex-col items-center justify-start gap-2 sm:gap-3 overflow-y-auto px-2 py-2">
             <p id="userQueryText" class="text-slate-400 italic text-center"></p>
             <div id="aiResponseText" class="text-slate-700 text-center leading-relaxed whitespace-pre-wrap"></div>
         </div>
     </div>
 
+    <!-- Controls & Prompt Input Footer con Liquid Glass Verde y botones ordenados -->
     <footer class="w-full px-4 sm:px-6 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] z-10 flex flex-col items-center flex-shrink-0">
         <div class="max-w-3xl w-full flex items-center gap-2 sm:gap-3 liquid-glass rounded-2xl p-2 sm:p-2.5 transition-all focus-within:ring-2 focus-within:ring-emerald-500/30">
-            <input type="text" id="userInput" placeholder="Escribe un mensaje..." maxlength="2000" autocomplete="off" spellcheck="false"
+            <input type="text" id="userInput" placeholder="Escribe un mensaje..." 
                 class="flex-1 min-w-0 bg-transparent border-none px-3 sm:px-4 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none">
-
+            
+            <!-- Botón de Envío -->
             <button id="sendBtn" class="bg-emerald-500 hover:bg-emerald-600 text-white font-medium p-2.5 sm:p-3 rounded-xl text-sm transition-all shadow-md shadow-emerald-500/20 active:scale-95 flex items-center justify-center flex-shrink-0" title="Enviar">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </button>
 
+            <!-- Botón de Voz / Micrófono a la derecha -->
             <button id="voiceBtn" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-medium p-2.5 sm:p-3 rounded-xl text-sm transition-all active:scale-95 flex items-center justify-center flex-shrink-0" title="Hablar directamente">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg>
             </button>
         </div>
     </footer>
 
+    <!-- Script de animación del orbe verde puro y conexión con el backend Flask -->
     <script>
-        // ================= ELEMENTOS UI =================
+        // Elementos UI
         const canvas = document.getElementById('orbCanvas');
         const ctx = canvas.getContext('2d');
         const thoughtProcess = document.getElementById('thoughtProcess');
@@ -203,6 +189,8 @@
         const userQueryText = document.getElementById('userQueryText');
         const aiResponseText = document.getElementById('aiResponseText');
 
+        // Configuración de Canvas Retina Display — se recalcula en cada resize/orientación
+        // para que el orbe se vea nítido en cualquier pantalla (celular, tablet, monitor 4K)
         function resizeCanvas() {
             const dpr = Math.min(window.devicePixelRatio || 1, 3);
             const rect = canvas.getBoundingClientRect();
@@ -219,10 +207,12 @@
         }
         resizeCanvas();
 
-        let orbState = 'idle';
+        // Estados del Orbe (siempre tonos verdes)
+        let orbState = 'idle'; // idle, thinking, speaking
         let time = 0;
-        let audioLevel = 0;
+        let audioLevel = 0; 
 
+        // Puntos de control para la plastilina/fluido verde orgánico
         const numPoints = 16;
         let points = [];
         for (let i = 0; i < numPoints; i++) {
@@ -233,6 +223,7 @@
             });
         }
 
+        // Bucle de renderizado del Orbe Verde
         function animateOrb() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const rect = canvas.getBoundingClientRect();
@@ -259,6 +250,7 @@
                 ambientGlow.style.background = 'rgba(52, 211, 153, 0.35)';
             }
 
+            // Deriva el contorno líquido (mismo cálculo, reutilizado para cuerpo + brillo + borde)
             let coords = [];
             for (let i = 0; i < numPoints; i++) {
                 let p = points[i];
@@ -285,6 +277,7 @@
                 ctx.closePath();
             }
 
+            // Sombra ambiental proyectada debajo del orbe (le da peso y profundidad)
             ctx.save();
             trazarContorno();
             ctx.shadowColor = 'rgba(6, 95, 70, 0.30)';
@@ -294,23 +287,25 @@
             ctx.fill();
             ctx.restore();
 
+            // Cuerpo principal: gradiente radial más rico, con más paradas de color para dar volumen esférico
             ctx.save();
             trazarContorno();
             const gradient = ctx.createRadialGradient(
                 centerX - baseRadius * 0.32, centerY - baseRadius * 0.38, baseRadius * 0.08,
                 centerX, centerY, baseRadius * 1.4
             );
-            gradient.addColorStop(0, '#6ee7b7');
-            gradient.addColorStop(0.28, '#34d399');
-            gradient.addColorStop(0.62, '#059669');
-            gradient.addColorStop(0.88, '#047857');
-            gradient.addColorStop(1, '#064e3b');
+            gradient.addColorStop(0, '#6ee7b7');     // Highlight superior claro
+            gradient.addColorStop(0.28, '#34d399');  // Verde esmeralda brillante
+            gradient.addColorStop(0.62, '#059669');  // Verde esmeralda intenso
+            gradient.addColorStop(0.88, '#047857');  // Transición
+            gradient.addColorStop(1, '#064e3b');     // Sombra verde profunda en el borde
             ctx.fillStyle = gradient;
             ctx.shadowColor = 'rgba(16, 185, 129, 0.45)';
             ctx.shadowBlur = orbState === 'speaking' ? 55 : 32;
             ctx.fill();
             ctx.restore();
 
+            // Brillo especular: un reflejo suave arriba a la izquierda, como luz incidiendo sobre líquido
             ctx.save();
             trazarContorno();
             ctx.clip();
@@ -324,6 +319,7 @@
             ctx.fillRect(centerX - baseRadius * 1.5, centerY - baseRadius * 1.5, baseRadius * 3, baseRadius * 3);
             ctx.restore();
 
+            // Borde interior sutil que define el volumen del orbe
             ctx.save();
             trazarContorno();
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
@@ -335,6 +331,11 @@
         }
         animateOrb();
 
+        // ==========================================
+        // MODO CONVERSACIÓN CARA A CARA: el orbe se queda siempre en el centro,
+        // solo se achica un poco. No hay historial ni burbujas: se muestra
+        // únicamente lo que tú dijiste y, debajo, lo que responde el modelo.
+        // ==========================================
         let chatStarted = false;
 
         function iniciarModoConversacion() {
@@ -351,13 +352,14 @@
             resizeCanvas();
         }
 
+        // Muestra el nuevo intercambio: reemplaza lo anterior, no lo apila
         function mostrarIntercambio(textoUsuario) {
             iniciarModoConversacion();
-            // innerText, no innerHTML: el navegador nunca interpreta esto como HTML/JS.
             userQueryText.innerText = textoUsuario;
             aiResponseText.innerHTML = '';
         }
 
+        // Efecto de escritura letra por letra en la respuesta del modelo, con cursor parpadeante
         function escribirRespuesta(texto) {
             return new Promise((resolve) => {
                 aiResponseText.innerHTML = '<span class="speaking-cursor"></span>';
@@ -367,7 +369,6 @@
                 function escribir() {
                     if (i < texto.length) {
                         const textoParcial = texto.slice(0, i + 1);
-                        // El contenido variable siempre pasa por escaparHtml() antes de innerHTML.
                         aiResponseText.innerHTML = escaparHtml(textoParcial) + '<span class="speaking-cursor"></span>';
                         audioLevel = Math.sin(i * 0.4) * 0.5 + 0.5;
                         i++;
@@ -382,11 +383,9 @@
             });
         }
 
-        // Escapa cualquier texto antes de insertarlo como HTML (previene XSS si el
-        // backend llegara a estar comprometido o a devolver texto no confiable).
         function escaparHtml(str) {
             const div = document.createElement('div');
-            div.innerText = String(str ?? '');
+            div.innerText = str;
             return div.innerHTML;
         }
 
@@ -396,82 +395,40 @@
         //   POST /query/response  -> recibe { texto } y devuelve la respuesta del modelo
         //   POST /query/generate  -> recibe { texto } y devuelve la voz (texto a voz)
         // ==========================================
-        // NOTA: si cambia la URL de ngrok, actualiza esta constante Y la directiva
-        // connect-src de la Content-Security-Policy en el <head>, o las peticiones
-        // quedarán bloqueadas por el navegador.
+        // NOTA: si cambia la URL de ngrok, solo hay que actualizar esta constante.
         const API_BASE = 'https://9897-190-24-70-29.ngrok-free.app/query';
 
+        // Header requerido por ngrok free para evitar la página de advertencia del navegador
         const NGROK_HEADERS = { 'ngrok-skip-browser-warning': 'true' };
 
-        // Verificación defensiva: nunca enviar datos a un origen que no sea HTTPS.
-        if (!API_BASE.startsWith('https://')) {
-            console.error('API_BASE debe usar HTTPS.');
-        }
-
-        // Límite de tamaño de audio grabado (evita subir archivos enormes por error o abuso).
-        const MAX_AUDIO_BYTES = 10 * 1024 * 1024; // 10 MB
-        const FETCH_TIMEOUT_MS = 30000;
-
-        // fetch con timeout, para que una conexión colgada no deje la UI bloqueada indefinidamente.
-        async function fetchConTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS) {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), timeoutMs);
-            try {
-                return await fetch(url, { ...options, signal: controller.signal });
-            } finally {
-                clearTimeout(id);
-            }
-        }
-
-        // Valida que la respuesta sea JSON antes de intentar parsearla.
-        async function parsearJsonSeguro(res) {
-            const contentType = res.headers.get('Content-Type') || '';
-            if (!contentType.includes('application/json')) {
-                throw new Error('Respuesta inesperada del servidor (no es JSON).');
-            }
-            return res.json();
-        }
-
-        let procesando = false;
-
-        function setControlesHabilitados(habilitado) {
-            sendBtn.disabled = !habilitado;
-            voiceBtn.disabled = !habilitado;
-        }
-
+        // Texto del usuario -> respuesta del modelo -> voz de salida
         async function conectarConMiModelo(promptTexto) {
-            if (procesando) return; // evita envíos duplicados/solapados
-            const texto = promptTexto.trim().slice(0, 2000); // saneo básico de longitud
-            if (!texto) return;
-
-            procesando = true;
-            setControlesHabilitados(false);
             setOrbState('thinking');
             mostrarProceso(true, "Procesando solicitud...");
-            mostrarIntercambio(texto);
+            mostrarIntercambio(promptTexto);
 
             try {
-                const resResponse = await fetchConTimeout(`${API_BASE}/response`, {
+                const resResponse = await fetch(`${API_BASE}/response`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         ...NGROK_HEADERS
                     },
-                    body: JSON.stringify({ texto })
+                    body: JSON.stringify({ texto: promptTexto })
                 });
 
                 if (!resResponse.ok) {
                     throw new Error(`Error en /response: ${resResponse.status}`);
                 }
 
-                const dataResponse = await parsearJsonSeguro(resResponse);
-                const respuestaIA = String(
-                    dataResponse.output ?? dataResponse.respuesta ?? dataResponse.texto ?? JSON.stringify(dataResponse)
-                );
+                const dataResponse = await resResponse.json();
+                // NOTA: ajusta esta clave según lo que realmente devuelva response_modelo()
+                const respuestaIA = dataResponse.output ?? dataResponse.respuesta ?? dataResponse.texto ?? JSON.stringify(dataResponse);
 
                 mostrarProceso(false);
                 setOrbState('speaking');
 
+                // Texto y voz en paralelo, sincronizados
                 await Promise.all([
                     escribirRespuesta(respuestaIA),
                     generarVoz(respuestaIA)
@@ -483,20 +440,19 @@
                 aiResponseText.innerText = "Error de conexión con el modelo.";
             } finally {
                 setOrbState('idle');
-                procesando = false;
-                setControlesHabilitados(true);
             }
         }
 
+        // Texto a voz vía /generate
         async function generarVoz(texto) {
             try {
-                const resVoz = await fetchConTimeout(`${API_BASE}/generate`, {
+                const resVoz = await fetch(`${API_BASE}/generate`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         ...NGROK_HEADERS
                     },
-                    body: JSON.stringify({ texto })
+                    body: JSON.stringify({ texto: texto })
                 });
 
                 if (!resVoz.ok) {
@@ -506,13 +462,14 @@
                 const contentType = resVoz.headers.get('Content-Type') || '';
 
                 if (contentType.startsWith('audio/')) {
+                    // generate_model() devuelve el audio directamente como binario
                     const audioBlob = await resVoz.blob();
                     const audioUrl = URL.createObjectURL(audioBlob);
                     const audio = new Audio(audioUrl);
-                    audio.addEventListener('ended', () => URL.revokeObjectURL(audioUrl));
-                    audio.addEventListener('error', () => URL.revokeObjectURL(audioUrl));
                     await audio.play();
-                } else if (contentType.includes('application/json')) {
+                } else {
+                    // generate_model() devuelve JSON con audio_url o audio en base64
+                    // NOTA: ajusta estas claves según lo que realmente devuelva tu backend
                     const dataVoz = await resVoz.json();
                     const audioSrc = dataVoz.audio_url
                         ?? (dataVoz.audio_base64 ? `data:audio/mpeg;base64,${dataVoz.audio_base64}` : null);
@@ -539,6 +496,7 @@
             }
         }
 
+        // Eventos de interacción (texto escrito)
         sendBtn.addEventListener('click', () => {
             const texto = userInput.value.trim();
             if (texto) {
@@ -555,6 +513,8 @@
 
         // ==========================================
         // CAPTURA DE AUDIO -> /into (ingreso de info)
+        // Se graba con MediaRecorder, se sube el blob a /into,
+        // y el texto transcrito que devuelve se manda a conectarConMiModelo().
         // ==========================================
         let mediaRecorder = null;
         let mediaStream = null;
@@ -578,26 +538,12 @@
                     mostrarProceso(true, "Transcribiendo audio...");
 
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-
-                    // Validación de tamaño antes de subir el archivo.
-                    if (audioBlob.size === 0) {
-                        mostrarProceso(true, "No se detectó audio.");
-                        setTimeout(() => mostrarProceso(false), 2500);
-                        setOrbState('idle');
-                        return;
-                    }
-                    if (audioBlob.size > MAX_AUDIO_BYTES) {
-                        mostrarProceso(true, "El audio es demasiado largo.");
-                        setTimeout(() => mostrarProceso(false), 2500);
-                        setOrbState('idle');
-                        return;
-                    }
-
                     const formData = new FormData();
+                    // NOTA: ajusta el nombre del campo ('audio') según lo que espere captura_audio()
                     formData.append('audio', audioBlob, 'grabacion.webm');
 
                     try {
-                        const resInto = await fetchConTimeout(`${API_BASE}/into`, {
+                        const resInto = await fetch(`${API_BASE}/into`, {
                             method: 'POST',
                             headers: { ...NGROK_HEADERS },
                             body: formData
@@ -607,8 +553,9 @@
                             throw new Error(`Error en /into: ${resInto.status}`);
                         }
 
-                        const dataInto = await parsearJsonSeguro(resInto);
-                        const textoTranscrito = String(dataInto.texto ?? dataInto.transcripcion ?? dataInto.output ?? "");
+                        const dataInto = await resInto.json();
+                        // NOTA: ajusta esta clave según lo que realmente devuelva captura_audio()
+                        const textoTranscrito = dataInto.texto ?? dataInto.transcripcion ?? dataInto.output ?? "";
 
                         mostrarProceso(false);
 
@@ -646,7 +593,6 @@
 
         if (navigator.mediaDevices && window.MediaRecorder) {
             voiceBtn.addEventListener('click', () => {
-                if (procesando) return;
                 if (isRecording) {
                     detenerGrabacion();
                 } else {
