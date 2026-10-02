@@ -544,7 +544,7 @@
         // El frontend lo pide por GET y lo muestra debajo de la respuesta del modelo.
         // NOTA: si la ruta del blueprint es distinta, solo hay que ajustar IMAGE_ENDPOINT.
         // ==========================================
-        const IMAGE_ENDPOINT = `${API_BASE}/query/send_image/images`;
+        const IMAGE_ENDPOINT = `${API_BASE}/send_image/images`;
 
         async function cargarImagenInventario(nombreImagen) {
             if (!nombreImagen) return;
