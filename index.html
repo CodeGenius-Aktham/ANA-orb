@@ -78,6 +78,16 @@
             filter: blur(48px);
         }
 
+        /* Vista previa de la imagen enviada por el usuario, arriba de la respuesta */
+        #userImagePreview {
+            max-height: clamp(5rem, 18vh, 10rem);
+            max-width: 100%;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.12);
+            object-fit: contain;
+        }
+
         /* Texto de lo que dijo el usuario, arriba de la respuesta */
         #userQueryText {
             transition: opacity 0.4s ease;
@@ -148,6 +158,7 @@
 
         <!-- Intercambio actual: lo que tú dijiste arriba, la respuesta del modelo abajo. Sin historial, sin burbujas. -->
         <div id="exchangeArea" class="hidden w-full max-w-2xl flex-1 min-h-0 flex flex-col items-center justify-start gap-2 sm:gap-3 overflow-y-auto px-2 py-2">
+            <img id="userImagePreview" class="hidden flex-shrink-0" alt="Imagen enviada">
             <p id="userQueryText" class="text-slate-400 italic text-center"></p>
             <div id="aiResponseText" class="text-slate-700 text-center leading-relaxed whitespace-pre-wrap"></div>
         </div>
@@ -162,6 +173,12 @@
             <!-- Botón de Envío -->
             <button id="sendBtn" class="bg-emerald-500 hover:bg-emerald-600 text-white font-medium p-2.5 sm:p-3 rounded-xl text-sm transition-all shadow-md shadow-emerald-500/20 active:scale-95 flex items-center justify-center flex-shrink-0" title="Enviar">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </button>
+
+            <!-- Botón de Imagen: abre el selector de archivos (en celular permite usar la cámara) -->
+            <input type="file" id="imageInput" accept="image/*" class="hidden">
+            <button id="imageBtn" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-medium p-2.5 sm:p-3 rounded-xl text-sm transition-all active:scale-95 flex items-center justify-center flex-shrink-0" title="Enviar una imagen">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             </button>
 
             <!-- Botón de Voz / Micrófono a la derecha -->
@@ -181,12 +198,15 @@
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
         const voiceBtn = document.getElementById('voiceBtn');
+        const imageBtn = document.getElementById('imageBtn');
+        const imageInput = document.getElementById('imageInput');
         const ambientGlow = document.getElementById('ambientGlow');
 
         const orbWrap = document.getElementById('orbWrap');
         const welcomeText = document.getElementById('welcomeText');
         const exchangeArea = document.getElementById('exchangeArea');
         const userQueryText = document.getElementById('userQueryText');
+        const userImagePreview = document.getElementById('userImagePreview');
         const aiResponseText = document.getElementById('aiResponseText');
 
         // Configuración de Canvas Retina Display — se recalcula en cada resize/orientación
@@ -352,11 +372,23 @@
             resizeCanvas();
         }
 
-        // Muestra el nuevo intercambio: reemplaza lo anterior, no lo apila
-        function mostrarIntercambio(textoUsuario) {
+        // Muestra el nuevo intercambio: reemplaza lo anterior, no lo apila.
+        // Si se pasa una imagen (File/Blob), se muestra una vista previa arriba del texto.
+        function mostrarIntercambio(textoUsuario, imagen = null) {
             iniciarModoConversacion();
             userQueryText.innerText = textoUsuario;
             aiResponseText.innerHTML = '';
+
+            if (userImagePreview.src && userImagePreview.src.startsWith('blob:')) {
+                URL.revokeObjectURL(userImagePreview.src);
+            }
+            if (imagen) {
+                userImagePreview.src = URL.createObjectURL(imagen);
+                userImagePreview.classList.remove('hidden');
+            } else {
+                userImagePreview.removeAttribute('src');
+                userImagePreview.classList.add('hidden');
+            }
         }
 
         // Efecto de escritura letra por letra en la respuesta del modelo, con cursor parpadeante
@@ -394,6 +426,8 @@
         //   POST /query/into      -> ingreso de audio, devuelve el texto transcrito
         //   POST /query/response  -> recibe { texto } y devuelve la respuesta del modelo
         //   POST /query/generate  -> recibe { texto } y devuelve la voz (texto a voz)
+        //   POST /query/image     -> recibe multipart/form-data con el campo 'imagen'
+        //                            (y opcionalmente 'texto') y devuelve la respuesta del modelo
         // ==========================================
         // NOTA: si cambia la URL de ngrok, solo hay que actualizar esta constante.
         const API_BASE = 'https://3a5e-186-29-72-11.ngrok-free.app/query';
@@ -509,6 +543,84 @@
             if (e.key === 'Enter') {
                 sendBtn.click();
             }
+        });
+
+        // ==========================================
+        // ENVÍO DE IMAGEN -> /image
+        // El usuario elige una foto (o la toma con la cámara en celular), se sube
+        // como multipart/form-data y la respuesta del modelo se muestra y se lee en voz alta,
+        // igual que con /response.
+        // ==========================================
+        const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
+
+        async function enviarImagen(archivo, textoAdicional = "") {
+            if (!archivo) return;
+
+            if (!archivo.type.startsWith('image/')) {
+                mostrarProceso(true, "El archivo seleccionado no es una imagen.");
+                setTimeout(() => mostrarProceso(false), 2500);
+                return;
+            }
+            if (archivo.size > MAX_IMAGE_BYTES) {
+                mostrarProceso(true, "La imagen es muy pesada (máximo 10 MB).");
+                setTimeout(() => mostrarProceso(false), 2500);
+                return;
+            }
+
+            setOrbState('thinking');
+            mostrarProceso(true, "Analizando imagen...");
+            mostrarIntercambio(textoAdicional || archivo.name || "Imagen enviada", archivo);
+
+            const formData = new FormData();
+            // NOTA: ajusta el nombre del campo ('imagen') según lo que espere el endpoint Flask
+            formData.append('imagen', archivo, archivo.name || 'imagen.jpg');
+            if (textoAdicional) formData.append('texto', textoAdicional);
+
+            try {
+                const resImage = await fetch(`${API_BASE}/image`, {
+                    method: 'POST',
+                    headers: { ...NGROK_HEADERS },
+                    body: formData
+                });
+
+                if (!resImage.ok) {
+                    throw new Error(`Error en /image: ${resImage.status}`);
+                }
+
+                const dataImage = await resImage.json();
+                // NOTA: ajusta esta clave según lo que realmente devuelva el endpoint de imagen
+                const respuestaIA = dataImage.output ?? dataImage.respuesta ?? dataImage.texto ?? JSON.stringify(dataImage);
+
+                mostrarProceso(false);
+                setOrbState('speaking');
+
+                await Promise.all([
+                    escribirRespuesta(respuestaIA),
+                    generarVoz(respuestaIA)
+                ]);
+            } catch (error) {
+                console.error("Error al enviar imagen a /image:", error);
+                mostrarProceso(false);
+                aiResponseText.innerText = "Error al procesar la imagen.";
+            } finally {
+                setOrbState('idle');
+            }
+        }
+
+        imageBtn.addEventListener('click', () => {
+            imageInput.click();
+        });
+
+        imageInput.addEventListener('change', () => {
+            const archivo = imageInput.files && imageInput.files[0];
+            // El texto escrito en el input (si hay) acompaña a la imagen como contexto
+            const texto = userInput.value.trim();
+            if (archivo) {
+                userInput.value = "";
+                enviarImagen(archivo, texto);
+            }
+            // Permite volver a elegir el mismo archivo
+            imageInput.value = "";
         });
 
         // ==========================================
