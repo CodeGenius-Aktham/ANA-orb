@@ -67,25 +67,94 @@
             width: clamp(7rem, 28vw, 15rem);
             height: clamp(7rem, 28vw, 15rem);
         }
+        /* Cuando hay una imagen en pantalla el orbe se compacta aún más para cederle espacio */
+        .orb-size-compact {
+            width: clamp(5rem, 18vw, 9rem);
+            height: clamp(5rem, 18vw, 9rem);
+        }
         /* En pantallas muy bajas de altura (celular en horizontal, ventanas chicas) priorizamos que
            todo quepa sin cortar el input de abajo */
         @media (max-height: 560px) {
             .orb-size-hero { width: clamp(7rem, 22vh, 20rem); height: clamp(7rem, 22vh, 20rem); }
             .orb-size-active { width: clamp(5.5rem, 16vh, 15rem); height: clamp(5.5rem, 16vh, 15rem); }
+            .orb-size-compact { width: clamp(4rem, 11vh, 9rem); height: clamp(4rem, 11vh, 9rem); }
         }
 
         #ambientGlow {
             filter: blur(48px);
         }
 
-        /* Imagen del inventario que devuelve el backend (/image), debajo de la respuesta */
+        /* Imagen del inventario que devuelve el backend (/send_image), junto a la respuesta */
         #responseImage {
-            max-height: clamp(5rem, 18vh, 10rem);
+            max-height: clamp(11rem, 40vh, 24rem);
             max-width: 100%;
-            border-radius: 0.75rem;
+            width: auto;
+            border-radius: 1rem;
             border: 1px solid rgba(16, 185, 129, 0.25);
-            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.12);
+            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.18);
             object-fit: contain;
+            /* Arranca invisible; la clase .aparecer dispara la animación cuando termina de cargar */
+            opacity: 0;
+            transform: scale(0.9) translateY(16px);
+            will-change: opacity, transform, filter;
+        }
+        #responseImage.aparecer {
+            animation: imagenAparece 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes imagenAparece {
+            0%   { opacity: 0; transform: scale(0.9) translateY(16px); filter: blur(8px); }
+            60%  { filter: blur(0); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #responseImage.aparecer { animation-duration: 0.01s; }
+        }
+
+        /* Modo con imagen: el área de intercambio se ensancha, el texto se compacta
+           y en pantallas medianas/grandes la respuesta queda a la izquierda y la imagen a la derecha */
+        #exchangeArea.con-imagen {
+            max-width: 60rem;
+        }
+        /* Los textos nunca se encogen para "hacer caber" la imagen: si falta alto, el área hace scroll */
+        #exchangeArea.con-imagen #userQueryText,
+        #exchangeArea.con-imagen #aiResponseText {
+            flex-shrink: 0;
+        }
+        #exchangeArea.con-imagen #userQueryText {
+            font-size: clamp(0.75rem, 1.2vw + 0.4rem, 0.9rem);
+        }
+        #exchangeArea.con-imagen #aiResponseText {
+            font-size: clamp(0.95rem, 1vw + 0.6rem, 1.15rem);
+            transition: font-size 0.4s ease;
+        }
+        /* Celulares de poca altura: imagen algo más baja para que texto e imagen quepan sin scroll */
+        @media (max-width: 767px) and (max-height: 700px) {
+            #exchangeArea.con-imagen #responseImage {
+                max-height: clamp(8rem, 32vh, 24rem);
+            }
+        }
+        @media (min-width: 768px) {
+            #exchangeArea.con-imagen {
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+                gap: 1rem 2rem;
+            }
+            #exchangeArea.con-imagen #userQueryText {
+                flex-basis: 100%;
+                width: 100%;
+            }
+            #exchangeArea.con-imagen #aiResponseText {
+                flex: 1 1 0;
+                min-width: 0;
+                text-align: left;
+            }
+            #exchangeArea.con-imagen #responseImage {
+                flex: 0 1 auto;
+                max-width: 50%;
+                max-height: clamp(10rem, 36vh, 26rem);
+            }
         }
 
         /* Texto de lo que dijo el usuario, arriba de la respuesta */
@@ -376,9 +445,37 @@
             if (responseImage.src && responseImage.src.startsWith('blob:')) {
                 URL.revokeObjectURL(responseImage.src);
             }
+            responseImage.onload = null;
             responseImage.removeAttribute('src');
             responseImage.alt = 'Imagen del inventario';
+            responseImage.classList.remove('aparecer');
             responseImage.classList.add('hidden');
+
+            // Volver al layout normal: texto a tamaño completo y orbe en tamaño de conversación
+            exchangeArea.classList.remove('con-imagen');
+            if (chatStarted) {
+                orbWrap.classList.remove('orb-size-compact');
+                orbWrap.classList.add('orb-size-active');
+            }
+        }
+
+        // Activa el layout con imagen (texto compacto, orbe más chico) y muestra la imagen
+        // con su animación de entrada una vez que el navegador terminó de cargarla.
+        function mostrarImagenRespuesta(blobUrl, nombreImagen) {
+            exchangeArea.classList.add('con-imagen');
+            orbWrap.classList.remove('orb-size-active');
+            orbWrap.classList.add('orb-size-compact');
+            resizeCanvas();
+
+            responseImage.alt = nombreImagen;
+            responseImage.classList.remove('aparecer');
+            responseImage.onload = () => {
+                // Forzar reflow para que la animación se reinicie aunque la clase ya estuviera
+                void responseImage.offsetWidth;
+                responseImage.classList.add('aparecer');
+            };
+            responseImage.src = blobUrl;
+            responseImage.classList.remove('hidden');
         }
 
         // Efecto de escritura letra por letra en la respuesta del modelo, con cursor parpadeante
@@ -569,9 +666,7 @@
 
                 const imagenBlob = await resImagen.blob();
                 ocultarImagenRespuesta();
-                responseImage.src = URL.createObjectURL(imagenBlob);
-                responseImage.alt = nombreImagen;
-                responseImage.classList.remove('hidden');
+                mostrarImagenRespuesta(URL.createObjectURL(imagenBlob), nombreImagen);
             } catch (error) {
                 console.error("Error al recibir imagen del inventario:", error);
                 ocultarImagenRespuesta();
