@@ -448,8 +448,8 @@
                 const dataResponse = await resResponse.json();
                 // NOTA: ajusta esta clave según lo que realmente devuelva response_modelo()
                 const respuestaIA = dataResponse.output ?? dataResponse.respuesta ?? dataResponse.texto ?? JSON.stringify(dataResponse);
-                // NOTA: ajusta esta clave según cómo response_modelo() indique la imagen del inventario a mostrar
-                const nombreImagen = dataResponse.nombre_imagen ?? dataResponse.imagen ?? dataResponse.image ?? null;
+                // response_modelo() indica en 'image_url' el nombre de la imagen del inventario a mostrar (opcional)
+                const nombreImagen = dataResponse.image_url;
 
                 mostrarProceso(false);
                 setOrbState('speaking');
