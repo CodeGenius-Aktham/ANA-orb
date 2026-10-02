@@ -78,8 +78,8 @@
             filter: blur(48px);
         }
 
-        /* Vista previa de la imagen enviada por el usuario, arriba de la respuesta */
-        #userImagePreview {
+        /* Imagen del inventario que devuelve el backend (/image), debajo de la respuesta */
+        #responseImage {
             max-height: clamp(5rem, 18vh, 10rem);
             max-width: 100%;
             border-radius: 0.75rem;
@@ -158,9 +158,9 @@
 
         <!-- Intercambio actual: lo que tú dijiste arriba, la respuesta del modelo abajo. Sin historial, sin burbujas. -->
         <div id="exchangeArea" class="hidden w-full max-w-2xl flex-1 min-h-0 flex flex-col items-center justify-start gap-2 sm:gap-3 overflow-y-auto px-2 py-2">
-            <img id="userImagePreview" class="hidden flex-shrink-0" alt="Imagen enviada">
             <p id="userQueryText" class="text-slate-400 italic text-center"></p>
             <div id="aiResponseText" class="text-slate-700 text-center leading-relaxed whitespace-pre-wrap"></div>
+            <img id="responseImage" class="hidden flex-shrink-0" alt="Imagen del inventario">
         </div>
     </div>
 
@@ -173,12 +173,6 @@
             <!-- Botón de Envío -->
             <button id="sendBtn" class="bg-emerald-500 hover:bg-emerald-600 text-white font-medium p-2.5 sm:p-3 rounded-xl text-sm transition-all shadow-md shadow-emerald-500/20 active:scale-95 flex items-center justify-center flex-shrink-0" title="Enviar">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-            </button>
-
-            <!-- Botón de Imagen: abre el selector de archivos (en celular permite usar la cámara) -->
-            <input type="file" id="imageInput" accept="image/*" class="hidden">
-            <button id="imageBtn" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-medium p-2.5 sm:p-3 rounded-xl text-sm transition-all active:scale-95 flex items-center justify-center flex-shrink-0" title="Enviar una imagen">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             </button>
 
             <!-- Botón de Voz / Micrófono a la derecha -->
@@ -198,15 +192,13 @@
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
         const voiceBtn = document.getElementById('voiceBtn');
-        const imageBtn = document.getElementById('imageBtn');
-        const imageInput = document.getElementById('imageInput');
         const ambientGlow = document.getElementById('ambientGlow');
 
         const orbWrap = document.getElementById('orbWrap');
         const welcomeText = document.getElementById('welcomeText');
         const exchangeArea = document.getElementById('exchangeArea');
         const userQueryText = document.getElementById('userQueryText');
-        const userImagePreview = document.getElementById('userImagePreview');
+        const responseImage = document.getElementById('responseImage');
         const aiResponseText = document.getElementById('aiResponseText');
 
         // Configuración de Canvas Retina Display — se recalcula en cada resize/orientación
@@ -372,23 +364,21 @@
             resizeCanvas();
         }
 
-        // Muestra el nuevo intercambio: reemplaza lo anterior, no lo apila.
-        // Si se pasa una imagen (File/Blob), se muestra una vista previa arriba del texto.
-        function mostrarIntercambio(textoUsuario, imagen = null) {
+        // Muestra el nuevo intercambio: reemplaza lo anterior, no lo apila
+        function mostrarIntercambio(textoUsuario) {
             iniciarModoConversacion();
             userQueryText.innerText = textoUsuario;
             aiResponseText.innerHTML = '';
+            ocultarImagenRespuesta();
+        }
 
-            if (userImagePreview.src && userImagePreview.src.startsWith('blob:')) {
-                URL.revokeObjectURL(userImagePreview.src);
+        function ocultarImagenRespuesta() {
+            if (responseImage.src && responseImage.src.startsWith('blob:')) {
+                URL.revokeObjectURL(responseImage.src);
             }
-            if (imagen) {
-                userImagePreview.src = URL.createObjectURL(imagen);
-                userImagePreview.classList.remove('hidden');
-            } else {
-                userImagePreview.removeAttribute('src');
-                userImagePreview.classList.add('hidden');
-            }
+            responseImage.removeAttribute('src');
+            responseImage.alt = 'Imagen del inventario';
+            responseImage.classList.add('hidden');
         }
 
         // Efecto de escritura letra por letra en la respuesta del modelo, con cursor parpadeante
@@ -426,8 +416,8 @@
         //   POST /query/into      -> ingreso de audio, devuelve el texto transcrito
         //   POST /query/response  -> recibe { texto } y devuelve la respuesta del modelo
         //   POST /query/generate  -> recibe { texto } y devuelve la voz (texto a voz)
-        //   POST /query/image     -> recibe multipart/form-data con el campo 'imagen'
-        //                            (y opcionalmente 'texto') y devuelve la respuesta del modelo
+        //   GET  /query/image/<nombre_imagen> -> send_to_image(): devuelve el archivo de la carpeta
+        //                            'images_inventory' con ese nombre (o JSON {Error} con 400)
         // ==========================================
         // NOTA: si cambia la URL de ngrok, solo hay que actualizar esta constante.
         const API_BASE = 'https://950c-186-29-72-11.ngrok-free.app/query';
@@ -458,14 +448,17 @@
                 const dataResponse = await resResponse.json();
                 // NOTA: ajusta esta clave según lo que realmente devuelva response_modelo()
                 const respuestaIA = dataResponse.output ?? dataResponse.respuesta ?? dataResponse.texto ?? JSON.stringify(dataResponse);
+                // NOTA: ajusta esta clave según cómo response_modelo() indique la imagen del inventario a mostrar
+                const nombreImagen = dataResponse.nombre_imagen ?? dataResponse.imagen ?? dataResponse.image ?? null;
 
                 mostrarProceso(false);
                 setOrbState('speaking');
 
-                // Texto y voz en paralelo, sincronizados
+                // Texto, voz e imagen (si hay) en paralelo, sincronizados
                 await Promise.all([
                     escribirRespuesta(respuestaIA),
-                    generarVoz(respuestaIA)
+                    generarVoz(respuestaIA),
+                    nombreImagen ? cargarImagenInventario(nombreImagen) : Promise.resolve()
                 ]);
 
             } catch (error) {
@@ -546,82 +539,44 @@
         });
 
         // ==========================================
-        // ENVÍO DE IMAGEN -> /image
-        // El usuario elige una foto (o la toma con la cámara en celular), se sube
-        // como multipart/form-data y la respuesta del modelo se muestra y se lee en voz alta,
-        // igual que con /response.
+        // RECEPCIÓN DE IMAGEN <- /image/<nombre_imagen>
+        // El backend (send_to_image) sirve un archivo de 'images_inventory' por su nombre.
+        // El frontend lo pide por GET y lo muestra debajo de la respuesta del modelo.
+        // NOTA: si la ruta del blueprint es distinta, solo hay que ajustar IMAGE_ENDPOINT.
         // ==========================================
-        const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
+        const IMAGE_ENDPOINT = `${API_BASE}/image`;
 
-        async function enviarImagen(archivo, textoAdicional = "") {
-            if (!archivo) return;
-
-            if (!archivo.type.startsWith('image/')) {
-                mostrarProceso(true, "El archivo seleccionado no es una imagen.");
-                setTimeout(() => mostrarProceso(false), 2500);
-                return;
-            }
-            if (archivo.size > MAX_IMAGE_BYTES) {
-                mostrarProceso(true, "La imagen es muy pesada (máximo 10 MB).");
-                setTimeout(() => mostrarProceso(false), 2500);
-                return;
-            }
-
-            setOrbState('thinking');
-            mostrarProceso(true, "Analizando imagen...");
-            mostrarIntercambio(textoAdicional || archivo.name || "Imagen enviada", archivo);
-
-            const formData = new FormData();
-            // NOTA: ajusta el nombre del campo ('imagen') según lo que espere el endpoint Flask
-            formData.append('imagen', archivo, archivo.name || 'imagen.jpg');
-            if (textoAdicional) formData.append('texto', textoAdicional);
+        async function cargarImagenInventario(nombreImagen) {
+            if (!nombreImagen) return;
 
             try {
-                const resImage = await fetch(`${API_BASE}/image`, {
-                    method: 'POST',
-                    headers: { ...NGROK_HEADERS },
-                    body: formData
+                const resImagen = await fetch(`${IMAGE_ENDPOINT}/${encodeURIComponent(nombreImagen)}`, {
+                    method: 'GET',
+                    headers: { ...NGROK_HEADERS }
                 });
 
-                if (!resImage.ok) {
-                    throw new Error(`Error en /image: ${resImage.status}`);
+                const contentType = resImagen.headers.get('Content-Type') || '';
+
+                if (!resImagen.ok || !contentType.startsWith('image/')) {
+                    // send_to_image() devuelve JSON {'Error': '...'} con status 400 si falla
+                    let detalle = `status ${resImagen.status}`;
+                    try {
+                        const dataError = await resImagen.json();
+                        detalle = dataError.Error ?? dataError.error ?? detalle;
+                    } catch (_) { /* cuerpo no JSON */ }
+                    throw new Error(`Error en /image/${nombreImagen}: ${detalle}`);
                 }
 
-                const dataImage = await resImage.json();
-                // NOTA: ajusta esta clave según lo que realmente devuelva el endpoint de imagen
-                const respuestaIA = dataImage.output ?? dataImage.respuesta ?? dataImage.texto ?? JSON.stringify(dataImage);
-
-                mostrarProceso(false);
-                setOrbState('speaking');
-
-                await Promise.all([
-                    escribirRespuesta(respuestaIA),
-                    generarVoz(respuestaIA)
-                ]);
+                const imagenBlob = await resImagen.blob();
+                ocultarImagenRespuesta();
+                responseImage.src = URL.createObjectURL(imagenBlob);
+                responseImage.alt = nombreImagen;
+                responseImage.classList.remove('hidden');
             } catch (error) {
-                console.error("Error al enviar imagen a /image:", error);
-                mostrarProceso(false);
-                aiResponseText.innerText = "Error al procesar la imagen.";
-            } finally {
-                setOrbState('idle');
+                console.error("Error al recibir imagen del inventario:", error);
+                ocultarImagenRespuesta();
             }
         }
-
-        imageBtn.addEventListener('click', () => {
-            imageInput.click();
-        });
-
-        imageInput.addEventListener('change', () => {
-            const archivo = imageInput.files && imageInput.files[0];
-            // El texto escrito en el input (si hay) acompaña a la imagen como contexto
-            const texto = userInput.value.trim();
-            if (archivo) {
-                userInput.value = "";
-                enviarImagen(archivo, texto);
-            }
-            // Permite volver a elegir el mismo archivo
-            imageInput.value = "";
-        });
 
         // ==========================================
         // CAPTURA DE AUDIO -> /into (ingreso de info)
