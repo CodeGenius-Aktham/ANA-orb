@@ -84,38 +84,213 @@
             filter: blur(48px);
         }
 
-        /* Imagen del inventario que devuelve el backend (/send_image), junto a la respuesta */
-        #responseImage {
-            max-height: clamp(11rem, 40vh, 24rem);
-            max-width: 100%;
-            width: auto;
-            border-radius: 1rem;
-            border: 1px solid rgba(16, 185, 129, 0.25);
-            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.18);
-            object-fit: contain;
-            /* Arranca invisible; la clase .aparecer dispara la animación cuando termina de cargar */
+        /* ==========================================================
+           GALERÍA DE IMÁGENES DEL INVENTARIO (estilo pantalla de autoservicio)
+           - Escenario 4:3 con fondo desenfocado de la propia foto y la foto nítida contenida
+           - Revelado cinematográfico + destello de luz al aparecer
+           - Zoom lento (Ken Burns) en la foto activa
+           - Rotación automática con barra de progreso, puntos y contador cuando hay varias
+           ========================================================== */
+        #responseGallery {
+            --stage-h: clamp(11rem, 40vh, 24rem);
+            --stage-radius: 1.25rem;
+            width: min(100%, calc(var(--stage-h) * 4 / 3));
             opacity: 0;
-            transform: scale(0.9) translateY(16px);
-            will-change: opacity, transform, filter;
+            will-change: opacity, transform;
         }
-        #responseImage.aparecer {
-            animation: imagenAparece 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        #responseGallery.aparecer {
+            animation: galeriaAparece 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
-        @keyframes imagenAparece {
-            0%   { opacity: 0; transform: scale(0.9) translateY(16px); filter: blur(8px); }
-            60%  { filter: blur(0); }
-            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        @keyframes galeriaAparece {
+            0%   { opacity: 0; transform: translateY(28px) scale(0.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
         }
+
+        /* Escenario: define tamaño y sombra. El recorte del revelado va en el viewport interno
+           para que la sombra no se recorte con él. */
+        #galleryStage {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            border-radius: var(--stage-radius);
+            box-shadow: 0 18px 40px rgba(16, 185, 129, 0.22), 0 4px 12px rgba(0, 0, 0, 0.10);
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        #galleryViewport {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            border-radius: inherit;
+            background: #0b1f1a;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            isolation: isolate;
+        }
+        #galleryStage.revelar {
+            animation: sombraAparece 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        #galleryStage.revelar #galleryViewport {
+            animation: escenaRevela 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes sombraAparece {
+            0%   { box-shadow: 0 0 0 rgba(16, 185, 129, 0), 0 0 0 rgba(0, 0, 0, 0); }
+            100% { box-shadow: 0 18px 40px rgba(16, 185, 129, 0.22), 0 4px 12px rgba(0, 0, 0, 0.10); }
+        }
+        @keyframes escenaRevela {
+            0%   { clip-path: inset(46% 6% 46% 6% round var(--stage-radius)); }
+            100% { clip-path: inset(0 0 0 0 round var(--stage-radius)); }
+        }
+
+        .gallery-slide {
+            position: absolute;
+            inset: 0;
+            margin: 0;
+            opacity: 0;
+            transition: opacity 0.9s ease;
+            pointer-events: none;
+        }
+        .gallery-slide.activa {
+            opacity: 1;
+            z-index: 1;
+        }
+        /* Fondo ambiental: la misma foto, desenfocada y saturada, rellenando el escenario */
+        .slide-bg {
+            position: absolute;
+            inset: -12%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(26px) saturate(1.35) brightness(0.8);
+            transform: scale(1.1);
+        }
+        .slide-bg::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.28) 100%);
+        }
+        .gallery-slide img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            padding: 4%;
+            box-sizing: border-box;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.35));
+            will-change: transform;
+        }
+        .gallery-slide.activa img {
+            animation: kenBurns 7s cubic-bezier(0.2, 0.6, 0.2, 1) forwards;
+        }
+        .gallery-slide.activa:nth-child(even) img {
+            animation-name: kenBurnsAlt;
+        }
+        @keyframes kenBurns {
+            0%   { transform: scale(1.12) translate(1.5%, 1%); }
+            100% { transform: scale(1) translate(0, 0); }
+        }
+        @keyframes kenBurnsAlt {
+            0%   { transform: scale(1.12) translate(-1.5%, -1%); }
+            100% { transform: scale(1) translate(0, 0); }
+        }
+
+        /* Destello de luz que cruza la foto una vez al revelarse */
+        #galleryShine {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            pointer-events: none;
+            background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, 0.38) 50%, transparent 68%);
+            transform: translateX(-140%);
+        }
+        #galleryStage.revelar #galleryShine {
+            animation: brillo 1.4s cubic-bezier(0.4, 0, 0.2, 1) 0.55s forwards;
+        }
+        @keyframes brillo {
+            100% { transform: translateX(140%); }
+        }
+
+        /* Contador "1 / 3" y barra de progreso: solo cuando hay varias fotos */
+        #galleryCounter {
+            position: absolute;
+            top: 0.6rem;
+            right: 0.6rem;
+            z-index: 3;
+            display: none;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            color: #ecfdf5;
+            background: rgba(6, 78, 59, 0.55);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        #galleryProgress {
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            height: 3px;
+            z-index: 3;
+            display: none;
+            background: rgba(255, 255, 255, 0.22);
+        }
+        #galleryProgressBar {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #6ee7b7, #10b981);
+        }
+        #galleryProgressBar.corriendo {
+            animation: progresoGaleria var(--galeria-intervalo, 4.5s) linear forwards;
+        }
+        @keyframes progresoGaleria {
+            0%   { width: 0; }
+            100% { width: 100%; }
+        }
+        #responseGallery.multiple #galleryCounter,
+        #responseGallery.multiple #galleryProgress { display: block; }
+
+        /* Puntos indicadores debajo del escenario */
+        #galleryDots {
+            display: none;
+            justify-content: center;
+            gap: 0.4rem;
+            margin-top: 0.65rem;
+        }
+        #responseGallery.multiple #galleryDots { display: flex; }
+        .gallery-dot {
+            width: 0.45rem;
+            height: 0.45rem;
+            padding: 0;
+            border: 0;
+            border-radius: 999px;
+            background: rgba(16, 185, 129, 0.3);
+            cursor: pointer;
+            transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1), background 0.35s ease;
+        }
+        .gallery-dot.activa {
+            width: 1.5rem;
+            background: #10b981;
+        }
+
         @media (prefers-reduced-motion: reduce) {
-            #responseImage.aparecer { animation-duration: 0.01s; }
+            #responseGallery.aparecer,
+            #galleryStage.revelar,
+            #galleryStage.revelar #galleryViewport,
+            #galleryStage.revelar #galleryShine,
+            .gallery-slide.activa img { animation-duration: 0.01s; animation-delay: 0s; }
+            .gallery-slide { transition-duration: 0.01s; }
         }
 
         /* Modo con imagen: el área de intercambio se ensancha, el texto se compacta
-           y en pantallas medianas/grandes la respuesta queda a la izquierda y la imagen a la derecha */
+           y en pantallas medianas/grandes la respuesta queda a la izquierda y la galería a la derecha */
         #exchangeArea.con-imagen {
             max-width: 60rem;
         }
-        /* Los textos nunca se encogen para "hacer caber" la imagen: si falta alto, el área hace scroll */
+        /* Los textos nunca se encogen para "hacer caber" la galería: si falta alto, el área hace scroll */
         #exchangeArea.con-imagen #userQueryText,
         #exchangeArea.con-imagen #aiResponseText {
             flex-shrink: 0;
@@ -127,11 +302,9 @@
             font-size: clamp(0.95rem, 1vw + 0.6rem, 1.15rem);
             transition: font-size 0.4s ease;
         }
-        /* Celulares de poca altura: imagen algo más baja para que texto e imagen quepan sin scroll */
+        /* Celulares de poca altura: galería algo más baja para que texto y fotos quepan sin scroll */
         @media (max-width: 767px) and (max-height: 700px) {
-            #exchangeArea.con-imagen #responseImage {
-                max-height: clamp(8rem, 32vh, 24rem);
-            }
+            #responseGallery { --stage-h: clamp(8rem, 30vh, 24rem); }
         }
         @media (min-width: 768px) {
             #exchangeArea.con-imagen {
@@ -150,10 +323,10 @@
                 min-width: 0;
                 text-align: left;
             }
-            #exchangeArea.con-imagen #responseImage {
+            #exchangeArea.con-imagen #responseGallery {
+                --stage-h: clamp(10rem, 33vh, 26rem);
                 flex: 0 1 auto;
                 max-width: 50%;
-                max-height: clamp(10rem, 36vh, 26rem);
             }
         }
 
@@ -229,7 +402,17 @@
         <div id="exchangeArea" class="hidden w-full max-w-2xl flex-1 min-h-0 flex flex-col items-center justify-start gap-2 sm:gap-3 overflow-y-auto px-2 py-2">
             <p id="userQueryText" class="text-slate-400 italic text-center"></p>
             <div id="aiResponseText" class="text-slate-700 text-center leading-relaxed whitespace-pre-wrap"></div>
-            <img id="responseImage" class="hidden flex-shrink-0" alt="Imagen del inventario">
+            <!-- Galería de fotos del inventario que el modelo decide mostrar -->
+            <div id="responseGallery" class="hidden flex-shrink-0">
+                <div id="galleryStage" role="region" aria-label="Fotos del inventario" aria-live="polite">
+                    <div id="galleryViewport">
+                        <div id="galleryShine"></div>
+                        <div id="galleryCounter"></div>
+                        <div id="galleryProgress"><span id="galleryProgressBar"></span></div>
+                    </div>
+                </div>
+                <div id="galleryDots"></div>
+            </div>
         </div>
     </div>
 
@@ -267,11 +450,18 @@
         const welcomeText = document.getElementById('welcomeText');
         const exchangeArea = document.getElementById('exchangeArea');
         const userQueryText = document.getElementById('userQueryText');
-        const responseImage = document.getElementById('responseImage');
+        const responseGallery = document.getElementById('responseGallery');
+        const galleryStage = document.getElementById('galleryStage');
+        const galleryViewport = document.getElementById('galleryViewport');
+        const galleryShine = document.getElementById('galleryShine');
+        const galleryCounter = document.getElementById('galleryCounter');
+        const galleryProgressBar = document.getElementById('galleryProgressBar');
+        const galleryDots = document.getElementById('galleryDots');
         const aiResponseText = document.getElementById('aiResponseText');
 
         // Configuración de Canvas Retina Display — se recalcula en cada resize/orientación
         // para que el orbe se vea nítido en cualquier pantalla (celular, tablet, monitor 4K)
+        let orbeListo = false; // se activa cuando el estado del orbe ya está inicializado
         function resizeCanvas() {
             const dpr = Math.min(window.devicePixelRatio || 1, 3);
             const rect = canvas.getBoundingClientRect();
@@ -280,6 +470,9 @@
             canvas.height = rect.height * dpr;
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.scale(dpr, dpr);
+            // Cambiar el tamaño del canvas lo deja en blanco; se redibuja de inmediato para que el orbe
+            // no parpadee mientras transiciona de tamaño (el ResizeObserver corre después del rAF)
+            if (orbeListo) dibujarOrbe();
         }
         window.addEventListener('resize', resizeCanvas);
         window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 150));
@@ -306,27 +499,34 @@
 
         // Bucle de renderizado del Orbe Verde
         function animateOrb() {
+            time += 0.025;
+            dibujarOrbe();
+            requestAnimationFrame(animateOrb);
+        }
+
+        // Dibuja un fotograma del orbe con el estado actual (sin avanzar el tiempo)
+        function dibujarOrbe() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const rect = canvas.getBoundingClientRect();
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
             let baseRadius = Math.min(centerX, centerY) * 0.52;
 
-            time += 0.025;
-
-            let currentDeform = 10;
+            // La deformación es proporcional al radio para que el orbe conserve la misma forma
+            // en todos sus tamaños (hero, conversación y compacto con galería)
+            let currentDeform = baseRadius * 0.12;
             let speedMultiplier = 1;
 
             if (orbState === 'idle') {
-                currentDeform = 9;
+                currentDeform = baseRadius * 0.11;
                 speedMultiplier = 0.9;
                 ambientGlow.style.background = 'rgba(16, 185, 129, 0.18)';
             } else if (orbState === 'thinking') {
-                currentDeform = 16;
+                currentDeform = baseRadius * 0.19;
                 speedMultiplier = 2.2;
                 ambientGlow.style.background = 'rgba(5, 150, 105, 0.25)';
             } else if (orbState === 'speaking') {
-                currentDeform = 26 + (audioLevel * 22);
+                currentDeform = baseRadius * (0.3 + audioLevel * 0.26);
                 speedMultiplier = 3.2;
                 ambientGlow.style.background = 'rgba(52, 211, 153, 0.35)';
             }
@@ -337,7 +537,7 @@
                 let p = points[i];
                 let noise = Math.sin(time * speedMultiplier + i * 1.2) * currentDeform;
                 if (orbState === 'speaking') {
-                    noise += (Math.random() - 0.5) * 14 * audioLevel;
+                    noise += (Math.random() - 0.5) * baseRadius * 0.17 * audioLevel;
                 }
                 let r = baseRadius + noise;
                 let x = centerX + Math.cos(p.angle) * r;
@@ -362,8 +562,8 @@
             ctx.save();
             trazarContorno();
             ctx.shadowColor = 'rgba(6, 95, 70, 0.30)';
-            ctx.shadowBlur = 40;
-            ctx.shadowOffsetY = 14;
+            ctx.shadowBlur = baseRadius * 0.48;
+            ctx.shadowOffsetY = baseRadius * 0.17;
             ctx.fillStyle = 'rgba(6, 95, 70, 0.001)';
             ctx.fill();
             ctx.restore();
@@ -382,7 +582,7 @@
             gradient.addColorStop(1, '#064e3b');     // Sombra verde profunda en el borde
             ctx.fillStyle = gradient;
             ctx.shadowColor = 'rgba(16, 185, 129, 0.45)';
-            ctx.shadowBlur = orbState === 'speaking' ? 55 : 32;
+            ctx.shadowBlur = baseRadius * (orbState === 'speaking' ? 0.66 : 0.39);
             ctx.fill();
             ctx.restore();
 
@@ -407,9 +607,8 @@
             ctx.lineWidth = 1.5;
             ctx.stroke();
             ctx.restore();
-
-            requestAnimationFrame(animateOrb);
         }
+        orbeListo = true;
         animateOrb();
 
         // ==========================================
@@ -441,15 +640,26 @@
             ocultarImagenRespuesta();
         }
 
+        // ---------- Galería: estado ----------
+        const GALERIA_INTERVALO_MS = 4500; // tiempo que se muestra cada foto antes de pasar a la siguiente
+        let galeriaUrls = [];
+        let galeriaIndice = 0;
+        let galeriaTimer = null;
+
         function ocultarImagenRespuesta() {
-            if (responseImage.src && responseImage.src.startsWith('blob:')) {
-                URL.revokeObjectURL(responseImage.src);
-            }
-            responseImage.onload = null;
-            responseImage.removeAttribute('src');
-            responseImage.alt = 'Imagen del inventario';
-            responseImage.classList.remove('aparecer');
-            responseImage.classList.add('hidden');
+            clearInterval(galeriaTimer);
+            galeriaTimer = null;
+            galeriaUrls.forEach((u) => URL.revokeObjectURL(u));
+            galeriaUrls = [];
+            galeriaIndice = 0;
+
+            galleryStage.querySelectorAll('.gallery-slide').forEach((sl) => sl.remove());
+            galleryDots.innerHTML = '';
+            galleryCounter.textContent = '';
+            galleryProgressBar.classList.remove('corriendo');
+            galleryStage.classList.remove('revelar');
+            responseGallery.classList.remove('aparecer', 'multiple');
+            responseGallery.classList.add('hidden');
 
             // Volver al layout normal: texto a tamaño completo y orbe en tamaño de conversación
             exchangeArea.classList.remove('con-imagen');
@@ -459,24 +669,82 @@
             }
         }
 
-        // Activa el layout con imagen (texto compacto, orbe más chico) y muestra la imagen
-        // con su animación de entrada una vez que el navegador terminó de cargarla.
-        function mostrarImagenRespuesta(blobUrl, nombreImagen) {
+        // Activa el layout con imagen (texto compacto, orbe más chico), arma las diapositivas
+        // y dispara el revelado cinematográfico. `items` = [{ url, nombre }, ...]
+        function mostrarGaleriaRespuesta(items) {
             exchangeArea.classList.add('con-imagen');
             orbWrap.classList.remove('orb-size-active');
             orbWrap.classList.add('orb-size-compact');
             resizeCanvas();
 
-            responseImage.alt = nombreImagen;
-            responseImage.classList.remove('aparecer');
-            responseImage.onload = () => {
-                // Forzar reflow para que la animación se reinicie aunque la clase ya estuviera
-                void responseImage.offsetWidth;
-                responseImage.classList.add('aparecer');
-            };
-            responseImage.src = blobUrl;
-            responseImage.classList.remove('hidden');
+            items.forEach((item, i) => {
+                const slide = document.createElement('figure');
+                slide.className = 'gallery-slide';
+
+                const fondo = document.createElement('div');
+                fondo.className = 'slide-bg';
+                fondo.style.backgroundImage = `url("${item.url}")`;
+
+                const img = document.createElement('img');
+                img.src = item.url;
+                img.alt = item.nombre;
+                img.draggable = false;
+
+                slide.append(fondo, img);
+                galleryViewport.insertBefore(slide, galleryShine);
+
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = 'gallery-dot';
+                dot.setAttribute('aria-label', `Ver foto ${i + 1} de ${items.length}`);
+                dot.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    irASlide(i, true);
+                });
+                galleryDots.appendChild(dot);
+            });
+
+            galeriaUrls = items.map((it) => it.url);
+            responseGallery.classList.toggle('multiple', items.length > 1);
+            responseGallery.style.setProperty('--galeria-intervalo', `${GALERIA_INTERVALO_MS}ms`);
+
+            responseGallery.classList.remove('hidden');
+            void responseGallery.offsetWidth; // reflow para que las animaciones arranquen desde cero
+            responseGallery.classList.add('aparecer');
+            galleryStage.classList.add('revelar');
+
+            irASlide(0);
+            if (items.length > 1) programarSiguienteSlide();
         }
+
+        function irASlide(indice, manual = false) {
+            const slides = galleryStage.querySelectorAll('.gallery-slide');
+            const total = slides.length;
+            if (!total) return;
+            galeriaIndice = ((indice % total) + total) % total;
+
+            slides.forEach((sl, k) => sl.classList.toggle('activa', k === galeriaIndice));
+            galleryDots.querySelectorAll('.gallery-dot').forEach((d, k) => d.classList.toggle('activa', k === galeriaIndice));
+            galleryCounter.textContent = `${galeriaIndice + 1} / ${total}`;
+
+            if (total > 1) {
+                // Reinicia la barra de progreso
+                galleryProgressBar.classList.remove('corriendo');
+                void galleryProgressBar.offsetWidth;
+                galleryProgressBar.classList.add('corriendo');
+                if (manual) programarSiguienteSlide();
+            }
+        }
+
+        function programarSiguienteSlide() {
+            clearInterval(galeriaTimer);
+            galeriaTimer = setInterval(() => irASlide(galeriaIndice + 1), GALERIA_INTERVALO_MS);
+        }
+
+        // Tocar la foto pasa a la siguiente (como en un kiosco)
+        galleryStage.addEventListener('click', () => {
+            if (galeriaUrls.length > 1) irASlide(galeriaIndice + 1, true);
+        });
 
         // Efecto de escritura letra por letra en la respuesta del modelo, con cursor parpadeante
         function escribirRespuesta(texto) {
@@ -545,8 +813,9 @@
                 const dataResponse = await resResponse.json();
                 // NOTA: ajusta esta clave según lo que realmente devuelva response_modelo()
                 const respuestaIA = dataResponse.output ?? dataResponse.respuesta ?? dataResponse.texto ?? JSON.stringify(dataResponse);
-                // response_modelo() indica en 'image_url' el nombre de la imagen del inventario a mostrar (opcional)
-                const nombreImagen = dataResponse.image_url;
+                // response_modelo() indica en 'image_url' las fotos del inventario a mostrar (opcional):
+                // un nombre ("a.png"), varios separados por coma ("a.png, b.png") o una lista ["a.png", "b.png"]
+                const nombresImagenes = normalizarListaImagenes(dataResponse.image_url ?? dataResponse.image_urls);
 
                 mostrarProceso(false);
                 setOrbState('speaking');
@@ -555,7 +824,7 @@
                 await Promise.all([
                     escribirRespuesta(respuestaIA),
                     generarVoz(respuestaIA),
-                    nombreImagen ? cargarImagenInventario(nombreImagen) : Promise.resolve()
+                    nombresImagenes.length ? cargarImagenesInventario(nombresImagenes) : Promise.resolve()
                 ]);
 
             } catch (error) {
@@ -636,40 +905,68 @@
         });
 
         // ==========================================
-        // RECEPCIÓN DE IMAGEN <- /query/send_image/images/<nombre_imagen>
+        // RECEPCIÓN DE IMÁGENES <- /query/send_image/images/<nombre_imagen>
         // El backend (send_to_image) sirve un archivo de 'images_inventory' por su nombre.
-        // El frontend lo pide por GET y lo muestra debajo de la respuesta del modelo.
+        // El modelo puede pedir que se muestren una o varias fotos; el frontend las descarga
+        // todas en paralelo, espera a que estén decodificadas y las muestra en la galería.
         // NOTA: si la ruta del blueprint es distinta, solo hay que ajustar IMAGE_ENDPOINT.
         // ==========================================
         const IMAGE_ENDPOINT = `${API_BASE}/send_image/images`;
 
-        async function cargarImagenInventario(nombreImagen) {
-            if (!nombreImagen) return;
+        // Acepta string ("a.png" o "a.png, b.png") o array (["a.png", "b.png"]) y devuelve una lista limpia
+        function normalizarListaImagenes(valor) {
+            if (!valor) return [];
+            const lista = Array.isArray(valor) ? valor : String(valor).split(',');
+            return lista.map((v) => String(v).trim()).filter(Boolean);
+        }
 
-            try {
-                const resImagen = await fetch(`${IMAGE_ENDPOINT}/${encodeURIComponent(nombreImagen)}`, {
-                    method: 'GET',
-                    headers: { ...NGROK_HEADERS }
-                });
+        async function descargarImagenInventario(nombreImagen) {
+            const resImagen = await fetch(`${IMAGE_ENDPOINT}/${encodeURIComponent(nombreImagen)}`, {
+                method: 'GET',
+                headers: { ...NGROK_HEADERS }
+            });
 
-                const contentType = resImagen.headers.get('Content-Type') || '';
+            const contentType = resImagen.headers.get('Content-Type') || '';
 
-                if (!resImagen.ok || !contentType.startsWith('image/')) {
-                    // send_to_image() devuelve JSON {'Error': '...'} con status 400 si falla
-                    let detalle = `status ${resImagen.status}`;
-                    try {
-                        const dataError = await resImagen.json();
-                        detalle = dataError.Error ?? dataError.error ?? detalle;
-                    } catch (_) { /* cuerpo no JSON */ }
-                    throw new Error(`Error en /image/${nombreImagen}: ${detalle}`);
+            if (!resImagen.ok || !contentType.startsWith('image/')) {
+                // send_to_image() devuelve JSON {'Error': '...'} con status 400 si falla
+                let detalle = `status ${resImagen.status}`;
+                try {
+                    const dataError = await resImagen.json();
+                    detalle = dataError.Error ?? dataError.error ?? detalle;
+                } catch (_) { /* cuerpo no JSON */ }
+                throw new Error(`Error en /send_image/images/${nombreImagen}: ${detalle}`);
+            }
+
+            const blob = await resImagen.blob();
+            const url = URL.createObjectURL(blob);
+
+            // Esperar a que el navegador la decodifique para que el revelado no muestre un hueco
+            await new Promise((resolve) => {
+                const pre = new Image();
+                pre.onload = resolve;
+                pre.onerror = resolve;
+                pre.src = url;
+            });
+
+            return { url, nombre: nombreImagen };
+        }
+
+        async function cargarImagenesInventario(nombres) {
+            const resultados = await Promise.allSettled(nombres.map(descargarImagenInventario));
+
+            const items = [];
+            resultados.forEach((r, i) => {
+                if (r.status === 'fulfilled') {
+                    items.push(r.value);
+                } else {
+                    console.error(`No se pudo cargar la imagen "${nombres[i]}":`, r.reason);
                 }
+            });
 
-                const imagenBlob = await resImagen.blob();
-                ocultarImagenRespuesta();
-                mostrarImagenRespuesta(URL.createObjectURL(imagenBlob), nombreImagen);
-            } catch (error) {
-                console.error("Error al recibir imagen del inventario:", error);
-                ocultarImagenRespuesta();
+            ocultarImagenRespuesta();
+            if (items.length) {
+                mostrarGaleriaRespuesta(items);
             }
         }
 
