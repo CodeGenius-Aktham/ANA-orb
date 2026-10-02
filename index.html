@@ -416,8 +416,8 @@
         //   POST /query/into      -> ingreso de audio, devuelve el texto transcrito
         //   POST /query/response  -> recibe { texto } y devuelve la respuesta del modelo
         //   POST /query/generate  -> recibe { texto } y devuelve la voz (texto a voz)
-        //   GET  /query/image/<nombre_imagen> -> send_to_image(): devuelve el archivo de la carpeta
-        //                            'images_inventory' con ese nombre (o JSON {Error} con 400)
+        //   GET  /query/send_image/images/<nombre_imagen> -> send_to_image(): devuelve el archivo
+        //                            de la carpeta 'images_inventory' con ese nombre (o JSON {Error} con 400)
         // ==========================================
         // NOTA: si cambia la URL de ngrok, solo hay que actualizar esta constante.
         const API_BASE = 'https://950c-186-29-72-11.ngrok-free.app/query';
@@ -539,12 +539,12 @@
         });
 
         // ==========================================
-        // RECEPCIÓN DE IMAGEN <- /image/<nombre_imagen>
+        // RECEPCIÓN DE IMAGEN <- /query/send_image/images/<nombre_imagen>
         // El backend (send_to_image) sirve un archivo de 'images_inventory' por su nombre.
         // El frontend lo pide por GET y lo muestra debajo de la respuesta del modelo.
         // NOTA: si la ruta del blueprint es distinta, solo hay que ajustar IMAGE_ENDPOINT.
         // ==========================================
-        const IMAGE_ENDPOINT = `${API_BASE}/image`;
+        const IMAGE_ENDPOINT = `${API_BASE}/query/send_image/images`;
 
         async function cargarImagenInventario(nombreImagen) {
             if (!nombreImagen) return;
