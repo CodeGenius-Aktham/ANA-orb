@@ -3,156 +3,1193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asistente IA</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
+    <title>ANA - Panel de la empresa</title>
+    <!-- Google Fonts (si no cargan, se usa la fuente del sistema) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        html, body {
-            height: 100%;
-            margin: 0;
+        :root {
+            --verde: #10b981;
+            --verde-oscuro: #059669;
+            --verde-suave: #ecfdf5;
+            --borde: rgba(16, 185, 129, 0.18);
+            --texto: #1e293b;
+            --texto-suave: #64748b;
         }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; margin: 0; }
         body {
             font-family: 'Outfit', sans-serif;
-            background: #ffffff;
+            background: linear-gradient(180deg, #f8fffb 0%, #ffffff 60%);
+            color: var(--texto);
+            height: 100svh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+
+        /* ---------- Utilidades (sin frameworks externos) ---------- */
+        .flex { display: flex; } .inline-flex { display: inline-flex; }
+        .flex-col { flex-direction: column; } .flex-wrap { flex-wrap: wrap; }
+        .flex-1 { flex: 1 1 0%; } .flex-shrink-0 { flex-shrink: 0; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; } .justify-between { justify-content: space-between; } .justify-end { justify-content: flex-end; }
+        .gap-1\.5 { gap: 0.375rem; } .gap-2 { gap: 0.5rem; } .gap-2\.5 { gap: 0.625rem; } .gap-3 { gap: 0.75rem; }
+        .min-h-0 { min-height: 0; } .min-w-0 { min-width: 0; }
+        .w-1\.5 { width: 0.375rem; } .h-1\.5 { height: 0.375rem; }
+        .w-4 { width: 1rem; } .h-4 { height: 1rem; } .w-6 { width: 1.5rem; } .h-6 { height: 1.5rem; }
+        .p-1\.5 { padding: 0.375rem; } .p-2 { padding: 0.5rem; }
+        .px-1\.5 { padding-left: 0.375rem; padding-right: 0.375rem; } .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; } .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; } .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; } .py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; } .pb-3 { padding-bottom: 0.75rem; } .pt-1 { padding-top: 0.25rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .rounded-full { border-radius: 9999px; } .rounded-lg { border-radius: 0.5rem; } .rounded-xl { border-radius: 0.75rem; }
+        .border { border: 1px solid var(--borde); } .border-none { border: 0; }
+        .bg-white { background: #fff; } .bg-transparent { background: transparent; }
+        .bg-emerald-50 { background: #ecfdf5; } .bg-emerald-100 { background: #d1fae5; } .bg-emerald-500 { background: #10b981; }
+        .hover\:bg-emerald-50:hover { background: #ecfdf5; } .hover\:bg-emerald-200:hover { background: #a7f3d0; } .hover\:bg-emerald-600:hover { background: #059669; }
+        .hover\:text-emerald-700:hover { color: #047857; }
+        .text-white { color: #fff; } .text-emerald-600 { color: #059669; } .text-emerald-700 { color: #047857; } .text-emerald-800 { color: #065f46; }
+        .text-slate-400 { color: #94a3b8; } .text-slate-500 { color: #64748b; } .text-slate-700 { color: #334155; } .text-slate-800 { color: #1e293b; }
+        .text-xs { font-size: 0.75rem; line-height: 1rem; } .text-sm { font-size: 0.875rem; line-height: 1.25rem; } .text-base { font-size: 1rem; line-height: 1.5rem; }
+        .text-center { text-align: center; } .capitalize { text-transform: capitalize; }
+        .font-normal { font-weight: 400; } .font-medium { font-weight: 500; } .font-semibold { font-weight: 600; }
+        .leading-tight { line-height: 1.25; } .whitespace-nowrap { white-space: nowrap; }
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .overflow-x-auto { overflow-x: auto; } .overflow-y-auto { overflow-y: auto; }
+        .resize-none { resize: none; } .hidden { display: none !important; }
+        .shadow-md { box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
+        .transition-all { transition: all 0.15s ease; }
+        .active\:scale-95:active { transform: scale(0.95); }
+        .focus\:outline-none:focus { outline: none; }
+        .focus-within\:ring:focus-within { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+        .placeholder-slate-400::placeholder { color: #94a3b8; }
+        button { font: inherit; cursor: pointer; border: 0; }
+        .md\:inline { display: none; } .sm\:inline-flex { display: none; }
+        @media (min-width: 640px) { .sm\:inline-flex { display: inline-flex; } }
+        @media (min-width: 1200px) { .md\:inline { display: inline; } }
+
+        /* ---------- Rejilla principal: todo visible sin scroll de página ---------- */
+        #panel {
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: minmax(320px, 38fr) minmax(0, 62fr);
+            grid-template-rows: minmax(0, 1.35fr) minmax(0, 1fr);
+            gap: 0.9rem;
+            padding: 0 0.9rem 0.9rem;
+        }
+        #chatPanel      { grid-column: 1; grid-row: 1; }
+        #notifPanel     { grid-column: 1; grid-row: 2; }
+        #calendarPanel  { grid-column: 2; grid-row: 1; }
+        #rightBottom    { grid-column: 2; grid-row: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; min-height: 0; }
+
+        .card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--borde);
+            border-radius: 1.1rem;
+            box-shadow: 0 8px 28px rgba(16, 185, 129, 0.07);
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0.7rem 0.95rem;
+            border-bottom: 1px solid var(--borde);
+            flex-shrink: 0;
+        }
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 0.01em;
+        }
+        .card-title svg { width: 1rem; height: 1rem; color: var(--verde-oscuro); }
+        .card-body { flex: 1; min-height: 0; overflow-y: auto; }
+
+        /* Scrollbars finos */
+        .card-body::-webkit-scrollbar, .scroll-fino::-webkit-scrollbar { width: 6px; height: 6px; }
+        .card-body::-webkit-scrollbar-thumb, .scroll-fino::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.25); border-radius: 999px; }
+
+        /* ---------- Avatar de ANA (orbe pequeño) ---------- */
+        .orbe-mini {
+            width: 2rem; height: 2rem; border-radius: 50%; flex-shrink: 0;
+            background: radial-gradient(circle at 32% 30%, #6ee7b7 0%, #34d399 30%, #059669 65%, #064e3b 100%);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35), 0 4px 12px rgba(5, 150, 105, 0.35);
+            animation: respirar 3.2s ease-in-out infinite;
+        }
+        .orbe-mini.thinking { animation: respirar 0.9s ease-in-out infinite; }
+        .orbe-mini.speaking { animation: hablar 0.5s ease-in-out infinite; }
+        @keyframes respirar {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35), 0 4px 12px rgba(5, 150, 105, 0.35); }
+            50%      { transform: scale(1.06); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0), 0 4px 14px rgba(5, 150, 105, 0.45); }
+        }
+        @keyframes hablar {
+            0%, 100% { transform: scale(1) ; border-radius: 50%; }
+            50%      { transform: scale(1.12); border-radius: 46% 54% 52% 48%; }
+        }
+
+        /* ---------- Chat ---------- */
+        .msg { display: flex; gap: 0.5rem; max-width: 100%; animation: aparecer 0.25s ease-out; }
+        .msg.user { justify-content: flex-end; }
+        .burbuja {
+            max-width: 85%;
+            padding: 0.55rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            line-height: 1.45;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .msg.user .burbuja { background: var(--verde); color: white; border-bottom-right-radius: 0.3rem; }
+        .msg.ana  .burbuja { background: var(--verde-suave); color: var(--texto); border: 1px solid var(--borde); border-bottom-left-radius: 0.3rem; }
+        .msg.ana .fotos { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+        .msg.ana .fotos img { width: 5.5rem; height: 5.5rem; object-fit: cover; border-radius: 0.6rem; border: 1px solid var(--borde); }
+        .escribiendo span {
+            display: inline-block; width: 6px; height: 6px; margin: 0 1.5px; border-radius: 50%;
+            background: var(--verde-oscuro); animation: puntos 1.2s infinite;
+        }
+        .escribiendo span:nth-child(2) { animation-delay: 0.2s; }
+        .escribiendo span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes puntos { 0%, 80%, 100% { opacity: 0.25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+        @keyframes aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+        #voiceBtn.recording { background: #ef4444 !important; color: white !important; animation: pulseRec 1.2s infinite; }
+        @keyframes pulseRec {
+            0%   { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+            70%  { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* ---------- Notificaciones ---------- */
+        .notif { display: flex; gap: 0.6rem; padding: 0.55rem 0.95rem; border-bottom: 1px solid rgba(16,185,129,0.08); animation: aparecer 0.25s ease-out; }
+        .notif-punto { width: 0.55rem; height: 0.55rem; border-radius: 50%; margin-top: 0.4rem; flex-shrink: 0; }
+        .notif.ok     .notif-punto { background: #10b981; }
+        .notif.info   .notif-punto { background: #0ea5e9; }
+        .notif.alerta .notif-punto { background: #f59e0b; }
+        .notif.error  .notif-punto { background: #ef4444; }
+        .notif-texto { font-size: 0.82rem; line-height: 1.35; }
+        .notif-hora { font-size: 0.7rem; color: var(--texto-suave); margin-top: 0.1rem; }
+
+        /* ---------- Calendario ---------- */
+        #calGrid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            grid-auto-rows: minmax(0, 1fr);
+            gap: 3px;
+            flex: 1;
+            min-height: 0;
+            padding: 0.5rem 0.75rem 0.75rem;
+        }
+        .cal-dia-nombre { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--texto-suave); text-align: center; padding: 0.45rem 0 0.15rem; }
+        .cal-dia {
+            position: relative;
+            border-radius: 0.6rem;
+            border: 1px solid transparent;
+            background: #f8fafc;
+            padding: 0.25rem 0.3rem;
+            display: flex; flex-direction: column; gap: 2px;
+            min-height: 0; overflow: hidden;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, transform 0.1s;
+            text-align: left;
+            font: inherit;
+        }
+        .cal-dia:hover { background: var(--verde-suave); border-color: var(--borde); }
+        .cal-dia.otro-mes { opacity: 0.38; }
+        .cal-dia.hoy { border-color: var(--verde); background: var(--verde-suave); }
+        .cal-dia.seleccionado { border-color: var(--verde-oscuro); box-shadow: inset 0 0 0 1px var(--verde-oscuro); }
+        .cal-num { font-size: 0.78rem; font-weight: 500; line-height: 1; }
+        .cal-dia.hoy .cal-num { color: var(--verde-oscuro); font-weight: 700; }
+        .cal-evento {
+            font-size: 0.64rem; line-height: 1.2; padding: 1px 5px; border-radius: 4px;
+            background: var(--verde); color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .cal-evento.manual { background: #0ea5e9; }
+        .cal-mas { font-size: 0.62rem; color: var(--texto-suave); }
+        .cal-puntos { display: none; gap: 2px; margin-top: auto; }
+        .cal-punto { width: 5px; height: 5px; border-radius: 50%; background: var(--verde); }
+        .cal-punto.manual { background: #0ea5e9; }
+
+        #calDetalle { border-top: 1px solid var(--borde); padding: 0.5rem 0.75rem; flex-shrink: 0; }
+        .det-evento {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            background: var(--verde-suave); border: 1px solid var(--borde);
+            border-radius: 999px; padding: 0.15rem 0.3rem 0.15rem 0.6rem; font-size: 0.74rem; white-space: nowrap;
+        }
+        .det-evento button { border: 0; background: transparent; color: var(--texto-suave); cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 0 0.25rem; }
+        .det-evento button:hover { color: #ef4444; }
+
+        .btn-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 1.75rem; height: 1.75rem; border-radius: 0.55rem; border: 1px solid var(--borde);
+            background: white; color: var(--verde-oscuro); cursor: pointer; transition: background 0.15s;
+            font: inherit;
+        }
+        .btn-icon:hover { background: var(--verde-suave); }
+        .btn-icon svg { width: 0.9rem; height: 0.9rem; }
+
+        .input {
+            width: 100%; border: 1px solid var(--borde); border-radius: 0.65rem;
+            padding: 0.45rem 0.65rem; font: inherit; font-size: 0.82rem; color: var(--texto); background: white;
+            outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .input:focus { border-color: var(--verde); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+        .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--texto-suave); margin-bottom: 0.2rem; display: block; }
+        .btn-verde {
+            background: var(--verde); color: white; border: 0; border-radius: 0.65rem;
+            padding: 0.45rem 0.9rem; font: inherit; font-size: 0.8rem; font-weight: 500; cursor: pointer;
+            transition: background 0.15s, transform 0.1s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+        .btn-verde:hover { background: var(--verde-oscuro); }
+        .btn-verde:active { transform: scale(0.97); }
+        .btn-verde:disabled { opacity: 0.5; cursor: default; }
+
+        /* ---------- Documentos ---------- */
+        #dropZone {
+            border: 1.5px dashed rgba(16, 185, 129, 0.45);
+            border-radius: 0.8rem; background: var(--verde-suave);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.25rem;
+            padding: 0.75rem; text-align: center; cursor: pointer; transition: background 0.15s, border-color 0.15s;
+            flex-shrink: 0;
+        }
+        #dropZone.sobre { background: #d1fae5; border-color: var(--verde-oscuro); }
+        .doc {
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.2rem;
+            border-bottom: 1px solid rgba(16,185,129,0.08); font-size: 0.78rem; animation: aparecer 0.25s ease-out;
+        }
+        .doc-icono { width: 1.9rem; height: 1.9rem; border-radius: 0.5rem; background: var(--verde-suave); color: var(--verde-oscuro); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; flex-shrink: 0; text-transform: uppercase; }
+        .doc-meta { font-size: 0.68rem; color: var(--texto-suave); }
+        .estado { font-size: 0.65rem; padding: 1px 6px; border-radius: 999px; white-space: nowrap; }
+        .estado.subido    { background: #d1fae5; color: #047857; }
+        .estado.pendiente { background: #fef3c7; color: #b45309; }
+        .estado.subiendo  { background: #e0f2fe; color: #0369a1; }
+
+        .vacio { color: var(--texto-suave); font-size: 0.78rem; text-align: center; padding: 1rem; }
+
+        /* ---------- Responsivo: en pantallas angostas se apila y la página hace scroll ---------- */
+        @media (max-width: 900px) {
+            body { overflow: auto; height: auto; min-height: 100svh; }
+            #panel { grid-template-columns: 1fr; grid-template-rows: none; }
+            #chatPanel, #notifPanel, #calendarPanel, #rightBottom { grid-column: 1; grid-row: auto; }
+            #chatPanel { height: 70vh; }
+            #notifPanel { height: 40vh; }
+            #calendarPanel { height: 80vh; }
+            #rightBottom { grid-template-columns: 1fr; }
+            #rightBottom .card { height: 55vh; }
+            #calendarPanel .card-head { flex-wrap: wrap; }
+            #calendarPanel .card-head > div:last-child { width: 100%; justify-content: space-between; }
+        }
+        @media (max-width: 1100px) and (min-width: 901px) {
+            .cal-evento, .cal-mas { display: none; }
+            .cal-puntos { display: flex; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Página vacía: no hay elementos visibles. La conexión con el backend queda abajo, lista para usarse. -->
+    <!-- Barra superior -->
+    <header class="flex items-center justify-between px-4 py-2.5 flex-shrink-0">
+        <div class="flex items-center gap-3">
+            <div id="orbeHeader" class="orbe-mini"></div>
+            <div>
+                <div class="font-semibold text-sm leading-tight">ANA</div>
+                <div id="empresaHeader" class="text-xs text-slate-500 leading-tight">Asistente de tu empresa</div>
+            </div>
+        </div>
+        <div class="flex items-center gap-3 text-xs text-slate-500">
+            <span id="fechaHoy"></span>
+            <span class="sm:inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-50 text-emerald-700" style="border:1px solid #d1fae5;">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Demo
+            </span>
+        </div>
+    </header>
+
+    <main id="panel">
+
+        <!-- ================= CHAT ================= -->
+        <section id="chatPanel" class="card">
+            <div class="card-head">
+                <div class="card-title">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8M8 14h5m-9 7l3.5-3.5H18a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v15z"/></svg>
+                    Chat con ANA
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button id="vozToggle" class="btn-icon" title="Activar o silenciar la voz de ANA">
+                        <svg id="vozOnIcon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.5 8.5a5 5 0 010 7M18 6a8.5 8.5 0 010 12M5 9v6h3l4 4V5L8 9H5z"/></svg>
+                        <svg id="vozOffIcon" class="hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 9v6h3l4 4V5L8 9H5zm11 2l4 4m0-4l-4 4"/></svg>
+                    </button>
+                    <button id="limpiarChat" class="btn-icon" title="Nueva conversación">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M5.6 9A7 7 0 0118.4 9M18.4 15A7 7 0 015.6 15"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="chatMensajes" class="card-body px-3 py-3 flex flex-col gap-2.5"></div>
+            <div class="px-3 pb-3 pt-1 flex-shrink-0">
+                <div class="flex items-center gap-1.5 bg-white border rounded-xl p-1.5 focus-within:ring" style="border-color: var(--borde);">
+                    <input type="text" id="userInput" placeholder="Escribe un mensaje para ANA..."
+                        class="flex-1 min-w-0 bg-transparent border-none px-2.5 py-1.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none">
+                    <button id="voiceBtn" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 p-2 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0" title="Hablar directamente">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg>
+                    </button>
+                    <button id="sendBtn" class="bg-emerald-500 hover:bg-emerald-600 text-white p-2 rounded-lg transition-all shadow-md active:scale-95 flex items-center justify-center flex-shrink-0" title="Enviar">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= NOTIFICACIONES ================= -->
+        <section id="notifPanel" class="card">
+            <div class="card-head">
+                <div class="card-title">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3A6 6 0 006 11v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    Notificaciones
+                    <span id="notifContador" class="font-semibold bg-emerald-500 text-white rounded-full px-1.5 py-0.5 hidden" style="font-size:0.65rem;">0</span>
+                </div>
+                <button id="limpiarNotif" class="text-xs text-slate-500 hover:text-emerald-700">Limpiar</button>
+            </div>
+            <div id="notifLista" class="card-body"></div>
+        </section>
+
+        <!-- ================= CALENDARIO ================= -->
+        <section id="calendarPanel" class="card">
+            <div class="card-head">
+                <div class="card-title">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 3v3m8-3v3M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/></svg>
+                    Calendario
+                    <span class="text-xs font-normal text-slate-500 md:inline">· pídele a ANA que agende fechas y aparecerán aquí</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button id="calPrev" class="btn-icon" title="Mes anterior">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <span id="calTitulo" class="text-sm font-semibold text-center capitalize" style="min-width:9rem;"></span>
+                    <button id="calNext" class="btn-icon" title="Mes siguiente">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                    <button id="calHoy" class="text-xs px-2 py-1 rounded-lg border hover:bg-emerald-50" style="border-color: var(--borde);">Hoy</button>
+                </div>
+            </div>
+            <div id="calGrid"></div>
+            <div id="calDetalle">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span id="calDetalleFecha" class="text-xs font-semibold text-emerald-700 whitespace-nowrap"></span>
+                    <div id="calDetalleEventos" class="flex gap-1.5 overflow-x-auto scroll-fino flex-1 min-w-0 py-0.5"></div>
+                    <form id="calForm" class="flex items-center gap-1.5 flex-shrink-0">
+                        <input id="calNuevoTitulo" class="input" style="width: 11rem; padding: 0.3rem 0.55rem;" placeholder="Nuevo evento..." maxlength="80">
+                        <button type="submit" class="btn-verde" style="padding: 0.3rem 0.7rem;">Agregar</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <div id="rightBottom">
+            <!-- ================= DATOS DE LA EMPRESA ================= -->
+            <section id="empresaPanel" class="card">
+                <div class="card-head">
+                    <div class="card-title">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V5a1 1 0 011-1h8a1 1 0 011 1v16M15 9h3a1 1 0 011 1v11M9 8h2m-2 4h2m-2 4h2"/></svg>
+                        Datos de la empresa
+                    </div>
+                    <span id="empresaEstado" class="text-xs text-slate-500"></span>
+                </div>
+                <form id="empresaForm" class="card-body px-4 py-3 flex flex-col gap-2.5">
+                    <div>
+                        <label class="label" for="empNombre">Nombre de la empresa</label>
+                        <input id="empNombre" class="input" placeholder="Ej. Bytes Technology" autocomplete="organization">
+                    </div>
+                    <div>
+                        <label class="label" for="empSector">A qué se dedica</label>
+                        <input id="empSector" class="input" placeholder="Ej. Desarrollo de software y consultoría tecnológica">
+                    </div>
+                    <div>
+                        <label class="label" for="empProductos">Qué hace / qué vende</label>
+                        <input id="empProductos" class="input" placeholder="Ej. Aplicaciones a medida, soporte TI, licencias">
+                    </div>
+                    <div class="flex-1 min-h-0 flex flex-col">
+                        <label class="label" for="empOtros">Otros datos útiles para ANA</label>
+                        <textarea id="empOtros" class="input flex-1 resize-none" rows="3" placeholder="Horarios, número de empleados, clientes principales, políticas internas, etc."></textarea>
+                    </div>
+                    <div class="flex items-center justify-end gap-2 flex-shrink-0">
+                        <button type="submit" class="btn-verde">Guardar datos</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ================= DOCUMENTOS ================= -->
+            <section id="docsPanel" class="card">
+                <div class="card-head">
+                    <div class="card-title">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zm0 0v5h5"/></svg>
+                        Documentos de la empresa
+                    </div>
+                    <span id="docsContador" class="text-xs text-slate-500"></span>
+                </div>
+                <div class="card-body px-3 py-3 flex flex-col gap-2.5">
+                    <div id="dropZone" tabindex="0" role="button" aria-label="Subir documentos">
+                        <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+                        <div class="text-xs font-medium text-emerald-800">Arrastra aquí contratos, facturas, nóminas...</div>
+                        <div class="text-slate-500" style="font-size:0.68rem;">o haz clic para elegir archivos. ANA los estudiará.</div>
+                        <input type="file" id="fileInput" class="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg">
+                    </div>
+                    <div id="docsLista" class="flex-1 min-h-0 overflow-y-auto scroll-fino"></div>
+                </div>
+            </section>
+        </div>
+    </main>
 
     <script>
         // ==========================================
         // ZONA DE CONEXIÓN CON EL BACKEND FLASK (blueprint 'input')
         //   POST /query/into      -> ingreso de audio, devuelve el texto transcrito
-        //   POST /query/response  -> recibe { texto } y devuelve la respuesta del modelo
+        //   POST /query/response  -> recibe { texto, empresa, documentos } y devuelve la respuesta del modelo
+        //                            Opcionalmente puede devolver:
+        //                              image_url: "a.png" | "a.png, b.png" | ["a.png", "b.png"]  (fotos del inventario)
+        //                              eventos:   [{ fecha: "2026-10-15", titulo: "Pago de nómina" }, ...]  (para el calendario)
         //   POST /query/generate  -> recibe { texto } y devuelve la voz (texto a voz)
-        //   GET  /query/send_image/images/<nombre_imagen> -> send_to_image(): devuelve el archivo
-        //                            de la carpeta 'images_inventory' con ese nombre (o JSON {Error} con 400)
+        //   POST /query/upload    -> recibe FormData con 'archivo' (documento de la empresa para que ANA lo estudie)
+        //   GET  /query/send_image/images/<nombre_imagen> -> devuelve el archivo de 'images_inventory'
         // ==========================================
         // NOTA: si cambia la URL de ngrok, solo hay que actualizar esta constante.
         const API_BASE = 'https://f333-186-29-72-11.ngrok-free.app/query';
-
-        // Header requerido por ngrok free para evitar la página de advertencia del navegador
         const NGROK_HEADERS = { 'ngrok-skip-browser-warning': 'true' };
-
         const IMAGE_ENDPOINT = `${API_BASE}/send_image/images`;
+        const UPLOAD_ENDPOINT = `${API_BASE}/upload`;
 
-        // Texto del usuario -> respuesta del modelo.
-        // Devuelve { texto, imagenes } donde imagenes es la lista de nombres de archivo que el modelo pidió mostrar.
-        async function consultarModelo(promptTexto) {
-            const resResponse = await fetch(`${API_BASE}/response`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...NGROK_HEADERS
-                },
-                body: JSON.stringify({ texto: promptTexto })
-            });
+        // ---------- Utilidades ----------
+        const $ = (id) => document.getElementById(id);
+        const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+        const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+        const DIAS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 
-            if (!resResponse.ok) {
-                throw new Error(`Error en /response: ${resResponse.status}`);
-            }
-
-            const dataResponse = await resResponse.json();
-            // NOTA: ajusta esta clave según lo que realmente devuelva response_modelo()
-            const texto = dataResponse.output ?? dataResponse.respuesta ?? dataResponse.texto ?? JSON.stringify(dataResponse);
-            // response_modelo() indica en 'image_url' las fotos del inventario a mostrar (opcional):
-            // un nombre ("a.png"), varios separados por coma ("a.png, b.png") o una lista ["a.png", "b.png"]
-            const imagenes = normalizarListaImagenes(dataResponse.image_url ?? dataResponse.image_urls);
-
-            return { texto, imagenes };
+        function guardar(clave, valor) {
+            try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (_) { /* almacenamiento no disponible */ }
+        }
+        function cargar(clave, porDefecto) {
+            try {
+                const v = localStorage.getItem(clave);
+                return v ? JSON.parse(v) : porDefecto;
+            } catch (_) { return porDefecto; }
+        }
+        function escaparHtml(str) {
+            const div = document.createElement('div');
+            div.innerText = String(str ?? '');
+            return div.innerHTML;
+        }
+        function claveFecha(d) {
+            const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+        function fechaDesdeClave(clave) {
+            const [y, m, d] = clave.split('-').map(Number);
+            return new Date(y, m - 1, d);
+        }
+        function formatearFechaLarga(d) {
+            return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+        }
+        function horaCorta(iso) {
+            const d = new Date(iso);
+            const hoy = claveFecha(new Date()) === claveFecha(d);
+            return hoy ? d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+                       : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
         }
 
-        // Texto a voz vía /generate. Reproduce el audio que devuelve el backend.
-        async function generarVoz(texto) {
-            const resVoz = await fetch(`${API_BASE}/generate`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...NGROK_HEADERS
-                },
-                body: JSON.stringify({ texto: texto })
+        $('fechaHoy').textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+        // ==========================================
+        // ESTADO
+        // ==========================================
+        let eventos = cargar('ana_eventos', []);            // [{ id, fecha: 'YYYY-MM-DD', titulo, origen: 'ana'|'manual' }]
+        let empresa = cargar('ana_empresa', {});            // { nombre, sector, productos, otros }
+        let documentos = cargar('ana_documentos', []);      // [{ id, nombre, tamano, tipo, fecha, estado }]
+        let notificaciones = cargar('ana_notificaciones', []); // [{ id, tipo, texto, hora }]
+        let chat = cargar('ana_chat', []);                  // [{ rol: 'user'|'ana', texto, fotos?: [nombres] }]
+        const archivosEnMemoria = new Map();                // id -> File (solo durante la sesión, para reintentar)
+
+        // ==========================================
+        // NOTIFICACIONES
+        // ==========================================
+        const notifLista = $('notifLista');
+        const notifContador = $('notifContador');
+
+        function notificar(tipo, texto) {
+            notificaciones.unshift({ id: uid(), tipo, texto, hora: new Date().toISOString() });
+            notificaciones = notificaciones.slice(0, 60);
+            guardar('ana_notificaciones', notificaciones);
+            renderNotificaciones();
+        }
+
+        function renderNotificaciones() {
+            if (!notificaciones.length) {
+                notifLista.innerHTML = '<div class="vacio">Sin notificaciones por ahora.</div>';
+                notifContador.classList.add('hidden');
+                return;
+            }
+            notifContador.textContent = notificaciones.length;
+            notifContador.classList.remove('hidden');
+            notifLista.innerHTML = notificaciones.map((n) => `
+                <div class="notif ${n.tipo}">
+                    <span class="notif-punto"></span>
+                    <div class="min-w-0">
+                        <div class="notif-texto">${escaparHtml(n.texto)}</div>
+                        <div class="notif-hora">${horaCorta(n.hora)}</div>
+                    </div>
+                </div>`).join('');
+        }
+
+        $('limpiarNotif').addEventListener('click', () => {
+            notificaciones = [];
+            guardar('ana_notificaciones', notificaciones);
+            renderNotificaciones();
+        });
+
+        // Recordatorios: eventos de hoy o de los próximos 3 días (una sola vez por evento y día)
+        function revisarRecordatorios() {
+            const avisados = new Set(cargar('ana_recordatorios', []));
+            const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+            const hoyClave = claveFecha(hoy);
+            let cambios = false;
+
+            eventos.forEach((ev) => {
+                const f = fechaDesdeClave(ev.fecha);
+                const dias = Math.round((f - hoy) / 86400000);
+                if (dias < 0 || dias > 3) return;
+                const clave = `${ev.id}-${hoyClave}`;
+                if (avisados.has(clave)) return;
+                avisados.add(clave);
+                cambios = true;
+                const cuando = dias === 0 ? 'es hoy' : dias === 1 ? 'es mañana' : `es en ${dias} días`;
+                notificar('alerta', `Recordatorio: "${ev.titulo}" ${cuando} (${f.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}).`);
             });
 
-            if (!resVoz.ok) {
-                throw new Error(`Error en /generate (voz): ${resVoz.status}`);
+            if (cambios) guardar('ana_recordatorios', [...avisados].slice(-500));
+        }
+
+        // ==========================================
+        // CALENDARIO
+        // ==========================================
+        const calGrid = $('calGrid');
+        const calTitulo = $('calTitulo');
+        let mesVisible = new Date(); mesVisible.setDate(1);
+        let diaSeleccionado = claveFecha(new Date());
+
+        function eventosDe(clave) {
+            return eventos.filter((e) => e.fecha === clave);
+        }
+
+        function renderCalendario() {
+            const y = mesVisible.getFullYear(), m = mesVisible.getMonth();
+            calTitulo.textContent = `${MESES[m]} ${y}`;
+
+            const primero = new Date(y, m, 1);
+            const desplazamiento = (primero.getDay() + 6) % 7; // lunes = 0
+            const inicio = new Date(y, m, 1 - desplazamiento);
+            const hoyClave = claveFecha(new Date());
+
+            let html = DIAS.map((d) => `<div class="cal-dia-nombre">${d}</div>`).join('');
+            for (let i = 0; i < 42; i++) {
+                const d = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + i);
+                const clave = claveFecha(d);
+                const evs = eventosDe(clave);
+                const clases = ['cal-dia'];
+                if (d.getMonth() !== m) clases.push('otro-mes');
+                if (clave === hoyClave) clases.push('hoy');
+                if (clave === diaSeleccionado) clases.push('seleccionado');
+
+                const chips = evs.slice(0, 2).map((e) => `<span class="cal-evento ${e.origen}" title="${escaparHtml(e.titulo)}">${escaparHtml(e.titulo)}</span>`).join('');
+                const mas = evs.length > 2 ? `<span class="cal-mas">+${evs.length - 2} más</span>` : '';
+                const puntos = evs.length ? `<span class="cal-puntos">${evs.slice(0, 4).map((e) => `<span class="cal-punto ${e.origen}"></span>`).join('')}</span>` : '';
+
+                html += `<button type="button" class="${clases.join(' ')}" data-fecha="${clave}">
+                            <span class="cal-num">${d.getDate()}</span>${chips}${mas}${puntos}
+                         </button>`;
+            }
+            calGrid.innerHTML = html;
+            renderDetalleDia();
+        }
+
+        function renderDetalleDia() {
+            const f = fechaDesdeClave(diaSeleccionado);
+            $('calDetalleFecha').textContent = formatearFechaLarga(f);
+            const evs = eventosDe(diaSeleccionado);
+            $('calDetalleEventos').innerHTML = evs.length
+                ? evs.map((e) => `<span class="det-evento" title="${e.origen === 'ana' ? 'Agendado por ANA' : 'Agregado manualmente'}">${escaparHtml(e.titulo)}<button type="button" data-borrar="${e.id}" title="Quitar">×</button></span>`).join('')
+                : '<span class="text-xs text-slate-400">Sin eventos este día.</span>';
+        }
+
+        function agregarEvento(fecha, titulo, origen = 'manual', silencioso = false) {
+            titulo = String(titulo || '').trim();
+            if (!fecha || !titulo) return null;
+            // Evitar duplicados exactos
+            if (eventos.some((e) => e.fecha === fecha && e.titulo.toLowerCase() === titulo.toLowerCase())) return null;
+            const ev = { id: uid(), fecha, titulo, origen };
+            eventos.push(ev);
+            eventos.sort((a, b) => a.fecha.localeCompare(b.fecha));
+            guardar('ana_eventos', eventos);
+            if (!silencioso) {
+                const f = fechaDesdeClave(fecha);
+                notificar(origen === 'ana' ? 'ok' : 'info', `${origen === 'ana' ? 'ANA agendó' : 'Agregaste'} "${titulo}" para el ${f.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}.`);
+            }
+            return ev;
+        }
+
+        function quitarEvento(id) {
+            const ev = eventos.find((e) => e.id === id);
+            eventos = eventos.filter((e) => e.id !== id);
+            guardar('ana_eventos', eventos);
+            if (ev) notificar('info', `Se quitó "${ev.titulo}" del calendario.`);
+            renderCalendario();
+        }
+
+        calGrid.addEventListener('click', (e) => {
+            const btn = e.target.closest('.cal-dia');
+            if (!btn) return;
+            diaSeleccionado = btn.dataset.fecha;
+            const f = fechaDesdeClave(diaSeleccionado);
+            if (f.getMonth() !== mesVisible.getMonth()) { mesVisible = new Date(f.getFullYear(), f.getMonth(), 1); }
+            renderCalendario();
+            $('calNuevoTitulo').focus();
+        });
+        $('calDetalleEventos').addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-borrar]');
+            if (btn) quitarEvento(btn.dataset.borrar);
+        });
+        $('calPrev').addEventListener('click', () => { mesVisible.setMonth(mesVisible.getMonth() - 1); renderCalendario(); });
+        $('calNext').addEventListener('click', () => { mesVisible.setMonth(mesVisible.getMonth() + 1); renderCalendario(); });
+        $('calHoy').addEventListener('click', () => { mesVisible = new Date(); mesVisible.setDate(1); diaSeleccionado = claveFecha(new Date()); renderCalendario(); });
+        $('calForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = $('calNuevoTitulo');
+            if (agregarEvento(diaSeleccionado, input.value, 'manual')) {
+                input.value = '';
+                renderCalendario();
+                revisarRecordatorios();
+            }
+        });
+
+        // ---------- Extraer fechas de un texto (respaldo cuando el backend no envía 'eventos') ----------
+        function extraerFechas(texto) {
+            const res = new Set();
+            const hoy = new Date();
+            const anio = hoy.getFullYear();
+            if (!texto) return [];
+
+            // 2026-10-15
+            for (const m of texto.matchAll(/\b(\d{4})-(\d{1,2})-(\d{1,2})\b/g)) {
+                const d = new Date(+m[1], +m[2] - 1, +m[3]);
+                if (!isNaN(d)) res.add(claveFecha(d));
+            }
+            // 15/10/2026, 15-10-26, 15/10
+            for (const m of texto.matchAll(/\b(\d{1,2})[\/-](\d{1,2})(?:[\/-](\d{2,4}))?\b/g)) {
+                let y = m[3] ? +m[3] : anio;
+                if (m[3] && m[3].length === 2) y += 2000;
+                const d = new Date(y, +m[2] - 1, +m[1]);
+                if (!isNaN(d) && d.getMonth() === +m[2] - 1 && d.getDate() === +m[1]) res.add(claveFecha(d));
+            }
+            // 15 de octubre (de 2026)
+            const reMes = new RegExp(`\\b(\\d{1,2})\\s+de\\s+(${MESES.join('|')})(?:\\s+(?:de\\s+)?(\\d{4}))?`, 'gi');
+            for (const m of texto.matchAll(reMes)) {
+                const d = new Date(m[3] ? +m[3] : anio, MESES.indexOf(m[2].toLowerCase()), +m[1]);
+                if (!isNaN(d)) res.add(claveFecha(d));
+            }
+            return [...res];
+        }
+
+        // Convierte lo que el usuario pidió en un título corto para el evento
+        function tituloDesdeTexto(texto) {
+            let t = String(texto || '')
+                .replace(/\b\d{4}-\d{1,2}-\d{1,2}\b/g, '')
+                .replace(/\b\d{1,2}[\/-]\d{1,2}(?:[\/-]\d{2,4})?\b/g, '')
+                .replace(new RegExp(`\\b\\d{1,2}\\s+de\\s+(${MESES.join('|')})(?:\\s+(?:de\\s+)?\\d{4})?`, 'gi'), '')
+                .replace(/\b(?:en|al|del)?\s*(?:el\s+)?calendario\b/gi, '')
+                .replace(/^\s*(por favor\s+)?(coloca|colocar|pon|poner|agrega|agregar|añade|añadir|agenda|agendar|registra|registrar|marca|marcar|anota|anotar|programa|programar)\s+(me\s+)?(las?|los?|el|un|una)?\s*(fechas?|d[ií]as?|eventos?|recordatorios?)?\s*(en\s+(las?|los?|el)\s+que|en\s+que|de|del|para|cuando)?\s*/i, '')
+                .replace(/\s{2,}/g, ' ')
+                .replace(/^[\s,.:;y]+|[\s,.:;]+$/g, '')
+                .replace(/\s+(en|a|al|de|del|para|con|por|el|la|los|las|y|que)$/i, '')
+                .trim();
+            if (!t) t = 'Evento agendado por ANA';
+            t = t.charAt(0).toUpperCase() + t.slice(1);
+            return t.length > 60 ? t.slice(0, 57) + '...' : t;
+        }
+
+        // Normaliza la lista 'eventos' que puede devolver el backend
+        function normalizarEventos(valor) {
+            if (!Array.isArray(valor)) return [];
+            const out = [];
+            valor.forEach((e) => {
+                if (!e) return;
+                if (typeof e === 'string') {
+                    extraerFechas(e).forEach((f) => out.push({ fecha: f, titulo: tituloDesdeTexto(e) }));
+                    return;
+                }
+                const fechaRaw = e.fecha ?? e.date ?? e.dia ?? e.day ?? '';
+                const fechas = extraerFechas(String(fechaRaw));
+                const titulo = e.titulo ?? e.title ?? e.descripcion ?? e.description ?? e.nombre ?? 'Evento';
+                fechas.forEach((f) => out.push({ fecha: f, titulo }));
+            });
+            return out;
+        }
+
+        // Decide qué agendar a partir de la respuesta del modelo y del mensaje del usuario
+        function procesarEventosDeRespuesta(dataResponse, textoUsuario, textoRespuesta) {
+            let lista = normalizarEventos(dataResponse.eventos ?? dataResponse.calendar_events ?? dataResponse.calendario ?? dataResponse.events);
+
+            // Respaldo: si el usuario pidió algo del calendario y el backend no mandó 'eventos', se buscan fechas en el texto
+            if (!lista.length && /calendari|agend|recu[eé]rda|recordatorio|programa\b|fecha/i.test(textoUsuario)) {
+                const titulo = tituloDesdeTexto(textoUsuario);
+                let fechas = extraerFechas(textoRespuesta);
+                if (!fechas.length) fechas = extraerFechas(textoUsuario);
+                lista = fechas.map((f) => ({ fecha: f, titulo }));
             }
 
-            const contentType = resVoz.headers.get('Content-Type') || '';
+            const agregados = [];
+            lista.forEach((ev) => {
+                const creado = agregarEvento(ev.fecha, ev.titulo, 'ana', true);
+                if (creado) agregados.push(creado);
+            });
 
-            if (contentType.startsWith('audio/')) {
-                // generate_model() devuelve el audio directamente como binario
-                const audioBlob = await resVoz.blob();
-                const audio = new Audio(URL.createObjectURL(audioBlob));
-                await audio.play();
-            } else {
-                // generate_model() devuelve JSON con audio_url o audio en base64
-                // NOTA: ajusta estas claves según lo que realmente devuelva tu backend
-                const dataVoz = await resVoz.json();
-                const audioSrc = dataVoz.audio_url
-                    ?? (dataVoz.audio_base64 ? `data:audio/mpeg;base64,${dataVoz.audio_base64}` : null);
+            if (agregados.length) {
+                const primero = fechaDesdeClave(agregados[0].fecha);
+                mesVisible = new Date(primero.getFullYear(), primero.getMonth(), 1);
+                diaSeleccionado = agregados[0].fecha;
+                renderCalendario();
+                revisarRecordatorios();
+                const detalle = agregados.length === 1
+                    ? `"${agregados[0].titulo}" para el ${primero.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}`
+                    : `${agregados.length} fechas ("${agregados[0].titulo}")`;
+                notificar('ok', `ANA agendó ${detalle} en el calendario.`);
+            }
+            return agregados;
+        }
+
+        // ==========================================
+        // DATOS DE LA EMPRESA
+        // ==========================================
+        const empresaForm = $('empresaForm');
+        const camposEmpresa = { nombre: 'empNombre', sector: 'empSector', productos: 'empProductos', otros: 'empOtros' };
+
+        function renderEmpresa() {
+            Object.entries(camposEmpresa).forEach(([k, id]) => { $(id).value = empresa[k] || ''; });
+            $('empresaHeader').textContent = empresa.nombre ? `Asistente de ${empresa.nombre}` : 'Asistente de tu empresa';
+            $('empresaEstado').textContent = empresa.actualizado ? `Guardado ${horaCorta(empresa.actualizado)}` : 'Sin guardar';
+        }
+
+        empresaForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nuevo = {};
+            Object.entries(camposEmpresa).forEach(([k, id]) => { nuevo[k] = $(id).value.trim(); });
+            nuevo.actualizado = new Date().toISOString();
+            empresa = nuevo;
+            guardar('ana_empresa', empresa);
+            renderEmpresa();
+            notificar('ok', empresa.nombre ? `Datos de ${empresa.nombre} guardados. ANA los usará como contexto.` : 'Datos de la empresa guardados.');
+        });
+
+        // ==========================================
+        // DOCUMENTOS
+        // ==========================================
+        const dropZone = $('dropZone');
+        const fileInput = $('fileInput');
+        const docsLista = $('docsLista');
+
+        function tamanoLegible(bytes) {
+            if (bytes < 1024) return `${bytes} B`;
+            if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+            return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+        }
+        function extensionDe(nombre) {
+            const p = nombre.lastIndexOf('.');
+            return p > -1 ? nombre.slice(p + 1).slice(0, 4) : 'doc';
+        }
+
+        function renderDocumentos() {
+            $('docsContador').textContent = documentos.length ? `${documentos.length} archivo${documentos.length === 1 ? '' : 's'}` : '';
+            if (!documentos.length) {
+                docsLista.innerHTML = '<div class="vacio">Aún no has subido documentos.</div>';
+                return;
+            }
+            const etiquetas = { subido: 'Estudiado por ANA', pendiente: 'Pendiente de envío', subiendo: 'Subiendo...' };
+            docsLista.innerHTML = documentos.map((d) => `
+                <div class="doc">
+                    <div class="doc-icono">${escaparHtml(extensionDe(d.nombre))}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="truncate" title="${escaparHtml(d.nombre)}">${escaparHtml(d.nombre)}</div>
+                        <div class="doc-meta">${tamanoLegible(d.tamano)} · ${horaCorta(d.fecha)}</div>
+                    </div>
+                    <span class="estado ${d.estado}">${etiquetas[d.estado] || d.estado}</span>
+                    ${d.estado === 'pendiente' && archivosEnMemoria.has(d.id) ? `<button class="btn-icon" data-reintentar="${d.id}" title="Reintentar envío"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M5.6 9A7 7 0 0118.4 9M18.4 15A7 7 0 015.6 15"/></svg></button>` : ''}
+                    <button class="btn-icon" data-quitar="${d.id}" title="Quitar de la lista"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                </div>`).join('');
+        }
+
+        async function subirDocumento(doc, file) {
+            doc.estado = 'subiendo';
+            renderDocumentos();
+            try {
+                const formData = new FormData();
+                // NOTA: ajusta el nombre del campo ('archivo') según lo que espere el backend
+                formData.append('archivo', file, file.name);
+                if (empresa.nombre) formData.append('empresa', empresa.nombre);
+                const res = await fetch(UPLOAD_ENDPOINT, { method: 'POST', headers: { ...NGROK_HEADERS }, body: formData });
+                if (!res.ok) throw new Error(`Error en /upload: ${res.status}`);
+                doc.estado = 'subido';
+                archivosEnMemoria.delete(doc.id);
+                notificar('ok', `ANA recibió "${doc.nombre}" y ya lo está estudiando.`);
+            } catch (err) {
+                console.error('No se pudo subir el documento:', err);
+                doc.estado = 'pendiente';
+                notificar('alerta', `"${doc.nombre}" quedó pendiente: no se pudo enviar al servidor. Puedes reintentar.`);
+            }
+            guardar('ana_documentos', documentos);
+            renderDocumentos();
+        }
+
+        function agregarArchivos(files) {
+            [...files].forEach((file) => {
+                const doc = { id: uid(), nombre: file.name, tamano: file.size, tipo: file.type, fecha: new Date().toISOString(), estado: 'subiendo' };
+                documentos.unshift(doc);
+                archivosEnMemoria.set(doc.id, file);
+                subirDocumento(doc, file);
+            });
+            guardar('ana_documentos', documentos);
+            renderDocumentos();
+        }
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+        fileInput.addEventListener('change', () => { if (fileInput.files.length) agregarArchivos(fileInput.files); fileInput.value = ''; });
+        ['dragenter', 'dragover'].forEach((ev) => dropZone.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add('sobre'); }));
+        ['dragleave', 'drop'].forEach((ev) => dropZone.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove('sobre'); }));
+        dropZone.addEventListener('drop', (e) => { if (e.dataTransfer.files.length) agregarArchivos(e.dataTransfer.files); });
+
+        docsLista.addEventListener('click', (e) => {
+            const quitar = e.target.closest('[data-quitar]');
+            const reintentar = e.target.closest('[data-reintentar]');
+            if (quitar) {
+                const doc = documentos.find((d) => d.id === quitar.dataset.quitar);
+                documentos = documentos.filter((d) => d.id !== quitar.dataset.quitar);
+                archivosEnMemoria.delete(quitar.dataset.quitar);
+                guardar('ana_documentos', documentos);
+                renderDocumentos();
+                if (doc) notificar('info', `Se quitó "${doc.nombre}" de la lista de documentos.`);
+            } else if (reintentar) {
+                const doc = documentos.find((d) => d.id === reintentar.dataset.reintentar);
+                const file = archivosEnMemoria.get(reintentar.dataset.reintentar);
+                if (doc && file) subirDocumento(doc, file);
+            }
+        });
+
+        // ==========================================
+        // CHAT
+        // ==========================================
+        const chatMensajes = $('chatMensajes');
+        const userInput = $('userInput');
+        const sendBtn = $('sendBtn');
+        const voiceBtn = $('voiceBtn');
+        const orbe = $('orbeHeader');
+        let vozActiva = cargar('ana_voz', true);
+        let ocupado = false;
+
+        function setOrbState(state) {
+            orbe.classList.remove('thinking', 'speaking');
+            if (state !== 'idle') orbe.classList.add(state);
+        }
+
+        function renderVozToggle() {
+            $('vozOnIcon').classList.toggle('hidden', !vozActiva);
+            $('vozOffIcon').classList.toggle('hidden', vozActiva);
+            $('vozToggle').title = vozActiva ? 'Silenciar la voz de ANA' : 'Activar la voz de ANA';
+        }
+        $('vozToggle').addEventListener('click', () => { vozActiva = !vozActiva; guardar('ana_voz', vozActiva); renderVozToggle(); });
+
+        function burbujaHtml(msg) {
+            const fotos = (msg.fotos || []).length
+                ? `<div class="fotos">${msg.fotos.map((f) => `<img src="${escaparHtml(f.url)}" alt="${escaparHtml(f.nombre)}" title="${escaparHtml(f.nombre)}">`).join('')}</div>`
+                : '';
+            return `<div class="msg ${msg.rol}">${msg.rol === 'ana' ? '<div class="orbe-mini" style="width:1.4rem;height:1.4rem;animation:none;margin-top:0.2rem;"></div>' : ''}<div class="burbuja">${escaparHtml(msg.texto)}${fotos}</div></div>`;
+        }
+
+        function renderChat() {
+            if (!chat.length) {
+                chatMensajes.innerHTML = `<div class="vacio" style="margin:auto;">
+                    <div class="orbe-mini" style="width:3.2rem;height:3.2rem;margin:0 auto 0.7rem;"></div>
+                    <div class="text-slate-700 font-medium text-base">Hola, soy ANA</div>
+                    <div class="mt-1">Pregúntame lo que necesites, pídeme que agende fechas en el calendario o sube documentos para que los estudie.</div>
+                </div>`;
+                return;
+            }
+            chatMensajes.innerHTML = chat.map(burbujaHtml).join('');
+            chatMensajes.scrollTop = chatMensajes.scrollHeight;
+        }
+
+        function agregarMensaje(rol, texto, fotos) {
+            const msg = { rol, texto };
+            if (fotos && fotos.length) msg.fotos = fotos.map((f) => ({ nombre: f.nombre, url: f.url }));
+            chat.push(msg);
+            // Solo se persisten los últimos 60 mensajes y sin las fotos (son URLs temporales)
+            guardar('ana_chat', chat.slice(-60).map(({ rol, texto }) => ({ rol, texto })));
+            renderChat();
+            return msg;
+        }
+
+        function mostrarEscribiendo(mostrar) {
+            const actual = $('escribiendo');
+            if (actual) actual.remove();
+            if (mostrar) {
+                chatMensajes.insertAdjacentHTML('beforeend', `<div id="escribiendo" class="msg ana"><div class="orbe-mini thinking" style="width:1.4rem;height:1.4rem;margin-top:0.2rem;"></div><div class="burbuja escribiendo"><span></span><span></span><span></span></div></div>`);
+                chatMensajes.scrollTop = chatMensajes.scrollHeight;
+            }
+        }
+
+        $('limpiarChat').addEventListener('click', () => {
+            chat = [];
+            guardar('ana_chat', chat);
+            renderChat();
+        });
+
+        // Escribe la respuesta letra por letra dentro de la última burbuja de ANA
+        function escribirRespuesta(msg, texto) {
+            return new Promise((resolve) => {
+                let i = 0;
+                const velocidad = 14;
+                function paso() {
+                    const nodos = chatMensajes.querySelectorAll('.msg.ana .burbuja');
+                    const burbuja = nodos[nodos.length - 1];
+                    if (!burbuja) { resolve(); return; }
+                    if (i < texto.length) {
+                        i = Math.min(texto.length, i + 1 + Math.floor(texto.length / 400));
+                        burbuja.firstChild.textContent = texto.slice(0, i);
+                        chatMensajes.scrollTop = chatMensajes.scrollHeight;
+                        setTimeout(paso, velocidad);
+                    } else {
+                        resolve();
+                    }
+                }
+                paso();
+            });
+        }
+
+        // Contexto que viaja con cada consulta para que ANA conozca la empresa
+        function contextoEmpresa() {
+            return {
+                empresa: {
+                    nombre: empresa.nombre || '',
+                    sector: empresa.sector || '',
+                    productos: empresa.productos || '',
+                    otros: empresa.otros || ''
+                },
+                documentos: documentos.filter((d) => d.estado === 'subido').map((d) => d.nombre),
+                eventos: eventos.map(({ fecha, titulo }) => ({ fecha, titulo }))
+            };
+        }
+
+        async function enviarMensaje(textoUsuario) {
+            textoUsuario = String(textoUsuario || '').trim();
+            if (!textoUsuario || ocupado) return;
+            ocupado = true;
+            sendBtn.disabled = true;
+            agregarMensaje('user', textoUsuario);
+            setOrbState('thinking');
+            mostrarEscribiendo(true);
+
+            try {
+                const resResponse = await fetch(`${API_BASE}/response`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...NGROK_HEADERS },
+                    body: JSON.stringify({ texto: textoUsuario, ...contextoEmpresa() })
+                });
+                if (!resResponse.ok) throw new Error(`Error en /response: ${resResponse.status}`);
+
+                const dataResponse = await resResponse.json();
+                // NOTA: ajusta esta clave según lo que realmente devuelva response_modelo()
+                const respuestaIA = String(dataResponse.output ?? dataResponse.respuesta ?? dataResponse.texto ?? JSON.stringify(dataResponse));
+                const nombresImagenes = normalizarListaImagenes(dataResponse.image_url ?? dataResponse.image_urls);
+
+                mostrarEscribiendo(false);
+                setOrbState('speaking');
+                const msg = agregarMensaje('ana', '');
+                // Se renderiza el texto vacío y se va completando para el efecto de escritura
+                const nodos = chatMensajes.querySelectorAll('.msg.ana .burbuja');
+                nodos[nodos.length - 1].innerHTML = '<span></span>';
+
+                const [, , fotos] = await Promise.all([
+                    escribirRespuesta(msg, respuestaIA),
+                    vozActiva ? generarVoz(respuestaIA) : Promise.resolve(),
+                    nombresImagenes.length ? cargarImagenesInventario(nombresImagenes) : Promise.resolve([])
+                ]);
+
+                msg.texto = respuestaIA;
+                if (fotos && fotos.length) msg.fotos = fotos;
+                guardar('ana_chat', chat.slice(-60).map(({ rol, texto }) => ({ rol, texto })));
+                renderChat();
+
+                procesarEventosDeRespuesta(dataResponse, textoUsuario, respuestaIA);
+            } catch (error) {
+                console.error('Error al conectar con el modelo:', error);
+                mostrarEscribiendo(false);
+                agregarMensaje('ana', 'No pude conectarme con el servidor en este momento. Inténtalo de nuevo en unos segundos.');
+                notificar('error', 'Error de conexión con el modelo. Revisa que el servidor esté activo.');
+            } finally {
+                setOrbState('idle');
+                ocupado = false;
+                sendBtn.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        sendBtn.addEventListener('click', () => {
+            const texto = userInput.value.trim();
+            if (texto) { userInput.value = ''; enviarMensaje(texto); }
+        });
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendBtn.click(); }
+        });
+
+        // ---------- Texto a voz vía /generate ----------
+        async function generarVoz(texto) {
+            try {
+                const resVoz = await fetch(`${API_BASE}/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...NGROK_HEADERS },
+                    body: JSON.stringify({ texto })
+                });
+                if (!resVoz.ok) throw new Error(`Error en /generate (voz): ${resVoz.status}`);
+
+                const contentType = resVoz.headers.get('Content-Type') || '';
+                let audioSrc = null;
+                if (contentType.startsWith('audio/')) {
+                    audioSrc = URL.createObjectURL(await resVoz.blob());
+                } else {
+                    // NOTA: ajusta estas claves según lo que realmente devuelva tu backend
+                    const dataVoz = await resVoz.json();
+                    audioSrc = dataVoz.audio_url ?? (dataVoz.audio_base64 ? `data:audio/mpeg;base64,${dataVoz.audio_base64}` : null);
+                }
                 if (audioSrc) {
                     const audio = new Audio(audioSrc);
-                    await audio.play();
+                    await new Promise((resolve) => {
+                        audio.onended = resolve;
+                        audio.onerror = resolve;
+                        audio.play().catch(resolve);
+                    });
                 }
+            } catch (error) {
+                console.error('Error al generar voz en /generate:', error);
             }
         }
 
-        // Acepta string ("a.png" o "a.png, b.png") o array (["a.png", "b.png"]) y devuelve una lista limpia
+        // ---------- Imágenes del inventario ----------
         function normalizarListaImagenes(valor) {
             if (!valor) return [];
             const lista = Array.isArray(valor) ? valor : String(valor).split(',');
             return lista.map((v) => String(v).trim()).filter(Boolean);
         }
 
-        // Descarga una imagen del inventario y devuelve { url, nombre } con una URL de objeto lista para usar
         async function descargarImagenInventario(nombreImagen) {
-            const resImagen = await fetch(`${IMAGE_ENDPOINT}/${encodeURIComponent(nombreImagen)}`, {
-                method: 'GET',
-                headers: { ...NGROK_HEADERS }
-            });
-
+            const resImagen = await fetch(`${IMAGE_ENDPOINT}/${encodeURIComponent(nombreImagen)}`, { method: 'GET', headers: { ...NGROK_HEADERS } });
             const contentType = resImagen.headers.get('Content-Type') || '';
-
             if (!resImagen.ok || !contentType.startsWith('image/')) {
-                // send_to_image() devuelve JSON {'Error': '...'} con status 400 si falla
                 let detalle = `status ${resImagen.status}`;
-                try {
-                    const dataError = await resImagen.json();
-                    detalle = dataError.Error ?? dataError.error ?? detalle;
-                } catch (_) { /* cuerpo no JSON */ }
+                try { const dataError = await resImagen.json(); detalle = dataError.Error ?? dataError.error ?? detalle; } catch (_) { /* cuerpo no JSON */ }
                 throw new Error(`Error en /send_image/images/${nombreImagen}: ${detalle}`);
             }
-
             const blob = await resImagen.blob();
             return { url: URL.createObjectURL(blob), nombre: nombreImagen };
         }
 
-        // Audio grabado -> /into -> texto transcrito
+        async function cargarImagenesInventario(nombres) {
+            const resultados = await Promise.allSettled(nombres.map(descargarImagenInventario));
+            const items = [];
+            resultados.forEach((r, i) => {
+                if (r.status === 'fulfilled') items.push(r.value);
+                else console.error(`No se pudo cargar la imagen "${nombres[i]}":`, r.reason);
+            });
+            return items;
+        }
+
+        // ---------- Captura de audio -> /into ----------
+        let mediaRecorder = null, mediaStream = null, audioChunks = [], isRecording = false;
+
         async function transcribirAudio(audioBlob) {
             const formData = new FormData();
             // NOTA: ajusta el nombre del campo ('audio') según lo que espere captura_audio()
             formData.append('audio', audioBlob, 'grabacion.webm');
-
-            const resInto = await fetch(`${API_BASE}/into`, {
-                method: 'POST',
-                headers: { ...NGROK_HEADERS },
-                body: formData
-            });
-
-            if (!resInto.ok) {
-                throw new Error(`Error en /into: ${resInto.status}`);
-            }
-
+            const resInto = await fetch(`${API_BASE}/into`, { method: 'POST', headers: { ...NGROK_HEADERS }, body: formData });
+            if (!resInto.ok) throw new Error(`Error en /into: ${resInto.status}`);
             const dataInto = await resInto.json();
             // NOTA: ajusta esta clave según lo que realmente devuelva captura_audio()
-            return dataInto.texto ?? dataInto.transcripcion ?? dataInto.output ?? "";
+            return dataInto.texto ?? dataInto.transcripcion ?? dataInto.output ?? '';
         }
+
+        async function iniciarGrabacion() {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(mediaStream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
+                mediaRecorder.onstop = async () => {
+                    mediaStream.getTracks().forEach((t) => t.stop());
+                    voiceBtn.classList.remove('recording');
+                    setOrbState('thinking');
+                    userInput.placeholder = 'Transcribiendo audio...';
+                    try {
+                        const texto = await transcribirAudio(new Blob(audioChunks, { type: 'audio/webm' }));
+                        if (texto) await enviarMensaje(texto);
+                        else notificar('alerta', 'No se pudo transcribir el audio. Intenta de nuevo.');
+                    } catch (error) {
+                        console.error('Error al enviar audio a /into:', error);
+                        notificar('error', 'No se pudo enviar el audio al servidor.');
+                    } finally {
+                        setOrbState('idle');
+                        userInput.placeholder = 'Escribe un mensaje para ANA...';
+                    }
+                };
+                mediaRecorder.start();
+                isRecording = true;
+                voiceBtn.classList.add('recording');
+                userInput.placeholder = 'Escuchando... presiona el micrófono de nuevo para detener.';
+            } catch (err) {
+                console.error('No se pudo acceder al micrófono:', err);
+                notificar('error', 'Permiso de micrófono denegado o no disponible.');
+            }
+        }
+        function detenerGrabacion() {
+            if (mediaRecorder && isRecording) { mediaRecorder.stop(); isRecording = false; }
+        }
+        voiceBtn.addEventListener('click', () => {
+            if (!(navigator.mediaDevices && window.MediaRecorder)) {
+                notificar('alerta', 'Tu navegador no soporta grabación de audio.');
+                return;
+            }
+            isRecording ? detenerGrabacion() : iniciarGrabacion();
+        });
+
+        // ==========================================
+        // ARRANQUE
+        // ==========================================
+        renderNotificaciones();
+        renderCalendario();
+        renderEmpresa();
+        renderDocumentos();
+        renderChat();
+        renderVozToggle();
+        revisarRecordatorios();
     </script>
 </body>
 </html>
