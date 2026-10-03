@@ -283,6 +283,97 @@
 
         .vacio { color: var(--texto-suave); font-size: 0.78rem; text-align: center; padding: 1rem; }
 
+
+        /* ---------- Pestañas ---------- */
+        #tabs { display: flex; gap: 0.25rem; background: rgba(16,185,129,0.08); border: 1px solid var(--borde); border-radius: 0.8rem; padding: 0.2rem; }
+        .tab {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.4rem 0.95rem; border-radius: 0.6rem; font-size: 0.82rem; font-weight: 500;
+            color: var(--texto-suave); background: transparent; transition: background 0.15s, color 0.15s;
+        }
+        .tab svg { width: 0.9rem; height: 0.9rem; }
+        .tab:hover { color: var(--verde-oscuro); }
+        .tab.activa { background: white; color: var(--verde-oscuro); box-shadow: 0 2px 8px rgba(16,185,129,0.15); }
+        .tab-badge { font-size: 0.62rem; font-weight: 600; background: var(--verde); color: white; border-radius: 999px; padding: 0 0.4rem; line-height: 1.2rem; }
+
+        /* ---------- Conexiones ---------- */
+        #conexiones {
+            flex: 1; min-height: 0; overflow-y: auto; padding: 0 0.9rem 0.9rem;
+            display: flex; flex-direction: column; gap: 0.9rem;
+        }
+        #conexiones::-webkit-scrollbar { width: 6px; }
+        #conexiones::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.25); border-radius: 999px; }
+        .canales { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+        .canal-head-extra { display: flex; align-items: center; gap: 0.5rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; font-weight: 500; padding: 0.15rem 0.55rem; border-radius: 999px; white-space: nowrap; }
+        .pill .punto { width: 0.45rem; height: 0.45rem; border-radius: 50%; }
+        .pill.on  { background: #d1fae5; color: #047857; } .pill.on .punto { background: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.2); }
+        .pill.off { background: #f1f5f9; color: #64748b; } .pill.off .punto { background: #94a3b8; }
+        .pill.err { background: #fee2e2; color: #b91c1c; } .pill.err .punto { background: #ef4444; }
+        .logo-canal { width: 1.6rem; height: 1.6rem; border-radius: 0.5rem; display: inline-flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
+        .logo-canal svg { width: 1rem; height: 1rem; }
+        .logo-ws { background: #25d366; }
+        .logo-ig { background: linear-gradient(45deg, #f58529, #dd2a7b 55%, #8134af); }
+        .logo-cam { background: var(--verde-oscuro); }
+
+        .webhook-fila { display: flex; align-items: center; gap: 0.5rem; }
+        .webhook-url {
+            flex: 1; min-width: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.72rem;
+            background: #f8fafc; border: 1px solid var(--borde); border-radius: 0.55rem; padding: 0.4rem 0.6rem;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #334155;
+        }
+        .ayuda { font-size: 0.7rem; color: var(--texto-suave); line-height: 1.35; }
+
+        .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 0.6rem; }
+        .kpi { background: #f8fafc; border: 1px solid rgba(16,185,129,0.12); border-radius: 0.7rem; padding: 0.55rem 0.7rem; min-width: 0; }
+        .kpi-label { font-size: 0.68rem; color: var(--texto-suave); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .kpi-valor { font-size: 1.35rem; font-weight: 600; line-height: 1.2; margin-top: 0.1rem; color: var(--texto); }
+        .kpi-delta { font-size: 0.68rem; margin-top: 0.1rem; color: var(--texto-suave); }
+        .kpi-delta.sube { color: #047857; } .kpi-delta.baja { color: #b91c1c; }
+
+        .grafica { position: relative; }
+        .grafica svg { width: 100%; height: 9.5rem; display: block; overflow: visible; }
+        .grafica .eje { stroke: #e2e8f0; stroke-width: 1; }
+        .grafica .tick { font-size: 0.62rem; fill: #94a3b8; }
+        .grafica .barra { fill: var(--verde-oscuro); transition: opacity 0.15s; }
+        .grafica .barra.contexto { fill: #a7f3d0; }
+        .grafica .hit { fill: transparent; }
+        .grafica .hit:hover + .barra, .grafica .barra:hover { opacity: 0.75; }
+        .grafica .etiqueta { font-size: 0.66rem; fill: #334155; font-weight: 500; }
+        .tooltip {
+            position: absolute; pointer-events: none; z-index: 5; display: none;
+            background: #0f172a; color: white; font-size: 0.7rem; padding: 0.3rem 0.5rem; border-radius: 0.4rem;
+            white-space: nowrap; transform: translate(-50%, calc(-100% - 8px));
+        }
+        .grafica-titulo { font-size: 0.72rem; color: var(--texto-suave); margin-bottom: 0.2rem; }
+
+        .evento-feed { display: flex; flex-direction: column; }
+        .evento { display: flex; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid rgba(16,185,129,0.08); font-size: 0.78rem; }
+        .evento-hora { font-size: 0.66rem; color: var(--texto-suave); white-space: nowrap; margin-top: 0.1rem; min-width: 3rem; }
+        .evento-titulo { font-weight: 500; }
+        .evento-texto { color: var(--texto-suave); font-size: 0.74rem; }
+
+        .camaras-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.75rem; }
+        .camara { border: 1px solid var(--borde); border-radius: 0.8rem; overflow: hidden; background: #0f172a; position: relative; aspect-ratio: 16 / 9; }
+        .camara img, .camara video { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .camara .sin-senal { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; color: #94a3b8; font-size: 0.72rem; background: #0f172a; }
+        .camara .sin-senal svg { width: 1.6rem; height: 1.6rem; }
+        .camara-barra { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; padding: 0.35rem 0.55rem; background: linear-gradient(transparent, rgba(15,23,42,0.85)); color: white; font-size: 0.72rem; }
+        .camara-barra .btn-icon { width: 1.4rem; height: 1.4rem; background: rgba(255,255,255,0.15); border-color: transparent; color: white; }
+        .camara-barra .btn-icon:hover { background: rgba(239,68,68,0.8); }
+        .vivo { display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 600; font-size: 0.62rem; letter-spacing: 0.08em; }
+        .vivo .punto { width: 0.4rem; height: 0.4rem; border-radius: 50%; background: #ef4444; animation: parpadeo 1.2s infinite; }
+        .vivo.off .punto { background: #94a3b8; animation: none; }
+        @keyframes parpadeo { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .form-inline { display: grid; grid-template-columns: 1fr 2fr auto auto; gap: 0.5rem; align-items: end; }
+
+        @media (max-width: 900px) {
+            .canales { grid-template-columns: 1fr; }
+            .form-inline { grid-template-columns: 1fr; }
+            #tabs { width: 100%; justify-content: center; }
+            header { flex-wrap: wrap; }
+        }
+
         /* ---------- Responsivo: en pantallas angostas se apila y la página hace scroll ---------- */
         @media (max-width: 900px) {
             body { overflow: auto; height: auto; min-height: 100svh; }
@@ -313,6 +404,17 @@
                 <div id="empresaHeader" class="text-xs text-slate-500 leading-tight">Asistente de tu empresa</div>
             </div>
         </div>
+        <nav id="tabs" role="tablist" aria-label="Secciones">
+            <button class="tab activa" role="tab" data-tab="principal" aria-selected="true">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h5v7H4V5zm0 9h6v6H5a1 1 0 01-1-1v-5zm10-10h5a1 1 0 011 1v4h-6V4zm0 8h6v7a1 1 0 01-1 1h-5v-8z"/></svg>
+                Principal
+            </button>
+            <button class="tab" role="tab" data-tab="conexiones" aria-selected="false">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.8 10.2a4 4 0 010 5.6l-2 2a4 4 0 01-5.6-5.6l1-1m3-3l1-1a4 4 0 015.6 5.6l-1 1"/></svg>
+                Conexiones
+                <span id="tabConexionesBadge" class="tab-badge hidden">0</span>
+            </button>
+        </nav>
         <div class="flex items-center gap-3 text-xs text-slate-500">
             <span id="fechaHoy"></span>
             <span class="sm:inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-50 text-emerald-700" style="border:1px solid #d1fae5;">
@@ -455,6 +557,115 @@
         </div>
     </main>
 
+    <!-- ================= CONEXIONES ================= -->
+    <main id="conexiones" class="hidden">
+
+        <!-- Cámaras del negocio -->
+        <section class="card" style="flex-shrink: 0;">
+            <div class="card-head">
+                <div class="card-title">
+                    <span class="logo-canal logo-cam"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.5-2.5v9L15 14M4 7h9a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V9a2 2 0 012-2z"/></svg></span>
+                    Cámaras del negocio
+                    <span id="camarasContador" class="text-xs font-normal text-slate-500"></span>
+                </div>
+                <span class="ayuda md:inline">ANA observa las cámaras conectadas para responder sobre lo que pasa en el local.</span>
+            </div>
+            <div class="px-4 py-3 flex flex-col gap-3">
+                <form id="camaraForm" class="form-inline">
+                    <div>
+                        <label class="label" for="camNombre">Nombre</label>
+                        <input id="camNombre" class="input" placeholder="Ej. Entrada principal" maxlength="40" required>
+                    </div>
+                    <div>
+                        <label class="label" for="camUrl">URL del video o imagen (HTTP/HTTPS)</label>
+                        <input id="camUrl" class="input" type="url" placeholder="https://192.168.1.20:8080/video  ·  http://cam.local/snapshot.jpg" required>
+                    </div>
+                    <div>
+                        <label class="label" for="camTipo">Tipo</label>
+                        <select id="camTipo" class="input">
+                            <option value="imagen">Imagen / MJPEG</option>
+                            <option value="video">Video (MP4, WebM, HLS)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-verde">Conectar cámara</button>
+                </form>
+                <p class="ayuda">Las cámaras RTSP no se pueden ver directamente en el navegador: configura en el servidor una ruta HTTP que reenvíe el video o entregue capturas.</p>
+                <div id="camarasGrid" class="camaras-grid"></div>
+            </div>
+        </section>
+
+        <!-- WhatsApp e Instagram -->
+        <div class="canales">
+            <section class="card" id="canal-whatsapp" style="flex-shrink: 0;">
+                <div class="card-head">
+                    <div class="card-title">
+                        <span class="logo-canal logo-ws"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm0 18.2a8.2 8.2 0 01-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1112 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 01-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 00-.7.3 3 3 0 00-.9 2.2 5.2 5.2 0 001.1 2.8 12 12 0 004.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 001.8-1.3 2.3 2.3 0 00.2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg></span>
+                        WhatsApp
+                        <span class="pill off" data-estado="whatsapp"><span class="punto"></span>Sin conectar</span>
+                    </div>
+                    <div class="canal-head-extra">
+                        <span class="text-xs text-slate-500" data-actualizado="whatsapp"></span>
+                        <button class="btn-icon" data-refrescar="whatsapp" title="Actualizar ahora">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M5.6 9A7 7 0 0118.4 9M18.4 15A7 7 0 015.6 15"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-4 py-3 flex flex-col gap-3">
+                    <div>
+                        <span class="label">Webhook (pégalo en Meta for Developers → WhatsApp → Configuración)</span>
+                        <div class="webhook-fila">
+                            <code class="webhook-url" data-webhook="whatsapp"></code>
+                            <button class="btn-icon" data-copiar="whatsapp" title="Copiar URL"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M6 8h8a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2z"/></svg></button>
+                        </div>
+                    </div>
+                    <div class="kpis" data-kpis="whatsapp"></div>
+                    <div>
+                        <div class="grafica-titulo" data-grafica-titulo="whatsapp">Mensajes recibidos por día</div>
+                        <div class="grafica" data-grafica="whatsapp"></div>
+                    </div>
+                    <div>
+                        <span class="label">Actividad reciente</span>
+                        <div class="evento-feed" data-eventos="whatsapp"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card" id="canal-instagram" style="flex-shrink: 0;">
+                <div class="card-head">
+                    <div class="card-title">
+                        <span class="logo-canal logo-ig"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></span>
+                        Instagram
+                        <span class="pill off" data-estado="instagram"><span class="punto"></span>Sin conectar</span>
+                    </div>
+                    <div class="canal-head-extra">
+                        <span class="text-xs text-slate-500" data-actualizado="instagram"></span>
+                        <button class="btn-icon" data-refrescar="instagram" title="Actualizar ahora">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M5.6 9A7 7 0 0118.4 9M18.4 15A7 7 0 015.6 15"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-4 py-3 flex flex-col gap-3">
+                    <div>
+                        <span class="label">Webhook (pégalo en Meta for Developers → Instagram → Webhooks)</span>
+                        <div class="webhook-fila">
+                            <code class="webhook-url" data-webhook="instagram"></code>
+                            <button class="btn-icon" data-copiar="instagram" title="Copiar URL"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M6 8h8a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2z"/></svg></button>
+                        </div>
+                    </div>
+                    <div class="kpis" data-kpis="instagram"></div>
+                    <div>
+                        <div class="grafica-titulo" data-grafica-titulo="instagram">Interacciones por día</div>
+                        <div class="grafica" data-grafica="instagram"></div>
+                    </div>
+                    <div>
+                        <span class="label">Actividad reciente</span>
+                        <div class="evento-feed" data-eventos="instagram"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
     <script>
         // ==========================================
         // ZONA DE CONEXIÓN CON EL BACKEND FLASK (blueprint 'input')
@@ -465,6 +676,13 @@
         //                              eventos:   [{ fecha: "2026-10-15", titulo: "Pago de nómina" }, ...]  (para el calendario)
         //   POST /query/generate  -> recibe { texto } y devuelve la voz (texto a voz)
         //   POST /query/upload    -> recibe FormData con 'archivo' (documento de la empresa para que ANA lo estudie)
+        //   GET  /query/metrics/whatsapp  y  GET /query/metrics/instagram  -> métricas reales del canal:
+        //        { conectado: true, actualizado: "ISO", metricas: [{ etiqueta, valor, delta?: "+12% vs ayer", direccion?: "sube"|"baja" }],
+        //          serie: [{ fecha: "2026-10-01", valor: 12 }, ...],   (últimos 7 a 30 días)
+        //          eventos: [{ id?, hora: "ISO", titulo: "Mensaje de Juan", texto: "Hola, ¿tienen...?" }] }
+        //   POST /query/webhooks/whatsapp y POST /query/webhooks/instagram -> reciben los webhooks de Meta (los expone el backend)
+        //   POST /query/cameras   -> registra una cámara { nombre, url, tipo } para que ANA pueda analizarla
+        //   DELETE /query/cameras/<id> -> quita la cámara
         //   GET  /query/send_image/images/<nombre_imagen> -> devuelve el archivo de 'images_inventory'
         // ==========================================
         // NOTA: si cambia la URL de ngrok, solo hay que actualizar esta constante.
@@ -472,6 +690,10 @@
         const NGROK_HEADERS = { 'ngrok-skip-browser-warning': 'true' };
         const IMAGE_ENDPOINT = `${API_BASE}/send_image/images`;
         const UPLOAD_ENDPOINT = `${API_BASE}/upload`;
+        const METRICS_ENDPOINT = (canal) => `${API_BASE}/metrics/${canal}`;
+        const WEBHOOK_URL = (canal) => `${API_BASE}/webhooks/${canal}`;
+        const CAMERAS_ENDPOINT = `${API_BASE}/cameras`;
+        const METRICS_INTERVALO_MS = 30000; // cada cuánto se refrescan las métricas de WhatsApp e Instagram
 
         // ---------- Utilidades ----------
         const $ = (id) => document.getElementById(id);
@@ -1180,6 +1402,303 @@
             isRecording ? detenerGrabacion() : iniciarGrabacion();
         });
 
+
+        // ==========================================
+        // PESTAÑAS
+        // ==========================================
+        const PESTANAS = { principal: $('panel'), conexiones: $('conexiones') };
+        let pestanaActiva = null;
+
+        function mostrarPestana(nombre) {
+            if (!PESTANAS[nombre]) nombre = 'principal';
+            pestanaActiva = nombre;
+            Object.entries(PESTANAS).forEach(([k, el]) => el.classList.toggle('hidden', k !== nombre));
+            document.querySelectorAll('#tabs .tab').forEach((t) => {
+                const activa = t.dataset.tab === nombre;
+                t.classList.toggle('activa', activa);
+                t.setAttribute('aria-selected', activa ? 'true' : 'false');
+            });
+            guardar('ana_pestana', nombre);
+            if (location.hash !== `#${nombre}`) history.replaceState(null, '', `#${nombre}`);
+            if (nombre === 'conexiones') {
+                eventosNuevos = 0;
+                renderBadgeConexiones();
+                refrescarCanales();
+            }
+        }
+        document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => mostrarPestana(t.dataset.tab)));
+        window.addEventListener('hashchange', () => mostrarPestana(location.hash.replace('#', '')));
+
+        let eventosNuevos = 0;
+        function renderBadgeConexiones() {
+            const badge = $('tabConexionesBadge');
+            badge.textContent = eventosNuevos > 99 ? '99+' : eventosNuevos;
+            badge.classList.toggle('hidden', eventosNuevos === 0 || pestanaActiva === 'conexiones');
+        }
+
+        // ==========================================
+        // CÁMARAS
+        // ==========================================
+        let camaras = cargar('ana_camaras', []); // [{ id, nombre, url, tipo: 'imagen'|'video' }]
+        const camarasGrid = $('camarasGrid');
+        let camarasTimer = null;
+
+        function renderCamaras() {
+            $('camarasContador').textContent = camaras.length ? `· ${camaras.length} conectada${camaras.length === 1 ? '' : 's'}` : '';
+            if (!camaras.length) {
+                camarasGrid.innerHTML = '<div class="vacio" style="grid-column: 1 / -1;">Aún no hay cámaras conectadas. Agrega la primera con el formulario de arriba.</div>';
+                return;
+            }
+            camarasGrid.innerHTML = camaras.map((c) => `
+                <div class="camara" data-cam="${c.id}">
+                    ${c.tipo === 'video'
+                        ? `<video src="${escaparHtml(c.url)}" autoplay muted playsinline loop></video>`
+                        : `<img src="${escaparHtml(c.url)}" alt="${escaparHtml(c.nombre)}">`}
+                    <div class="sin-senal hidden">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18M15 10l4.5-2.5v9M4 7h9a2 2 0 012 2v6M4 7a2 2 0 00-2 2v6a2 2 0 002 2h9"/></svg>
+                        Sin señal
+                    </div>
+                    <div class="camara-barra">
+                        <span class="truncate">${escaparHtml(c.nombre)}</span>
+                        <span class="flex items-center gap-2">
+                            <span class="vivo"><span class="punto"></span>EN VIVO</span>
+                            <button class="btn-icon" data-quitar-cam="${c.id}" title="Quitar cámara"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                        </span>
+                    </div>
+                </div>`).join('');
+
+            camarasGrid.querySelectorAll('.camara').forEach((tile) => {
+                const media = tile.querySelector('img, video');
+                const marcar = (ok) => {
+                    tile.querySelector('.sin-senal').classList.toggle('hidden', ok);
+                    tile.querySelector('.vivo').classList.toggle('off', !ok);
+                };
+                media.addEventListener('error', () => marcar(false));
+                media.addEventListener(media.tagName === 'VIDEO' ? 'playing' : 'load', () => marcar(true));
+            });
+        }
+
+        // Las capturas (snapshot) se refrescan cada 5 s; los streams MJPEG y los videos no lo necesitan
+        function refrescarCapturas() {
+            camarasGrid.querySelectorAll('.camara img').forEach((img) => {
+                const cam = camaras.find((c) => c.id === img.closest('.camara').dataset.cam);
+                if (!cam || /mjpe?g|stream|video/i.test(cam.url)) return;
+                const sep = cam.url.includes('?') ? '&' : '?';
+                img.src = `${cam.url}${sep}t=${Date.now()}`;
+            });
+        }
+
+        async function registrarCamaraEnBackend(cam, metodo = 'POST') {
+            try {
+                const url = metodo === 'DELETE' ? `${CAMERAS_ENDPOINT}/${encodeURIComponent(cam.id)}` : CAMERAS_ENDPOINT;
+                const res = await fetch(url, {
+                    method: metodo,
+                    headers: { 'Content-Type': 'application/json', ...NGROK_HEADERS },
+                    body: metodo === 'DELETE' ? undefined : JSON.stringify(cam)
+                });
+                return res.ok;
+            } catch (_) { return false; }
+        }
+
+        $('camaraForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const cam = { id: uid(), nombre: $('camNombre').value.trim(), url: $('camUrl').value.trim(), tipo: $('camTipo').value };
+            if (!cam.nombre || !cam.url) return;
+            camaras.push(cam);
+            guardar('ana_camaras', camaras);
+            renderCamaras();
+            e.target.reset();
+            const ok = await registrarCamaraEnBackend(cam);
+            notificar(ok ? 'ok' : 'alerta', ok
+                ? `Cámara "${cam.nombre}" conectada. ANA ya puede observarla.`
+                : `Cámara "${cam.nombre}" agregada en el panel, pero el servidor no la registró (se reintentará al recargar).`);
+        });
+
+        camarasGrid.addEventListener('click', async (e) => {
+            const btn = e.target.closest('[data-quitar-cam]');
+            if (!btn) return;
+            const cam = camaras.find((c) => c.id === btn.dataset.quitarCam);
+            camaras = camaras.filter((c) => c.id !== btn.dataset.quitarCam);
+            guardar('ana_camaras', camaras);
+            renderCamaras();
+            if (cam) {
+                registrarCamaraEnBackend(cam, 'DELETE');
+                notificar('info', `Cámara "${cam.nombre}" desconectada.`);
+            }
+        });
+
+        // ==========================================
+        // CANALES: WHATSAPP E INSTAGRAM (webhooks + métricas reales del backend)
+        // ==========================================
+        const CANALES = ['whatsapp', 'instagram'];
+        const NOMBRE_CANAL = { whatsapp: 'WhatsApp', instagram: 'Instagram' };
+        let datosCanal = cargar('ana_canales', {}); // último payload recibido por canal
+        let eventosVistos = new Set(cargar('ana_eventos_vistos', []));
+        let metricsTimer = null;
+
+        function q(sel, canal) { return document.querySelector(`[data-${sel}="${canal}"]`); }
+
+        CANALES.forEach((c) => { q('webhook', c).textContent = WEBHOOK_URL(c); });
+
+        document.querySelectorAll('[data-copiar]').forEach((btn) => btn.addEventListener('click', async () => {
+            const canal = btn.dataset.copiar;
+            try {
+                await navigator.clipboard.writeText(WEBHOOK_URL(canal));
+                notificar('info', `URL del webhook de ${NOMBRE_CANAL[canal]} copiada.`);
+            } catch (_) {
+                notificar('alerta', 'No se pudo copiar automáticamente. Selecciona la URL y cópiala a mano.');
+            }
+        }));
+        document.querySelectorAll('[data-refrescar]').forEach((btn) => btn.addEventListener('click', () => cargarMetricas(btn.dataset.refrescar, true)));
+
+        function formatearValor(v) {
+            if (typeof v !== 'number') return escaparHtml(v ?? '—');
+            if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+            if (Math.abs(v) >= 1e4) return (v / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+            return v.toLocaleString('es-ES');
+        }
+
+        function setEstadoCanal(canal, estado, texto) {
+            const pill = q('estado', canal);
+            pill.className = `pill ${estado}`;
+            pill.innerHTML = `<span class="punto"></span>${escaparHtml(texto)}`;
+        }
+
+        function renderCanal(canal) {
+            const data = datosCanal[canal];
+            const kpis = q('kpis', canal), graf = q('grafica', canal), feed = q('eventos', canal);
+
+            if (!data) {
+                setEstadoCanal(canal, 'off', 'Sin conectar');
+                kpis.innerHTML = `<div class="vacio" style="grid-column: 1 / -1;">Todavía no llegan datos de ${NOMBRE_CANAL[canal]}. Configura el webhook en Meta y asegúrate de que el servidor responda en /metrics/${canal}.</div>`;
+                graf.innerHTML = '';
+                feed.innerHTML = '';
+                q('actualizado', canal).textContent = '';
+                return;
+            }
+
+            setEstadoCanal(canal, data.conectado ? 'on' : 'off', data.conectado ? 'Conectado' : 'Webhook sin actividad');
+            q('actualizado', canal).textContent = data.actualizado ? `Actualizado ${horaCorta(data.actualizado)}` : '';
+
+            const lista = Array.isArray(data.metricas) ? data.metricas : Object.entries(data.metricas || {}).map(([etiqueta, valor]) => ({ etiqueta, valor }));
+            kpis.innerHTML = lista.length ? lista.slice(0, 8).map((m) => `
+                <div class="kpi">
+                    <div class="kpi-label" title="${escaparHtml(m.etiqueta)}">${escaparHtml(m.etiqueta)}</div>
+                    <div class="kpi-valor">${formatearValor(m.valor)}</div>
+                    ${m.delta ? `<div class="kpi-delta ${m.direccion || ''}">${escaparHtml(m.delta)}</div>` : ''}
+                </div>`).join('') : '<div class="vacio" style="grid-column: 1 / -1;">Sin métricas todavía.</div>';
+
+            if (data.titulo_serie) q('grafica-titulo', canal).textContent = data.titulo_serie;
+            renderGraficaBarras(graf, Array.isArray(data.serie) ? data.serie : []);
+
+            const eventos = Array.isArray(data.eventos) ? data.eventos.slice(0, 8) : [];
+            feed.innerHTML = eventos.length ? eventos.map((ev) => `
+                <div class="evento">
+                    <span class="evento-hora">${ev.hora ? horaCorta(ev.hora) : ''}</span>
+                    <div class="min-w-0">
+                        <div class="evento-titulo truncate">${escaparHtml(ev.titulo || 'Evento')}</div>
+                        ${ev.texto ? `<div class="evento-texto">${escaparHtml(ev.texto)}</div>` : ''}
+                    </div>
+                </div>`).join('') : '<div class="ayuda" style="padding: 0.3rem 0;">Aquí aparecerán los mensajes y eventos que lleguen por el webhook.</div>';
+        }
+
+        // Gráfica de columnas de una sola serie (SVG inline, con tooltip al pasar el cursor)
+        function renderGraficaBarras(cont, serie) {
+            if (!serie.length) {
+                cont.innerHTML = '<div class="ayuda" style="padding: 0.3rem 0;">Sin historial todavía.</div>';
+                return;
+            }
+            const puntos = serie.slice(-30).map((p) => ({ fecha: String(p.fecha ?? p.date ?? ''), valor: Number(p.valor ?? p.value ?? 0) || 0 }));
+            const W = 600, H = 150, padL = 34, padR = 8, padT = 14, padB = 22;
+            const maxV = Math.max(1, ...puntos.map((p) => p.valor));
+            // Escala "limpia" para los ticks del eje
+            const paso = Math.pow(10, Math.floor(Math.log10(maxV)));
+            const techo = Math.ceil(maxV / paso) * paso;
+            const ticks = [0, techo / 2, techo];
+            const anchoBanda = (W - padL - padR) / puntos.length;
+            const anchoBarra = Math.min(24, anchoBanda * 0.6);
+            const y = (v) => padT + (H - padT - padB) * (1 - v / techo);
+            const idxMax = puntos.reduce((m, p, i, a) => (p.valor > a[m].valor ? i : m), 0);
+            const etiquetaFecha = (f) => { const d = fechaDesdeClave(f); return isNaN(d) ? f : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }); };
+            const cadaN = Math.ceil(puntos.length / 7);
+
+            let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Serie diaria">`;
+            ticks.forEach((t) => {
+                svg += `<line class="eje" x1="${padL}" x2="${W - padR}" y1="${y(t)}" y2="${y(t)}"/>
+                        <text class="tick" x="${padL - 6}" y="${y(t) + 3}" text-anchor="end">${formatearValor(t)}</text>`;
+            });
+            puntos.forEach((p, i) => {
+                const x = padL + anchoBanda * i + (anchoBanda - anchoBarra) / 2;
+                const alto = Math.max(0, y(0) - y(p.valor));
+                const r = Math.min(4, anchoBarra / 2, alto);
+                // Columna con esquinas superiores redondeadas y base recta
+                const path = alto > 0
+                    ? `M${x},${y(0)} v${-(alto - r)} a${r},${r} 0 0 1 ${r},${-r} h${anchoBarra - 2 * r} a${r},${r} 0 0 1 ${r},${r} v${alto - r} z`
+                    : '';
+                svg += `<rect class="hit" x="${padL + anchoBanda * i}" y="${padT}" width="${anchoBanda}" height="${H - padT - padB}" data-i="${i}"/>`;
+                if (path) svg += `<path class="barra${i === puntos.length - 1 ? '' : ' contexto'}" d="${path}" data-i="${i}"/>`;
+                if (i === idxMax || i === puntos.length - 1) {
+                    svg += `<text class="etiqueta" x="${x + anchoBarra / 2}" y="${y(p.valor) - 4}" text-anchor="middle">${formatearValor(p.valor)}</text>`;
+                }
+                if (i % cadaN === 0 || i === puntos.length - 1) {
+                    svg += `<text class="tick" x="${x + anchoBarra / 2}" y="${H - 6}" text-anchor="middle">${escaparHtml(etiquetaFecha(p.fecha))}</text>`;
+                }
+            });
+            svg += '</svg><div class="tooltip"></div>';
+            cont.innerHTML = svg;
+
+            const tip = cont.querySelector('.tooltip');
+            cont.querySelectorAll('[data-i]').forEach((el) => {
+                el.addEventListener('mousemove', (e) => {
+                    const p = puntos[+el.dataset.i];
+                    const rect = cont.getBoundingClientRect();
+                    tip.style.display = 'block';
+                    tip.style.left = `${e.clientX - rect.left}px`;
+                    tip.style.top = `${e.clientY - rect.top}px`;
+                    tip.textContent = `${etiquetaFecha(p.fecha)}: ${p.valor.toLocaleString('es-ES')}`;
+                });
+                el.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+            });
+        }
+
+        async function cargarMetricas(canal, manual = false) {
+            try {
+                const res = await fetch(METRICS_ENDPOINT(canal), { headers: { ...NGROK_HEADERS } });
+                if (!res.ok) throw new Error(`Error en /metrics/${canal}: ${res.status}`);
+                const data = await res.json();
+                data.actualizado = data.actualizado || new Date().toISOString();
+                const primeraCarga = !datosCanal[canal];
+                datosCanal[canal] = data;
+                guardar('ana_canales', datosCanal);
+
+                // Avisar en notificaciones de los eventos que no se habían visto
+                let nuevos = 0;
+                (Array.isArray(data.eventos) ? data.eventos : []).forEach((ev) => {
+                    const clave = `${canal}:${ev.id ?? `${ev.hora}-${ev.titulo}`}`;
+                    if (eventosVistos.has(clave)) return;
+                    eventosVistos.add(clave);
+                    nuevos++;
+                    if (!primeraCarga) notificar('info', `${NOMBRE_CANAL[canal]}: ${ev.titulo || 'nuevo evento'}${ev.texto ? ` — ${String(ev.texto).slice(0, 80)}` : ''}`);
+                });
+                if (nuevos && pestanaActiva !== 'conexiones') { eventosNuevos += nuevos; renderBadgeConexiones(); }
+                guardar('ana_eventos_vistos', [...eventosVistos].slice(-1000));
+                renderCanal(canal);
+            } catch (err) {
+                console.error(`No se pudieron cargar las métricas de ${canal}:`, err);
+                if (datosCanal[canal]) {
+                    renderCanal(canal);
+                    setEstadoCanal(canal, 'err', 'Servidor sin respuesta');
+                } else {
+                    renderCanal(canal);
+                }
+                if (manual) notificar('error', `No se pudo conectar con el servidor para traer los datos de ${NOMBRE_CANAL[canal]}.`);
+            }
+        }
+
+        function refrescarCanales() {
+            CANALES.forEach((c) => cargarMetricas(c));
+        }
+
         // ==========================================
         // ARRANQUE
         // ==========================================
@@ -1190,6 +1709,12 @@
         renderChat();
         renderVozToggle();
         revisarRecordatorios();
+        renderCamaras();
+        camarasTimer = setInterval(refrescarCapturas, 5000);
+        CANALES.forEach(renderCanal);
+        refrescarCanales();
+        metricsTimer = setInterval(refrescarCanales, METRICS_INTERVALO_MS);
+        mostrarPestana(location.hash.replace('#', '') || cargar('ana_pestana', 'principal'));
     </script>
 </body>
 </html>
