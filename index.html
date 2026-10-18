@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ANA - Panel de la empresa</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='276 276 1380 1380' fill='none' stroke='%2319510a' stroke-width='83' stroke-linecap='round'%3E%3Cpath d='M322 887A649 649 0 0 1 1610 887M324 1060A649 649 0 0 0 1608 1060M852 481A498 498 0 0 0 852 1451M1074 480A498 498 0 0 1 1074 1452M628 888A347 347 0 0 1 1304 888M632 1060A347 347 0 0 0 1300 1060M852 805A197 197 0 0 0 852 1127M1074 801A197 197 0 0 1 1074 1131'/%3E%3C/svg%3E">
     <!-- Tema guardado (claro/oscuro) antes de pintar, para evitar parpadeos -->
     <script>
         (function () {
@@ -39,6 +40,7 @@
             --texto-tenue: #94a3b8;
             --sombra: 0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 20px rgba(15, 23, 42, 0.05);
             --radio: 1rem;
+            --logo: #19510a; /* verde del logo de Bytes */
             color-scheme: light;
         }
         :root[data-tema="oscuro"] {
@@ -55,6 +57,7 @@
             --texto-suave: #94a3b8;
             --texto-tenue: #64748b;
             --sombra: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --logo: #5fae3e; /* el verde del logo, aclarado para que se vea sobre fondo oscuro */
             color-scheme: dark;
         }
 
@@ -187,24 +190,21 @@
         /* Botón de tema: muestra la luna en claro y el sol en oscuro */
         :root[data-tema="oscuro"] #iconoLuna, :root:not([data-tema="oscuro"]) #iconoSol { display: none; }
 
-        /* ---------- Avatar de ANA (orbe) ---------- */
+        /* ---------- Avatar de ANA: logo de Bytes (vectorizado de "Logo Bytes-46.png") ---------- */
+        /* Se pinta con mask para que tome el color del tema; cualquier elemento con .orbe-mini muestra el logo */
         .orbe-mini {
-            width: 2.2rem; height: 2.2rem; border-radius: 50%; flex-shrink: 0;
-            background: radial-gradient(circle at 32% 30%, #6ee7b7 0%, #34d399 30%, #059669 65%, #064e3b 100%);
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35), 0 4px 12px rgba(5, 150, 105, 0.35);
+            width: 2.2rem; height: 2.2rem; flex-shrink: 0;
+            background: var(--logo);
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='276 276 1380 1380' fill='none' stroke='black' stroke-width='83' stroke-linecap='round'%3E%3Cpath d='M322 887A649 649 0 0 1 1610 887M324 1060A649 649 0 0 0 1608 1060M852 481A498 498 0 0 0 852 1451M1074 480A498 498 0 0 1 1074 1452M628 888A347 347 0 0 1 1304 888M632 1060A347 347 0 0 0 1300 1060M852 805A197 197 0 0 0 852 1127M1074 801A197 197 0 0 1 1074 1131'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='276 276 1380 1380' fill='none' stroke='black' stroke-width='83' stroke-linecap='round'%3E%3Cpath d='M322 887A649 649 0 0 1 1610 887M324 1060A649 649 0 0 0 1608 1060M852 481A498 498 0 0 0 852 1451M1074 480A498 498 0 0 1 1074 1452M628 888A347 347 0 0 1 1304 888M632 1060A347 347 0 0 0 1300 1060M852 805A197 197 0 0 0 852 1127M1074 801A197 197 0 0 1 1074 1131'/%3E%3C/svg%3E") center / contain no-repeat;
             animation: respirar 3.2s ease-in-out infinite;
         }
-        .orbe-mini.thinking { animation: respirar 0.9s ease-in-out infinite; }
+        .orbe-mini.thinking { animation: girar 1.6s linear infinite; }
         .orbe-mini.speaking { animation: hablar 0.5s ease-in-out infinite; }
-        .orbe-chico { width: 1.6rem; height: 1.6rem; animation: none; margin-top: 0.15rem; box-shadow: none; }
-        @keyframes respirar {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35), 0 4px 12px rgba(5, 150, 105, 0.35); }
-            50%      { transform: scale(1.06); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0), 0 4px 14px rgba(5, 150, 105, 0.45); }
-        }
-        @keyframes hablar {
-            0%, 100% { transform: scale(1); border-radius: 50%; }
-            50%      { transform: scale(1.12); border-radius: 46% 54% 52% 48%; }
-        }
+        .orbe-chico { width: 1.6rem; height: 1.6rem; animation: none; margin-top: 0.15rem; }
+        @keyframes respirar { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes girar   { to { transform: rotate(360deg); } }
+        @keyframes hablar  { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
         @keyframes aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; } }
 
