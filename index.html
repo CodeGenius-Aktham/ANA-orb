@@ -364,31 +364,114 @@
         .notif-texto { font-size: 0.84rem; line-height: 1.4; }
         .notif-hora { font-size: 0.72rem; color: var(--texto-tenue); margin-top: 0.15rem; }
 
-        /* ---------- Pestaña Empresa: datos | documentos ---------- */
-        #empresa { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; }
-        #empresaForm { padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.9rem; }
-        .campos-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
-        #empOtros { flex: 1; min-height: 7rem; resize: none; }
-        .form-pie { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-shrink: 0; }
-        .docs-body { padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.9rem; }
-        #dropZone {
+        /* ---------- Pestaña Empresa: menú de apartados | apartado activo ---------- */
+        #empresa { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 1rem; }
+        #empresaNav { padding: 0.6rem; gap: 0.2rem; overflow-y: auto; }
+        .subnav-titulo { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--texto-tenue); padding: 0.5rem 0.6rem 0.35rem; }
+        .subnav-item {
+            display: flex; align-items: center; gap: 0.7rem; width: 100%; text-align: left;
+            padding: 0.6rem 0.65rem; border-radius: 0.75rem; transition: background 0.15s; position: relative;
+        }
+        .subnav-item:hover { background: var(--superficie-2); }
+        .subnav-item.activa { background: var(--verde-suave); }
+        .subnav-item.activa::before { content: ''; position: absolute; left: 0; top: 0.65rem; bottom: 0.65rem; width: 3px; border-radius: 3px; background: var(--verde); }
+        .subnav-item .card-icono { background: var(--superficie-2); color: var(--texto-suave); }
+        .subnav-item.activa .card-icono { background: var(--verde); color: #fff; }
+        .subnav-item b { display: block; font-size: 0.88rem; font-weight: 600; }
+        .subnav-item small { display: block; font-size: 0.72rem; color: var(--texto-suave); margin-top: 0.05rem; }
+        .subnav-num { margin-left: auto; font-size: 0.7rem; font-weight: 600; color: var(--texto-suave); background: var(--superficie-2); border: 1px solid var(--borde); border-radius: 999px; padding: 0 0.45rem; line-height: 1.2rem; }
+        .subnav-punto { margin-left: auto; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--ambar); flex-shrink: 0; }
+
+        .resumen { margin-top: auto; padding: 0.85rem; border-radius: 0.8rem; background: var(--superficie-2); border: 1px solid var(--borde); display: flex; flex-direction: column; gap: 0.5rem; }
+        .resumen-titulo { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 600; }
+        .resumen-titulo .orbe-mini { width: 1.3rem; height: 1.3rem; animation: none; }
+        .barra-progreso { height: 6px; border-radius: 999px; background: var(--borde); overflow: hidden; }
+        .barra-progreso span { display: block; height: 100%; border-radius: inherit; background: var(--verde); transition: width 0.4s ease; }
+        .resumen-dato { font-size: 0.74rem; color: var(--texto-suave); display: flex; justify-content: space-between; gap: 0.5rem; }
+        .resumen-dato b { color: var(--texto); font-weight: 500; }
+
+        .apartado-body { padding: 1.1rem 1.25rem; display: flex; flex-direction: column; gap: 1.25rem; }
+        .grupo { display: flex; flex-direction: column; gap: 0.8rem; }
+        .grupo-titulo { font-size: 0.8rem; font-weight: 600; color: var(--texto); display: flex; align-items: center; gap: 0.5rem; }
+        .grupo-titulo::after { content: ''; flex: 1; height: 1px; background: var(--borde); }
+        .campos-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+        textarea.input { resize: vertical; min-height: 6rem; line-height: 1.5; }
+        .form-pie {
+            display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-shrink: 0;
+            padding: 0.75rem 1.25rem; border-top: 1px solid var(--borde); background: var(--superficie);
+        }
+        .estado-form { font-size: 0.75rem; color: var(--texto-suave); display: inline-flex; align-items: center; gap: 0.4rem; }
+        .estado-form.pendiente { color: #d97706; }
+        .estado-form.pendiente::before { content: ''; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--ambar); }
+
+        /* Asistente: formulario + vista previa */
+        .asistente-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 1.25rem; align-items: start; }
+        .tonos { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 0.5rem; }
+        .opcion { position: relative; display: block; cursor: pointer; }
+        .opcion input { position: absolute; opacity: 0; pointer-events: none; }
+        .opcion-caja {
+            display: block; height: 100%; padding: 0.65rem 0.75rem; border-radius: 0.75rem;
+            border: 1px solid var(--borde); background: var(--superficie-2); transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+        }
+        .opcion-caja b { display: block; font-size: 0.84rem; font-weight: 600; }
+        .opcion-caja small { display: block; font-size: 0.72rem; color: var(--texto-suave); margin-top: 0.15rem; line-height: 1.35; }
+        .opcion:hover .opcion-caja { border-color: var(--borde-fuerte); }
+        .opcion input:checked + .opcion-caja { border-color: var(--verde); background: var(--verde-suave); box-shadow: inset 0 0 0 1px var(--verde); }
+        .opcion input:focus-visible + .opcion-caja { outline: 2px solid var(--verde); outline-offset: 2px; }
+        .segmentado { display: inline-flex; background: var(--superficie-2); border: 1px solid var(--borde); border-radius: 0.7rem; padding: 0.2rem; gap: 0.15rem; flex-wrap: wrap; }
+        .segmentado label { cursor: pointer; }
+        .segmentado input { position: absolute; opacity: 0; pointer-events: none; }
+        .segmentado span { display: block; padding: 0.35rem 0.8rem; border-radius: 0.5rem; font-size: 0.8rem; color: var(--texto-suave); transition: background 0.15s, color 0.15s; }
+        .segmentado input:checked + span { background: var(--superficie); color: var(--verde-texto); font-weight: 500; box-shadow: var(--sombra); }
+        .segmentado input:focus-visible + span { outline: 2px solid var(--verde); }
+        .fila-opciones { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: flex-end; }
+        .interruptor { display: inline-flex; align-items: center; gap: 0.6rem; cursor: pointer; font-size: 0.84rem; }
+        .interruptor input { position: absolute; opacity: 0; pointer-events: none; }
+        .interruptor .pista { width: 2.3rem; height: 1.3rem; border-radius: 999px; background: var(--borde); position: relative; transition: background 0.15s; flex-shrink: 0; }
+        .interruptor .pista::after { content: ''; position: absolute; top: 0.15rem; left: 0.15rem; width: 1rem; height: 1rem; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.2); transition: transform 0.15s; }
+        .interruptor input:checked + .pista { background: var(--verde); }
+        .interruptor input:checked + .pista::after { transform: translateX(1rem); }
+        .interruptor input:focus-visible + .pista { outline: 2px solid var(--verde); outline-offset: 2px; }
+
+        .vista-previa { position: sticky; top: 0; border: 1px solid var(--borde); border-radius: 0.9rem; background: var(--superficie-2); overflow: hidden; }
+        .vista-previa-head { display: flex; align-items: center; gap: 0.55rem; padding: 0.7rem 0.85rem; border-bottom: 1px solid var(--borde); background: var(--superficie); }
+        .vista-previa-head .orbe-mini { width: 1.7rem; height: 1.7rem; }
+        .vista-previa-head b { font-size: 0.86rem; display: block; line-height: 1.2; }
+        .vista-previa-head small { font-size: 0.7rem; color: var(--verde-texto); }
+        .vista-previa-body { padding: 0.85rem; display: flex; flex-direction: column; gap: 0.6rem; }
+        .vista-previa .burbuja { max-width: 92%; font-size: 0.82rem; }
+        .vista-previa-pie { padding: 0 0.85rem 0.85rem; display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .etiqueta-chip { font-size: 0.68rem; padding: 0.15rem 0.5rem; border-radius: 999px; background: var(--superficie); border: 1px solid var(--borde); color: var(--texto-suave); }
+
+        /* Subir archivos */
+        .destino { display: flex; align-items: flex-end; gap: 0.6rem; flex-wrap: wrap; }
+        .destino > div { flex: 1; min-width: 12rem; }
+        .zona-subida {
             border: 1.5px dashed var(--borde-fuerte);
-            border-radius: 0.9rem; background: var(--verde-suave);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem;
-            padding: 1.4rem 1rem; text-align: center; cursor: pointer; transition: background 0.15s, border-color 0.15s;
+            border-radius: 1rem; background: var(--verde-suave);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem;
+            padding: 2.2rem 1rem; text-align: center; cursor: pointer; transition: background 0.15s, border-color 0.15s;
             flex-shrink: 0; color: var(--verde-texto);
         }
-        #dropZone svg { width: 1.6rem; height: 1.6rem; }
-        #dropZone:hover, #dropZone.sobre { background: var(--verde-medio); border-color: var(--verde); }
-        .drop-titulo { font-size: 0.88rem; font-weight: 500; }
-        .drop-sub { font-size: 0.75rem; color: var(--texto-suave); }
-        #docsLista { flex: 1; min-height: 0; overflow-y: auto; }
+        .zona-subida svg { width: 2rem; height: 2rem; }
+        .zona-subida:hover, .zona-subida.sobre { background: var(--verde-medio); border-color: var(--verde); }
+        .drop-titulo { font-size: 0.95rem; font-weight: 500; }
+        .drop-sub { font-size: 0.78rem; color: var(--texto-suave); }
+        .tipos-archivo { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3rem; margin-top: 0.35rem; }
+
         .doc {
-            display: flex; align-items: center; gap: 0.65rem; padding: 0.55rem 0.25rem;
+            display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 0.35rem;
             border-bottom: 1px solid var(--borde); font-size: 0.84rem; animation: aparecer 0.25s ease-out;
         }
         .doc:last-child { border-bottom: 0; }
-        .doc-icono { width: 2.2rem; height: 2.2rem; border-radius: 0.55rem; background: var(--verde-suave); color: var(--verde-texto); display: flex; align-items: center; justify-content: center; font-size: 0.62rem; font-weight: 700; flex-shrink: 0; text-transform: uppercase; }
+        .doc[draggable="true"] { cursor: grab; }
+        .doc-icono { width: 2.3rem; height: 2.3rem; border-radius: 0.6rem; background: var(--verde-suave); color: var(--verde-texto); display: flex; align-items: center; justify-content: center; font-size: 0.62rem; font-weight: 700; flex-shrink: 0; text-transform: uppercase; overflow: hidden; }
+        .doc-icono img { width: 100%; height: 100%; object-fit: cover; }
+        .doc-icono.pdf { background: rgba(239, 68, 68, 0.12); color: #dc2626; }
+        .doc-icono.xls { background: rgba(16, 185, 129, 0.14); color: var(--verde-texto); }
+        .doc-icono.doc-w { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+        :root[data-tema="oscuro"] .doc-icono.pdf { color: #fca5a5; }
+        :root[data-tema="oscuro"] .doc-icono.doc-w { color: #93c5fd; }
         .doc-meta { font-size: 0.72rem; color: var(--texto-suave); }
         .estado { font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; white-space: nowrap; font-weight: 500; }
         .estado.subido    { background: var(--verde-medio); color: var(--verde-texto); }
@@ -396,6 +479,66 @@
         .estado.subiendo  { background: var(--azul-suave); color: #0369a1; }
         :root[data-tema="oscuro"] .estado.pendiente { color: #fcd34d; }
         :root[data-tema="oscuro"] .estado.subiendo { color: #7dd3fc; }
+        .chip-carpeta { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.68rem; color: var(--texto-suave); }
+        .chip-carpeta svg { width: 0.75rem; height: 0.75rem; }
+        select.mover { width: auto; max-width: 9rem; padding: 0.25rem 0.45rem; font-size: 0.74rem; border-radius: 0.5rem; }
+
+        /* Biblioteca: carpetas | contenido */
+        #apartado-biblioteca .card-body { display: grid; grid-template-columns: 230px minmax(0, 1fr); overflow: hidden; }
+        .carpetas { border-right: 1px solid var(--borde); padding: 0.6rem; display: flex; flex-direction: column; gap: 0.15rem; overflow-y: auto; min-height: 0; }
+        .carpeta {
+            display: flex; align-items: center; gap: 0.55rem; padding: 0.5rem 0.6rem; border-radius: 0.65rem;
+            font-size: 0.84rem; text-align: left; width: 100%; transition: background 0.15s, box-shadow 0.15s; color: var(--texto);
+        }
+        .carpeta svg { width: 1.05rem; height: 1.05rem; color: var(--texto-tenue); flex-shrink: 0; }
+        .carpeta:hover { background: var(--superficie-2); }
+        .carpeta.activa { background: var(--verde-suave); color: var(--verde-texto); font-weight: 500; }
+        .carpeta.activa svg { color: var(--verde); }
+        .carpeta.destino-drop { box-shadow: inset 0 0 0 2px var(--verde); background: var(--verde-medio); }
+        .carpeta-num { margin-left: auto; font-size: 0.7rem; color: var(--texto-tenue); font-weight: 400; }
+        .carpeta-acciones { display: none; gap: 0.1rem; margin-left: auto; }
+        .carpeta:hover .carpeta-acciones, .carpeta:focus-within .carpeta-acciones { display: inline-flex; }
+        .carpeta:hover .carpeta-num, .carpeta:focus-within .carpeta-num { display: none; }
+        .carpeta-acciones span { width: 1.5rem; height: 1.5rem; border-radius: 0.4rem; display: inline-flex; align-items: center; justify-content: center; color: var(--texto-suave); }
+        .carpeta-acciones span:hover { background: var(--superficie); color: var(--verde-texto); }
+        .carpeta-acciones span[data-borrar-carpeta]:hover { color: var(--rojo); }
+        .carpeta-acciones svg { width: 0.85rem; height: 0.85rem; color: currentColor; }
+        .carpetas-sep { height: 1px; background: var(--borde); margin: 0.35rem 0.4rem; }
+        #carpetaForm { display: flex; gap: 0.35rem; padding: 0.35rem 0.2rem 0; }
+        #carpetaForm .input { padding: 0.4rem 0.6rem; font-size: 0.8rem; }
+
+        .bib-main { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+        .bib-barra { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; padding: 0.75rem 1rem; border-bottom: 1px solid var(--borde); }
+        #bibTitulo { font-size: 1rem; font-weight: 600; margin-right: auto; display: flex; align-items: center; gap: 0.5rem; }
+        .buscador { position: relative; }
+        .buscador svg { position: absolute; left: 0.6rem; top: 50%; width: 0.95rem; height: 0.95rem; transform: translateY(-50%); color: var(--texto-tenue); pointer-events: none; }
+        .buscador .input { padding: 0.45rem 0.7rem 0.45rem 2rem; width: 13rem; }
+        #bibContenido { flex: 1; min-height: 0; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 1.1rem; }
+        #bibContenido.sobre { background: var(--verde-suave); box-shadow: inset 0 0 0 2px var(--borde-fuerte); }
+        .bib-sub { font-size: 0.78rem; font-weight: 600; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 0.6rem; display: flex; align-items: center; gap: 0.4rem; }
+        .bib-sub span { font-weight: 500; color: var(--texto-tenue); }
+        .bib-imagenes { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 0.75rem; }
+        .bib-img { border: 1px solid var(--borde); border-radius: 0.8rem; overflow: hidden; background: var(--superficie); display: flex; flex-direction: column; animation: aparecer 0.25s ease-out; }
+        .bib-img[draggable="true"] { cursor: grab; }
+        .bib-img-ver { position: relative; aspect-ratio: 4 / 3; background: var(--superficie-2); display: flex; align-items: center; justify-content: center; overflow: hidden; color: var(--texto-tenue); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .bib-img-ver img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.25s; }
+        .bib-img-ver:hover img { transform: scale(1.04); }
+        .bib-img-ver .estado { text-transform: none; letter-spacing: 0; position: absolute; top: 0.45rem; left: 0.45rem; box-shadow: 0 1px 3px rgba(15,23,42,0.15); }
+        .bib-img-pie { padding: 0.5rem 0.6rem; display: flex; flex-direction: column; gap: 0.35rem; }
+        .bib-img-nombre { font-size: 0.8rem; font-weight: 500; }
+        .bib-img-acciones { display: flex; align-items: center; gap: 0.3rem; }
+        .bib-img-acciones .btn-icon { width: 1.7rem; height: 1.7rem; }
+        .bib-img-acciones select.mover { flex: 1; max-width: none; }
+        .bib-docs { border: 1px solid var(--borde); border-radius: 0.8rem; padding: 0 0.6rem; background: var(--superficie); }
+        .bib-vacio { margin: auto; text-align: center; color: var(--texto-suave); font-size: 0.85rem; max-width: 20rem; line-height: 1.5; }
+        .bib-vacio svg { width: 2.5rem; height: 2.5rem; color: var(--texto-tenue); margin-bottom: 0.5rem; }
+
+        /* Visor de imágenes */
+        #visor { border: 0; padding: 0; background: transparent; max-width: min(92vw, 1100px); max-height: 92vh; }
+        #visor::backdrop { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); }
+        #visor img { display: block; max-width: 100%; max-height: calc(92vh - 3rem); border-radius: 0.8rem; margin: 0 auto; }
+        .visor-pie { display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: #fff; font-size: 0.85rem; padding-top: 0.6rem; }
+        .visor-pie button { color: #fff; background: rgba(255,255,255,0.15); border-radius: 0.5rem; padding: 0.3rem 0.8rem; }
 
         /* ---------- Pestaña Conexiones ---------- */
         #conexiones { overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
@@ -472,6 +615,8 @@
             #chatPanel { grid-row: 1 / span 2; }
             #lateral { grid-template-rows: none; grid-template-columns: 1fr 1fr; }
             #fechaHoy { display: none; }
+            #empresa { grid-template-columns: 220px minmax(0, 1fr); }
+            .asistente-layout { grid-template-columns: minmax(0, 1fr) 260px; }
         }
         /* Tablet y móvil: todo se apila y la página hace scroll */
         @media (max-width: 900px) {
@@ -487,7 +632,19 @@
             #calendarPanel { height: 78vh; }
             #proximosPanel { max-height: 50vh; }
             #notifPanel { max-height: 50vh; }
-            #empresaPanel, #docsPanel { min-height: 60vh; }
+            #empresaNav { flex-direction: row; overflow-x: auto; padding: 0.4rem; flex-shrink: 0; }
+            .subnav-titulo, .subnav-item small, .resumen { display: none; }
+            .subnav-item { width: auto; flex-shrink: 0; padding: 0.45rem 0.7rem; }
+            .subnav-item.activa::before { display: none; }
+            .apartado { min-height: 80vh; }
+            .asistente-layout { grid-template-columns: 1fr; }
+            .vista-previa { position: static; }
+            #apartado-biblioteca .card-body { display: flex; flex-direction: column; overflow: visible; }
+            .carpetas { flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--borde); flex-shrink: 0; }
+            .carpeta { width: auto; flex-shrink: 0; }
+            .carpetas-sep, #carpetaForm { display: none; }
+            .buscador, .buscador .input { width: 100%; }
+            #bibContenido { min-height: 50vh; }
             #calendarPanel .card-head { flex-wrap: wrap; }
             #calForm { width: 100%; }
             #calNuevoTitulo { flex: 1; width: auto; }
@@ -495,6 +652,13 @@
             .form-inline { grid-template-columns: 1fr; }
             .campos-2 { grid-template-columns: 1fr; }
             .leyenda { display: none; }
+        }
+        @media (max-width: 600px) {
+            .doc { flex-wrap: wrap; row-gap: 0.4rem; }
+            .doc > .flex-1 { flex-basis: calc(100% - 3rem); }
+            .doc > .estado { margin-right: auto; }
+            .card-title .card-sub { display: none; }
+            .bib-imagenes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         @media (max-width: 520px) {
             .tab svg { display: none; }
@@ -512,7 +676,7 @@
         <div class="marca">
             <div id="orbeHeader" class="orbe-mini"></div>
             <div class="min-w-0">
-                <div class="marca-nombre">ANA</div>
+                <div class="marca-nombre" data-nombre-ia>ANA</div>
                 <div id="empresaHeader" class="marca-sub truncate">Asistente de tu empresa</div>
             </div>
         </div>
@@ -551,7 +715,7 @@
             <div class="card-head">
                 <div class="card-title">
                     <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8M8 14h5m-9 7l3.5-3.5H18a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v15z"/></svg></span>
-                    Chat con ANA
+                    Chat con <span data-nombre-ia>ANA</span>
                 </div>
                 <div class="flex items-center gap-1">
                     <button id="vozToggle" class="btn-icon" title="Activar o silenciar la voz de ANA">
@@ -583,7 +747,7 @@
                 <div class="card-title">
                     <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 3v3m8-3v3M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/></svg></span>
                     Calendario
-                    <span class="leyenda" title="Pídele a ANA que agende fechas y aparecerán aquí"><span><i></i>ANA</span><span><i class="manual"></i>Tú</span></span>
+                    <span class="leyenda" title="Pídele al asistente que agende fechas y aparecerán aquí"><span><i></i><span data-nombre-ia>ANA</span></span><span><i class="manual"></i>Tú</span></span>
                 </div>
                 <div class="flex items-center gap-1">
                     <button id="calPrev" class="btn-icon" title="Mes anterior">
@@ -637,61 +801,275 @@
     <!-- ================= EMPRESA ================= -->
     <main id="empresa" class="hidden">
 
-        <!-- Datos de la empresa -->
-        <section id="empresaPanel" class="card">
+        <!-- Menú de apartados -->
+        <nav id="empresaNav" class="card" aria-label="Apartados de la empresa">
+            <div class="subnav-titulo">Configuración</div>
+            <button type="button" class="subnav-item activa" data-apartado="perfil">
+                <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V5a1 1 0 011-1h8a1 1 0 011 1v16M15 9h3a1 1 0 011 1v11M9 8h2m-2 4h2m-2 4h2"/></svg></span>
+                <span class="min-w-0"><b>Empresa</b><small>Nombre, sector y datos clave</small></span>
+                <span class="subnav-punto hidden" data-pendiente="perfil" title="Cambios sin guardar"></span>
+            </button>
+            <button type="button" class="subnav-item" data-apartado="asistente">
+                <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4L12 3zm6 11l.9 2.1 2.1.9-2.1.9L18 20l-.9-2.1L15 17l2.1-.9L18 14z"/></svg></span>
+                <span class="min-w-0"><b>Asistente</b><small>Nombre, tono y estilo</small></span>
+                <span class="subnav-punto hidden" data-pendiente="asistente" title="Cambios sin guardar"></span>
+            </button>
+            <button type="button" class="subnav-item" data-apartado="subir">
+                <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg></span>
+                <span class="min-w-0"><b>Subir archivos</b><small>Documentos e imágenes</small></span>
+            </button>
+            <button type="button" class="subnav-item" data-apartado="biblioteca">
+                <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg></span>
+                <span class="min-w-0"><b>Biblioteca</b><small>Ordenada por carpetas</small></span>
+                <span id="bibliotecaNum" class="subnav-num hidden">0</span>
+            </button>
+
+            <div class="resumen">
+                <div class="resumen-titulo"><span class="orbe-mini"></span><span>Lo que sabe <span data-nombre-ia>ANA</span></span></div>
+                <div class="barra-progreso" title="Datos de la empresa completados"><span id="resumenBarra" style="width:0%"></span></div>
+                <div class="resumen-dato">Perfil completo <b id="resumenPerfil">0%</b></div>
+                <div class="resumen-dato">Documentos <b id="resumenDocs">0</b></div>
+                <div class="resumen-dato">Imágenes <b id="resumenImgs">0</b></div>
+                <div class="resumen-dato">Tono <b id="resumenTono">Profesional</b></div>
+            </div>
+        </nav>
+
+        <!-- Apartado: datos de la empresa -->
+        <section id="apartado-perfil" class="card apartado">
             <div class="card-head">
                 <div class="card-title">
                     <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V5a1 1 0 011-1h8a1 1 0 011 1v16M15 9h3a1 1 0 011 1v11M9 8h2m-2 4h2m-2 4h2"/></svg></span>
-                    Datos de la empresa
+                    <span>Datos de la empresa <span class="card-sub">· <span data-nombre-ia>ANA</span> los usa como contexto en cada respuesta</span></span>
                 </div>
-                <span id="empresaEstado" class="card-sub"></span>
             </div>
-            <form id="empresaForm" class="card-body">
-                <p class="ayuda">ANA usa estos datos como contexto en cada respuesta. Cuanto más completos, mejores respuestas.</p>
-                <div class="campos-2">
-                    <div>
-                        <label class="label" for="empNombre">Nombre de la empresa</label>
-                        <input id="empNombre" class="input" placeholder="Ej. Bytes Technology" autocomplete="organization">
+            <form id="empresaForm" class="flex flex-col flex-1 min-h-0" autocomplete="off">
+                <div class="card-body apartado-body">
+                    <div class="grupo">
+                        <div class="grupo-titulo">Identidad</div>
+                        <div class="campos-2">
+                            <div>
+                                <label class="label" for="empNombre">Nombre de la empresa</label>
+                                <input id="empNombre" class="input" placeholder="Ej. Bytes Technology" autocomplete="organization">
+                            </div>
+                            <div>
+                                <label class="label" for="empSector">A qué se dedica</label>
+                                <input id="empSector" class="input" placeholder="Ej. Desarrollo de software y consultoría">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="label" for="empProductos">Qué hace / qué vende</label>
+                            <input id="empProductos" class="input" placeholder="Ej. Aplicaciones a medida, soporte TI, licencias">
+                        </div>
                     </div>
-                    <div>
-                        <label class="label" for="empSector">A qué se dedica</label>
-                        <input id="empSector" class="input" placeholder="Ej. Desarrollo de software y consultoría">
+                    <div class="grupo">
+                        <div class="grupo-titulo">Contacto y atención</div>
+                        <div class="campos-2">
+                            <div>
+                                <label class="label" for="empHorario">Horario de atención</label>
+                                <input id="empHorario" class="input" placeholder="Ej. Lunes a viernes, 8:00 a 18:00">
+                            </div>
+                            <div>
+                                <label class="label" for="empContacto">Teléfono o correo de contacto</label>
+                                <input id="empContacto" class="input" placeholder="Ej. +57 300 000 0000 · hola@empresa.com">
+                            </div>
+                        </div>
+                        <div class="campos-2">
+                            <div>
+                                <label class="label" for="empWeb">Sitio web o redes</label>
+                                <input id="empWeb" class="input" placeholder="Ej. www.empresa.com · @empresa">
+                            </div>
+                            <div>
+                                <label class="label" for="empUbicacion">Ubicación</label>
+                                <input id="empUbicacion" class="input" placeholder="Ej. Calle 10 #20-30, Bogotá">
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <label class="label" for="empProductos">Qué hace / qué vende</label>
-                    <input id="empProductos" class="input" placeholder="Ej. Aplicaciones a medida, soporte TI, licencias">
-                </div>
-                <div class="flex-1 min-h-0 flex flex-col">
-                    <label class="label" for="empOtros">Otros datos útiles para ANA</label>
-                    <textarea id="empOtros" class="input" rows="4" placeholder="Horarios, número de empleados, clientes principales, políticas internas, etc."></textarea>
+                    <div class="grupo">
+                        <div class="grupo-titulo">Contexto adicional</div>
+                        <div>
+                            <label class="label" for="empOtros">Otros datos útiles</label>
+                            <textarea id="empOtros" class="input" rows="4" placeholder="Número de empleados, clientes principales, políticas internas, preguntas frecuentes, etc."></textarea>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-pie">
-                    <span class="ayuda">Se guardan en este navegador.</span>
+                    <span id="empresaEstado" class="estado-form"></span>
                     <button type="submit" class="btn-verde">Guardar datos</button>
                 </div>
             </form>
         </section>
 
-        <!-- Documentos -->
-        <section id="docsPanel" class="card">
+        <!-- Apartado: configuración del asistente -->
+        <section id="apartado-asistente" class="card apartado hidden">
             <div class="card-head">
                 <div class="card-title">
-                    <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zm0 0v5h5"/></svg></span>
-                    Documentos de la empresa
+                    <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4L12 3zm6 11l.9 2.1 2.1.9-2.1.9L18 20l-.9-2.1L15 17l2.1-.9L18 14z"/></svg></span>
+                    <span>Asistente <span class="card-sub">· cómo se llama y cómo habla</span></span>
+                </div>
+            </div>
+            <form id="asistenteForm" class="flex flex-col flex-1 min-h-0" autocomplete="off">
+                <div class="card-body apartado-body">
+                    <div class="asistente-layout">
+                        <div class="flex flex-col" style="gap: 1.25rem;">
+                            <div class="grupo">
+                                <div class="grupo-titulo">Identidad</div>
+                                <div class="campos-2">
+                                    <div>
+                                        <label class="label" for="iaNombre">Nombre del asistente</label>
+                                        <input id="iaNombre" class="input" placeholder="ANA" maxlength="30">
+                                    </div>
+                                    <div>
+                                        <label class="label" for="iaIdioma">Idioma de las respuestas</label>
+                                        <select id="iaIdioma" class="input">
+                                            <option value="es">Español</option>
+                                            <option value="en">Inglés</option>
+                                            <option value="pt">Portugués</option>
+                                            <option value="auto">El mismo del usuario</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="label" for="iaSaludo">Saludo inicial <span class="texto-tenue">(opcional)</span></label>
+                                    <input id="iaSaludo" class="input" placeholder="Si lo dejas vacío, se genera según el tono" maxlength="160">
+                                </div>
+                            </div>
+
+                            <div class="grupo">
+                                <div class="grupo-titulo">Tono</div>
+                                <div class="tonos" id="iaTonos">
+                                    <label class="opcion"><input type="radio" name="iaTono" value="profesional"><span class="opcion-caja"><b>Profesional</b><small>Claro, amable y confiable.</small></span></label>
+                                    <label class="opcion"><input type="radio" name="iaTono" value="cercano"><span class="opcion-caja"><b>Cercano</b><small>Cálido, como un compañero.</small></span></label>
+                                    <label class="opcion"><input type="radio" name="iaTono" value="formal"><span class="opcion-caja"><b>Formal</b><small>Protocolario y respetuoso.</small></span></label>
+                                    <label class="opcion"><input type="radio" name="iaTono" value="entusiasta"><span class="opcion-caja"><b>Entusiasta</b><small>Con energía y positivo.</small></span></label>
+                                    <label class="opcion"><input type="radio" name="iaTono" value="directo"><span class="opcion-caja"><b>Directo</b><small>Va al grano, sin rodeos.</small></span></label>
+                                </div>
+                            </div>
+
+                            <div class="grupo">
+                                <div class="grupo-titulo">Estilo</div>
+                                <div class="fila-opciones">
+                                    <div>
+                                        <span class="label">Largo de las respuestas</span>
+                                        <div class="segmentado">
+                                            <label><input type="radio" name="iaLongitud" value="breve"><span>Breve</span></label>
+                                            <label><input type="radio" name="iaLongitud" value="equilibrada"><span>Equilibrada</span></label>
+                                            <label><input type="radio" name="iaLongitud" value="detallada"><span>Detallada</span></label>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="label">Trato</span>
+                                        <div class="segmentado">
+                                            <label><input type="radio" name="iaTrato" value="tu"><span>Tú</span></label>
+                                            <label><input type="radio" name="iaTrato" value="usted"><span>Usted</span></label>
+                                        </div>
+                                    </div>
+                                    <label class="interruptor"><input type="checkbox" id="iaEmojis"><span class="pista"></span>Usar emojis</label>
+                                </div>
+                            </div>
+
+                            <div class="grupo">
+                                <div class="grupo-titulo">Instrucciones</div>
+                                <div>
+                                    <label class="label" for="iaInstrucciones">Reglas o indicaciones para el asistente</label>
+                                    <textarea id="iaInstrucciones" class="input" rows="4" placeholder="Ej. No confirmes precios sin revisar el inventario. Ofrece siempre agendar una cita. Si no sabes algo, dilo."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <aside class="vista-previa" aria-label="Vista previa">
+                            <div class="vista-previa-head">
+                                <span class="orbe-mini"></span>
+                                <span><b id="previaNombre">ANA</b><small>Vista previa</small></span>
+                            </div>
+                            <div class="vista-previa-body">
+                                <div class="msg ana"><div class="burbuja" id="previaSaludo"></div></div>
+                                <div class="msg user"><div class="burbuja">¿Cuál es su horario?</div></div>
+                                <div class="msg ana"><div class="burbuja" id="previaRespuesta"></div></div>
+                            </div>
+                            <div class="vista-previa-pie" id="previaChips"></div>
+                        </aside>
+                    </div>
+                </div>
+                <div class="form-pie">
+                    <span id="asistenteEstado" class="estado-form"></span>
+                    <div class="flex items-center gap-2">
+                        <button type="button" id="asistenteRestablecer" class="btn-texto">Restablecer</button>
+                        <button type="submit" class="btn-verde">Guardar configuración</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Apartado: subir archivos -->
+        <section id="apartado-subir" class="card apartado hidden">
+            <div class="card-head">
+                <div class="card-title">
+                    <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg></span>
+                    <span>Subir archivos <span class="card-sub">· <span data-nombre-ia>ANA</span> los estudiará</span></span>
+                </div>
+            </div>
+            <div class="card-body apartado-body">
+                <div class="destino">
+                    <div>
+                        <label class="label" for="subirCarpeta">Guardar en la carpeta</label>
+                        <select id="subirCarpeta" class="input"></select>
+                    </div>
+                    <button type="button" id="subirNuevaCarpeta" class="btn-secundario" style="height: 2.6rem;">+ Nueva carpeta</button>
+                </div>
+                <div id="dropZone" class="zona-subida" tabindex="0" role="button" aria-label="Subir archivos">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+                    <div class="drop-titulo">Arrastra aquí tus archivos o haz clic para elegirlos</div>
+                    <div class="drop-sub">Se guardarán en <b id="subirDestinoNombre">General</b></div>
+                    <div class="tipos-archivo">
+                        <span class="etiqueta-chip">PDF</span><span class="etiqueta-chip">Word</span><span class="etiqueta-chip">Excel / CSV</span><span class="etiqueta-chip">TXT</span><span class="etiqueta-chip">Imágenes</span>
+                    </div>
+                    <input type="file" id="fileInput" class="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.gif,.webp">
+                </div>
+                <div>
+                    <div class="flex items-center justify-between" style="margin-bottom: 0.4rem;">
+                        <span class="grupo-titulo" style="flex:1;">Subidas recientes</span>
+                        <button type="button" class="btn-texto" data-ir-apartado="biblioteca">Ver biblioteca →</button>
+                    </div>
+                    <div id="docsLista"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Apartado: biblioteca -->
+        <section id="apartado-biblioteca" class="card apartado hidden">
+            <div class="card-head">
+                <div class="card-title">
+                    <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg></span>
+                    <span>Biblioteca <span class="card-sub">· arrastra un archivo a una carpeta para moverlo</span></span>
                 </div>
                 <span id="docsContador" class="card-sub"></span>
             </div>
-            <div class="card-body docs-body">
-                <div id="dropZone" tabindex="0" role="button" aria-label="Subir documentos">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-                    <div class="drop-titulo">Arrastra aquí contratos, facturas, nóminas...</div>
-                    <div class="drop-sub">o haz clic para elegir archivos (PDF, Word, Excel, CSV, TXT, imágenes). ANA los estudiará.</div>
-                    <input type="file" id="fileInput" class="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg">
+            <div class="card-body">
+                <div class="carpetas" id="carpetasLista"></div>
+                <div class="bib-main">
+                    <div class="bib-barra">
+                        <div id="bibTitulo"></div>
+                        <div class="buscador">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 110-15 7.5 7.5 0 010 15z"/></svg>
+                            <input id="bibBuscar" class="input" type="search" placeholder="Buscar archivos...">
+                        </div>
+                        <div class="segmentado" id="bibFiltro">
+                            <label><input type="radio" name="bibFiltro" value="todo" checked><span>Todo</span></label>
+                            <label><input type="radio" name="bibFiltro" value="documentos"><span>Documentos</span></label>
+                            <label><input type="radio" name="bibFiltro" value="imagenes"><span>Imágenes</span></label>
+                        </div>
+                        <button type="button" id="bibSubir" class="btn-verde">Subir aquí</button>
+                        <input type="file" id="bibFileInput" class="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.gif,.webp">
+                    </div>
+                    <div id="bibContenido" class="scroll-fino"></div>
                 </div>
-                <div id="docsLista" class="scroll-fino"></div>
             </div>
         </section>
+
+        <dialog id="visor">
+            <img id="visorImg" alt="">
+            <div class="visor-pie"><span id="visorNombre" class="truncate"></span><button type="button" id="visorCerrar">Cerrar</button></div>
+        </dialog>
     </main>
 
     <!-- ================= CONEXIONES ================= -->
@@ -707,7 +1085,7 @@
                 </div>
             </div>
             <div class="seccion">
-                <p class="ayuda">ANA observa las cámaras conectadas para responder sobre lo que pasa en el local. Las cámaras RTSP no se pueden ver directamente en el navegador: configura en el servidor una ruta HTTP que reenvíe el video o entregue capturas.</p>
+                <p class="ayuda"><span data-nombre-ia>ANA</span> observa las cámaras conectadas para responder sobre lo que pasa en el local. Las cámaras RTSP no se pueden ver directamente en el navegador: configura en el servidor una ruta HTTP que reenvíe el video o entregue capturas.</p>
                 <form id="camaraForm" class="form-inline">
                     <div>
                         <label class="label" for="camNombre">Nombre</label>
@@ -811,7 +1189,9 @@
         //                              image_url: "a.png" | "a.png, b.png" | ["a.png", "b.png"]  (fotos del inventario)
         //                              eventos:   [{ fecha: "2026-10-15", titulo: "Pago de nómina" }, ...]  (para el calendario)
         //   POST /query/generate  -> recibe { texto } y devuelve la voz (texto a voz)
-        //   POST /query/upload    -> recibe FormData con 'archivo' (documento de la empresa para que ANA lo estudie)
+        //   POST /query/upload    -> recibe FormData con 'archivo', 'carpeta' (nombre de la carpeta), 'tipo' ('documento'|'imagen') y 'empresa'
+        //   /query/response recibe también 'asistente' { nombre, tono, longitud, trato, idioma, emojis, saludo, instrucciones }
+        //   y 'archivos' [{ nombre, carpeta, tipo }] para que el modelo hable como se configuró en la pestaña Empresa
         //   GET  /query/metrics/whatsapp  y  GET /query/metrics/instagram  -> métricas reales del canal:
         //        { conectado: true, actualizado: "ISO", metricas: [{ etiqueta, valor, delta?: "+12% vs ayer", direccion?: "sube"|"baja" }],
         //          serie: [{ fecha: "2026-10-01", valor: 12 }, ...],   (últimos 7 a 30 días)
@@ -848,7 +1228,7 @@
         const DIAS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 
         function guardar(clave, valor) {
-            try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (_) { /* almacenamiento no disponible */ }
+            try { localStorage.setItem(clave, JSON.stringify(valor)); return true; } catch (_) { return false; /* almacenamiento lleno o no disponible */ }
         }
         function cargar(clave, porDefecto) {
             try {
@@ -896,7 +1276,7 @@
             estadoServidor.querySelector('.texto-pill').textContent = ok ? 'Servidor conectado' : 'Servidor sin conexión';
         }
         estadoServidor.addEventListener('click', () => {
-            const nueva = prompt('Dirección del servidor de ANA (termina en /query).\nDéjala vacía para volver a la de fábrica.', API_BASE);
+            const nueva = prompt('Dirección del servidor del asistente (termina en /query).\nDéjala vacía para volver a la de fábrica.', API_BASE);
             if (nueva === null) return;
             try {
                 if (limpiarUrlApi(nueva)) localStorage.setItem('ana_api_base', limpiarUrlApi(nueva));
@@ -1025,14 +1405,14 @@
             const proximos = eventos.filter((e) => e.fecha >= hoyClave);
             $('proximosContador').textContent = proximos.length ? `${proximos.length} pendiente${proximos.length === 1 ? '' : 's'}` : '';
             if (!proximos.length) {
-                $('proximosLista').innerHTML = '<div class="vacio">No hay eventos próximos. Pídele a ANA que agende algo o agrégalo en el calendario.</div>';
+                $('proximosLista').innerHTML = `<div class="vacio">No hay eventos próximos. Pídele a ${escaparHtml(nombreIA())} que agende algo o agrégalo en el calendario.</div>`;
                 return;
             }
             $('proximosLista').innerHTML = proximos.slice(0, 20).map((e) => {
                 const f = fechaDesdeClave(e.fecha);
                 const dias = Math.round((f - hoy) / 86400000);
                 const cuando = dias === 0 ? 'Hoy' : dias === 1 ? 'Mañana' : dias < 7 ? `En ${dias} días` : formatearFechaLarga(f).replace(/^./, (c) => c.toUpperCase());
-                const quien = e.origen === 'ana' ? 'Agendado por ANA' : 'Agregado por ti';
+                const quien = e.origen === 'ana' ? `Agendado por ${nombreIA()}` : 'Agregado por ti';
                 return `<button type="button" class="prox" data-fecha="${e.fecha}">
                     <span class="prox-fecha ${e.origen}"><b>${f.getDate()}</b><small>${MESES[f.getMonth()].slice(0, 3)}</small></span>
                     <span class="min-w-0 flex-1">
@@ -1055,7 +1435,7 @@
             $('calDetalleFecha').textContent = formatearFechaLarga(f);
             const evs = eventosDe(diaSeleccionado);
             $('calDetalleEventos').innerHTML = evs.length
-                ? evs.map((e) => `<span class="det-evento" title="${e.origen === 'ana' ? 'Agendado por ANA' : 'Agregado manualmente'}">${escaparHtml(e.titulo)}<button type="button" data-borrar="${e.id}" title="Quitar">×</button></span>`).join('')
+                ? evs.map((e) => `<span class="det-evento" title="${e.origen === 'ana' ? `Agendado por ${escaparHtml(nombreIA())}` : 'Agregado manualmente'}">${escaparHtml(e.titulo)}<button type="button" data-borrar="${e.id}" title="Quitar">×</button></span>`).join('')
                 : '<span class="text-xs texto-tenue">Sin eventos este día.</span>';
         }
 
@@ -1070,7 +1450,7 @@
             guardar('ana_eventos', eventos);
             if (!silencioso) {
                 const f = fechaDesdeClave(fecha);
-                notificar(origen === 'ana' ? 'ok' : 'info', `${origen === 'ana' ? 'ANA agendó' : 'Agregaste'} "${titulo}" para el ${f.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}.`);
+                notificar(origen === 'ana' ? 'ok' : 'info', `${origen === 'ana' ? `${nombreIA()} agendó` : 'Agregaste'} "${titulo}" para el ${f.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}.`);
             }
             return ev;
         }
@@ -1152,7 +1532,7 @@
                 .replace(/^[\s,.:;y]+|[\s,.:;]+$/g, '')
                 .replace(/\s+(en|a|al|de|del|para|con|por|el|la|los|las|y|que)$/i, '')
                 .trim();
-            if (!t) t = 'Evento agendado por ANA';
+            if (!t) t = `Evento agendado por ${nombreIA()}`;
             t = t.charAt(0).toUpperCase() + t.slice(1);
             return t.length > 60 ? t.slice(0, 57) + '...' : t;
         }
@@ -1202,23 +1582,54 @@
                 const detalle = agregados.length === 1
                     ? `"${agregados[0].titulo}" para el ${primero.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}`
                     : `${agregados.length} fechas ("${agregados[0].titulo}")`;
-                notificar('ok', `ANA agendó ${detalle} en el calendario.`);
+                notificar('ok', `${nombreIA()} agendó ${detalle} en el calendario.`);
             }
             return agregados;
         }
 
         // ==========================================
-        // DATOS DE LA EMPRESA
+        // EMPRESA: apartados (datos, asistente, subir, biblioteca)
         // ==========================================
+        const APARTADOS = ['perfil', 'asistente', 'subir', 'biblioteca'];
+        let apartadoActivo = cargar('ana_empresa_apartado', 'perfil');
+
+        function mostrarApartado(nombre) {
+            if (!APARTADOS.includes(nombre)) nombre = 'perfil';
+            apartadoActivo = nombre;
+            APARTADOS.forEach((a) => $(`apartado-${a}`).classList.toggle('hidden', a !== nombre));
+            document.querySelectorAll('.subnav-item').forEach((b) => b.classList.toggle('activa', b.dataset.apartado === nombre));
+            guardar('ana_empresa_apartado', nombre);
+        }
+        $('empresaNav').addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-apartado]');
+            if (btn) mostrarApartado(btn.dataset.apartado);
+        });
+        document.querySelectorAll('[data-ir-apartado]').forEach((b) => b.addEventListener('click', () => mostrarApartado(b.dataset.irApartado)));
+
+        // Marca un formulario con "cambios sin guardar" hasta que se guarda
+        function marcarPendiente(clave, pendiente) {
+            document.querySelector(`[data-pendiente="${clave}"]`).classList.toggle('hidden', !pendiente);
+            const estado = $(clave === 'perfil' ? 'empresaEstado' : 'asistenteEstado');
+            if (pendiente) { estado.textContent = 'Cambios sin guardar'; estado.classList.add('pendiente'); }
+            else estado.classList.remove('pendiente');
+        }
+
+        // ---------- Datos de la empresa ----------
         const empresaForm = $('empresaForm');
-        const camposEmpresa = { nombre: 'empNombre', sector: 'empSector', productos: 'empProductos', otros: 'empOtros' };
+        const camposEmpresa = {
+            nombre: 'empNombre', sector: 'empSector', productos: 'empProductos', horario: 'empHorario',
+            contacto: 'empContacto', web: 'empWeb', ubicacion: 'empUbicacion', otros: 'empOtros'
+        };
 
         function renderEmpresa() {
             Object.entries(camposEmpresa).forEach(([k, id]) => { $(id).value = empresa[k] || ''; });
             $('empresaHeader').textContent = empresa.nombre ? `Asistente de ${empresa.nombre}` : 'Asistente de tu empresa';
-            $('empresaEstado').textContent = empresa.actualizado ? `Guardado ${horaCorta(empresa.actualizado)}` : 'Sin guardar';
+            $('empresaEstado').textContent = empresa.actualizado ? `Guardado ${horaCorta(empresa.actualizado)}` : 'Sin guardar todavía';
+            marcarPendiente('perfil', false);
+            renderResumen();
         }
 
+        empresaForm.addEventListener('input', () => marcarPendiente('perfil', true));
         empresaForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const nuevo = {};
@@ -1227,15 +1638,181 @@
             empresa = nuevo;
             guardar('ana_empresa', empresa);
             renderEmpresa();
-            notificar('ok', empresa.nombre ? `Datos de ${empresa.nombre} guardados. ANA los usará como contexto.` : 'Datos de la empresa guardados.');
+            renderAsistente();
+            notificar('ok', empresa.nombre ? `Datos de ${empresa.nombre} guardados. ${nombreIA()} los usará como contexto.` : 'Datos de la empresa guardados.');
         });
 
-        // ==========================================
-        // DOCUMENTOS
-        // ==========================================
+        // ---------- Configuración del asistente ----------
+        const ASISTENTE_DEFECTO = { nombre: 'ANA', idioma: 'es', saludo: '', tono: 'profesional', longitud: 'equilibrada', trato: 'tu', emojis: false, instrucciones: '' };
+        const NOMBRE_TONO = { profesional: 'Profesional', cercano: 'Cercano', formal: 'Formal', entusiasta: 'Entusiasta', directo: 'Directo' };
+        const NOMBRE_IDIOMA = { es: 'Español', en: 'Inglés', pt: 'Portugués', auto: 'Idioma del usuario' };
+        let asistente = { ...ASISTENTE_DEFECTO, ...cargar('ana_asistente', {}) };
+
+        function nombreIA() { return String(asistente.nombre || '').trim() || 'ANA'; }
+
+        // Lee el formulario del asistente (sin guardar), para la vista previa
+        function leerAsistenteForm() {
+            const marcado = (n) => (document.querySelector(`input[name="${n}"]:checked`) || {}).value;
+            return {
+                nombre: $('iaNombre').value.trim(),
+                idioma: $('iaIdioma').value,
+                saludo: $('iaSaludo').value.trim(),
+                tono: marcado('iaTono') || ASISTENTE_DEFECTO.tono,
+                longitud: marcado('iaLongitud') || ASISTENTE_DEFECTO.longitud,
+                trato: marcado('iaTrato') || ASISTENTE_DEFECTO.trato,
+                emojis: $('iaEmojis').checked,
+                instrucciones: $('iaInstrucciones').value.trim()
+            };
+        }
+
+        // Saludo de ejemplo según el tono y el trato (solo para la vista previa y el chat vacío)
+        function saludoSegun(cfg) {
+            if (cfg.saludo) return cfg.saludo;
+            const n = String(cfg.nombre || '').trim() || 'ANA';
+            const emp = empresa.nombre ? ` de ${empresa.nombre}` : '';
+            const u = cfg.trato === 'usted';
+            const frases = {
+                profesional: `Hola, soy ${n}, el asistente${emp}. ¿En qué ${u ? 'puedo ayudarle' : 'te puedo ayudar'} hoy?`,
+                cercano: `¡Hola! Soy ${n}${emp}. ${u ? 'Cuénteme, ¿qué necesita?' : 'Cuéntame, ¿qué necesitas?'}`,
+                formal: `Buen día. ${u ? 'Le' : 'Te'} saluda ${n}, asistente virtual${emp}. ¿Cómo ${u ? 'puedo servirle' : 'puedo servirte'}?`,
+                entusiasta: `¡Hola, hola! Soy ${n}${emp} y me encanta ayudar. ¿Qué hacemos hoy?`,
+                directo: `Soy ${n}${emp}. ${u ? 'Dígame qué necesita.' : 'Dime qué necesitas.'}`
+            };
+            const t = frases[cfg.tono] || frases.profesional;
+            return cfg.emojis ? `${t} ${{ profesional: '🙂', cercano: '😊', formal: '🤝', entusiasta: '🎉', directo: '👉' }[cfg.tono] || '🙂'}` : t;
+        }
+        function respuestaEjemplo(cfg) {
+            const horario = (empresa.horario || 'de lunes a viernes, de 8:00 a 18:00').replace(/^./, (c) => c.toLowerCase());
+            const usted = cfg.trato === 'usted';
+            const extra = { breve: '', equilibrada: ` Si ${usted ? 'lo necesita' : 'lo necesitas'}, también ${usted ? 'puedo agendarle' : 'puedo agendarte'} una cita.`, detallada: ` Fuera de ese horario ${usted ? 'puede escribirnos' : 'puedes escribirnos'} y ${usted ? 'le' : 'te'} responderemos al día siguiente. Si ${usted ? 'lo desea' : 'quieres'}, ${usted ? 'le agendo' : 'te agendo'} una cita ahora mismo.` }[cfg.longitud] || '';
+            const inicio = { profesional: 'Atendemos', cercano: '¡Claro! Estamos', formal: 'Nuestro horario de atención es', entusiasta: '¡Con gusto! Estamos', directo: 'Horario:' }[cfg.tono] || 'Atendemos';
+            return `${inicio} ${horario}.${extra}${cfg.emojis ? ' ⏰' : ''}`;
+        }
+
+        function renderVistaPrevia() {
+            const cfg = leerAsistenteForm();
+            $('previaNombre').textContent = cfg.nombre || 'ANA';
+            $('previaSaludo').textContent = saludoSegun(cfg);
+            $('previaRespuesta').textContent = respuestaEjemplo(cfg);
+            const chips = [NOMBRE_TONO[cfg.tono], `Respuestas ${cfg.longitud === 'equilibrada' ? 'equilibradas' : cfg.longitud + 's'}`, cfg.trato === 'usted' ? 'Trata de usted' : 'Trata de tú', NOMBRE_IDIOMA[cfg.idioma]];
+            if (cfg.emojis) chips.push('Con emojis');
+            if (cfg.instrucciones) chips.push('Con instrucciones');
+            $('previaChips').innerHTML = chips.map((c) => `<span class="etiqueta-chip">${escaparHtml(c)}</span>`).join('');
+        }
+
+        function renderAsistente() {
+            $('iaNombre').value = asistente.nombre === ASISTENTE_DEFECTO.nombre ? '' : asistente.nombre;
+            $('iaIdioma').value = asistente.idioma;
+            $('iaSaludo').value = asistente.saludo;
+            $('iaEmojis').checked = !!asistente.emojis;
+            $('iaInstrucciones').value = asistente.instrucciones;
+            ['Tono', 'Longitud', 'Trato'].forEach((k) => {
+                const el = document.querySelector(`input[name="ia${k}"][value="${asistente[k.toLowerCase()]}"]`);
+                if (el) el.checked = true;
+            });
+            $('asistenteEstado').textContent = asistente.actualizado ? `Guardado ${horaCorta(asistente.actualizado)}` : 'Usando la configuración de fábrica';
+            marcarPendiente('asistente', false);
+            renderVistaPrevia();
+            renderNombreIA();
+            renderResumen();
+        }
+
+        // Aplica el nombre del asistente en toda la interfaz
+        function renderNombreIA() {
+            const n = nombreIA();
+            document.querySelectorAll('[data-nombre-ia]').forEach((el) => { el.textContent = n; });
+            document.title = `${n} - Panel de la empresa`;
+            if (!isRecording) userInput.placeholder = `Escribe un mensaje para ${n}...`;
+            voiceBtn.title = `Hablar con ${n}`;
+            renderVozToggle();
+            if (!chat.length) renderChat();
+            renderDocumentos();
+        }
+
+        const asistenteForm = $('asistenteForm');
+        asistenteForm.addEventListener('input', () => { marcarPendiente('asistente', true); renderVistaPrevia(); });
+        asistenteForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            asistente = { ...ASISTENTE_DEFECTO, ...leerAsistenteForm(), actualizado: new Date().toISOString() };
+            if (!asistente.nombre) asistente.nombre = ASISTENTE_DEFECTO.nombre;
+            guardar('ana_asistente', asistente);
+            renderAsistente();
+            notificar('ok', `Configuración guardada: ${nombreIA()} hablará con tono ${NOMBRE_TONO[asistente.tono].toLowerCase()}.`);
+        });
+        $('asistenteRestablecer').addEventListener('click', () => {
+            const actualizado = asistente.actualizado;
+            asistente = { ...ASISTENTE_DEFECTO, actualizado };
+            renderAsistente();
+            marcarPendiente('asistente', true); // queda pendiente hasta que se guarde
+        });
+
+        // ---------- Carpetas ----------
+        const CARPETAS_DEFECTO = [
+            { id: 'general', nombre: 'General' },
+            { id: 'contratos', nombre: 'Contratos' },
+            { id: 'facturas', nombre: 'Facturas' },
+            { id: 'nominas', nombre: 'Nóminas' },
+            { id: 'productos', nombre: 'Productos' }
+        ];
+        let carpetas = cargar('ana_carpetas', CARPETAS_DEFECTO);
+        if (!carpetas.some((c) => c.id === 'general')) carpetas.unshift({ id: 'general', nombre: 'General' });
+        // Documentos guardados antes de existir las carpetas van a "General"
+        documentos.forEach((d) => { if (!carpetas.some((c) => c.id === d.carpeta)) d.carpeta = 'general'; });
+        let carpetaActiva = cargar('ana_carpeta_activa', '*'); // '*' = todos los archivos
+        let carpetaSubida = cargar('ana_carpeta_subida', 'general');
+        if (carpetaActiva !== '*' && !carpetas.some((c) => c.id === carpetaActiva)) carpetaActiva = '*';
+        if (!carpetas.some((c) => c.id === carpetaSubida)) carpetaSubida = 'general';
+
+        const nombreCarpeta = (id) => (carpetas.find((c) => c.id === id) || { nombre: 'General' }).nombre;
+
+        function crearCarpeta(nombre) {
+            nombre = String(nombre || '').trim().slice(0, 40);
+            if (!nombre) return null;
+            const existente = carpetas.find((c) => c.nombre.toLowerCase() === nombre.toLowerCase());
+            if (existente) return existente;
+            const carpeta = { id: uid(), nombre };
+            carpetas.push(carpeta);
+            guardar('ana_carpetas', carpetas);
+            notificar('info', `Carpeta "${nombre}" creada.`);
+            return carpeta;
+        }
+        function renombrarCarpeta(id) {
+            const c = carpetas.find((x) => x.id === id);
+            if (!c) return;
+            const nuevo = prompt('Nuevo nombre de la carpeta:', c.nombre);
+            if (nuevo === null || !nuevo.trim()) return;
+            c.nombre = nuevo.trim().slice(0, 40);
+            guardar('ana_carpetas', carpetas);
+            renderDocumentos();
+        }
+        function borrarCarpeta(id) {
+            const c = carpetas.find((x) => x.id === id);
+            if (!c || id === 'general') return;
+            const n = documentos.filter((d) => d.carpeta === id).length;
+            if (!confirm(n ? `¿Eliminar la carpeta "${c.nombre}"? Sus ${n} archivo${n === 1 ? '' : 's'} pasarán a "General".` : `¿Eliminar la carpeta "${c.nombre}"?`)) return;
+            documentos.forEach((d) => { if (d.carpeta === id) d.carpeta = 'general'; });
+            carpetas = carpetas.filter((x) => x.id !== id);
+            if (carpetaActiva === id) carpetaActiva = '*';
+            if (carpetaSubida === id) carpetaSubida = 'general';
+            guardar('ana_carpetas', carpetas);
+            guardarDocumentos();
+            renderDocumentos();
+            notificar('info', `Carpeta "${c.nombre}" eliminada.`);
+        }
+        function moverDocumento(docId, carpetaId) {
+            const d = documentos.find((x) => x.id === docId);
+            if (!d || d.carpeta === carpetaId || !carpetas.some((c) => c.id === carpetaId)) return;
+            d.carpeta = carpetaId;
+            guardarDocumentos();
+            renderDocumentos();
+            notificar('info', `"${d.nombre}" se movió a ${nombreCarpeta(carpetaId)}.`);
+        }
+
+        // ---------- Documentos e imágenes ----------
         const dropZone = $('dropZone');
         const fileInput = $('fileInput');
         const docsLista = $('docsLista');
+        let bibFiltro = 'todo', bibBusqueda = '';
 
         function tamanoLegible(bytes) {
             if (bytes < 1024) return `${bytes} B`;
@@ -1244,27 +1821,158 @@
         }
         function extensionDe(nombre) {
             const p = nombre.lastIndexOf('.');
-            return p > -1 ? nombre.slice(p + 1).slice(0, 4) : 'doc';
+            return p > -1 ? nombre.slice(p + 1).slice(0, 4).toLowerCase() : 'doc';
+        }
+        function esImagen(d) {
+            return /^image\//.test(d.tipo || '') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(d.nombre);
+        }
+        function claseIcono(d) {
+            const ext = extensionDe(d.nombre);
+            if (ext === 'pdf') return 'pdf';
+            if (['xls', 'xlsx', 'csv'].includes(ext)) return 'xls';
+            if (['doc', 'docx'].includes(ext)) return 'doc-w';
+            return '';
         }
 
-        function renderDocumentos() {
-            $('docsContador').textContent = documentos.length ? `${documentos.length} archivo${documentos.length === 1 ? '' : 's'}` : '';
-            if (!documentos.length) {
-                docsLista.innerHTML = '<div class="vacio">Aún no has subido documentos.</div>';
-                return;
+        // Las miniaturas se guardan junto a la lista; si el navegador se queda sin espacio, se descartan las más antiguas
+        function guardarDocumentos() {
+            if (guardar('ana_documentos', documentos)) return;
+            const conMiniatura = documentos.filter((d) => d.miniatura);
+            conMiniatura.slice(Math.floor(conMiniatura.length / 2)).forEach((d) => { delete d.miniatura; });
+            if (!guardar('ana_documentos', documentos)) {
+                documentos.forEach((d) => { delete d.miniatura; });
+                guardar('ana_documentos', documentos);
             }
-            const etiquetas = { subido: 'Estudiado por ANA', pendiente: 'Pendiente de envío', subiendo: 'Subiendo...' };
-            docsLista.innerHTML = documentos.map((d) => `
-                <div class="doc">
-                    <div class="doc-icono">${escaparHtml(extensionDe(d.nombre))}</div>
+        }
+
+        function crearMiniatura(file) {
+            return new Promise((resolve) => {
+                if (!/^image\/(png|jpe?g|gif|webp|bmp)$/.test(file.type)) { resolve(null); return; }
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => {
+                    const max = 320, escala = Math.min(1, max / Math.max(img.width, img.height));
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.round(img.width * escala);
+                    canvas.height = Math.round(img.height * escala);
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    URL.revokeObjectURL(url);
+                    try { resolve(canvas.toDataURL('image/jpeg', 0.75)); } catch (_) { resolve(null); }
+                };
+                img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+                img.src = url;
+            });
+        }
+
+        const ICONO_CARPETA = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>';
+        const ICONO_REINTENTAR = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M5.6 9A7 7 0 0118.4 9M18.4 15A7 7 0 015.6 15"/></svg>';
+        const ICONO_QUITAR = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>';
+
+        function etiquetaEstado(estado) {
+            return { subido: `Estudiado por ${nombreIA()}`, pendiente: 'Pendiente de envío', subiendo: 'Subiendo...' }[estado] || estado;
+        }
+        function selectMover(d) {
+            return `<select class="input mover" data-mover="${d.id}" title="Mover a otra carpeta" aria-label="Carpeta de ${escaparHtml(d.nombre)}">${carpetas.map((c) => `<option value="${c.id}"${c.id === d.carpeta ? ' selected' : ''}>${escaparHtml(c.nombre)}</option>`).join('')}</select>`;
+        }
+        function botonesDoc(d) {
+            return `${d.estado === 'pendiente' && archivosEnMemoria.has(d.id) ? `<button class="btn-icon" data-reintentar="${d.id}" title="Reintentar envío">${ICONO_REINTENTAR}</button>` : ''}
+                    <button class="btn-icon" data-quitar="${d.id}" title="Quitar">${ICONO_QUITAR}</button>`;
+        }
+        function filaDoc(d, { conCarpeta = false, conMover = false } = {}) {
+            const icono = d.miniatura ? `<img src="${d.miniatura}" alt="">` : escaparHtml(extensionDe(d.nombre));
+            return `<div class="doc" draggable="true" data-doc="${d.id}">
+                    <div class="doc-icono ${claseIcono(d)}">${icono}</div>
                     <div class="flex-1 min-w-0">
                         <div class="truncate" title="${escaparHtml(d.nombre)}">${escaparHtml(d.nombre)}</div>
-                        <div class="doc-meta">${tamanoLegible(d.tamano)} · ${horaCorta(d.fecha)}</div>
+                        <div class="doc-meta">${tamanoLegible(d.tamano)} · ${horaCorta(d.fecha)}${conCarpeta ? ` · <span class="chip-carpeta">${ICONO_CARPETA}${escaparHtml(nombreCarpeta(d.carpeta))}</span>` : ''}</div>
                     </div>
-                    <span class="estado ${d.estado}">${etiquetas[d.estado] || d.estado}</span>
-                    ${d.estado === 'pendiente' && archivosEnMemoria.has(d.id) ? `<button class="btn-icon" data-reintentar="${d.id}" title="Reintentar envío"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M5.6 9A7 7 0 0118.4 9M18.4 15A7 7 0 015.6 15"/></svg></button>` : ''}
-                    <button class="btn-icon" data-quitar="${d.id}" title="Quitar de la lista"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
-                </div>`).join('');
+                    <span class="estado ${d.estado}">${etiquetaEstado(d.estado)}</span>
+                    ${conMover ? selectMover(d) : ''}
+                    ${botonesDoc(d)}
+                </div>`;
+        }
+
+        // Punto único de refresco: subidas recientes, biblioteca, contadores y resumen
+        function renderDocumentos() {
+            const nImgs = documentos.filter(esImagen).length;
+            $('docsContador').textContent = documentos.length ? `${documentos.length - nImgs} documento${documentos.length - nImgs === 1 ? '' : 's'} · ${nImgs} imagen${nImgs === 1 ? '' : 'es'}` : '';
+            $('bibliotecaNum').textContent = documentos.length;
+            $('bibliotecaNum').classList.toggle('hidden', !documentos.length);
+
+            // Selector de carpeta de destino
+            $('subirCarpeta').innerHTML = carpetas.map((c) => `<option value="${c.id}"${c.id === carpetaSubida ? ' selected' : ''}>${escaparHtml(c.nombre)}</option>`).join('');
+            $('subirDestinoNombre').textContent = nombreCarpeta(carpetaSubida);
+
+            // Subidas recientes
+            docsLista.innerHTML = documentos.length
+                ? documentos.slice(0, 8).map((d) => filaDoc(d, { conCarpeta: true })).join('')
+                : '<div class="vacio">Aún no has subido archivos.</div>';
+
+            renderBiblioteca();
+            renderResumen();
+        }
+
+        function renderBiblioteca() {
+            // Carpetas
+            const cuenta = (id) => documentos.filter((d) => id === '*' || d.carpeta === id).length;
+            const itemCarpeta = (id, nombre, editable) => `
+                <button type="button" class="carpeta${carpetaActiva === id ? ' activa' : ''}" data-carpeta="${id}">
+                    ${id === '*' ? '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"/></svg>' : ICONO_CARPETA}
+                    <span class="truncate">${escaparHtml(nombre)}</span>
+                    <span class="carpeta-num">${cuenta(id)}</span>
+                    ${editable ? `<span class="carpeta-acciones">
+                        <span role="button" tabindex="0" data-renombrar-carpeta="${id}" title="Renombrar"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 20h4L19 9l-4-4L4 16v4z"/></svg></span>
+                        <span role="button" tabindex="0" data-borrar-carpeta="${id}" title="Eliminar">${ICONO_QUITAR}</span>
+                    </span>` : ''}
+                </button>`;
+            $('carpetasLista').innerHTML = itemCarpeta('*', 'Todos los archivos', false)
+                + '<div class="carpetas-sep"></div>'
+                + carpetas.map((c) => itemCarpeta(c.id, c.nombre, c.id !== 'general')).join('')
+                + `<form id="carpetaForm"><input class="input" id="carpetaNueva" placeholder="Nueva carpeta..." maxlength="40"><button class="btn-icon" type="submit" title="Crear carpeta"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14m-7-7h14"/></svg></button></form>`;
+
+            // Contenido de la carpeta activa
+            $('bibTitulo').innerHTML = `${carpetaActiva === '*' ? 'Todos los archivos' : escaparHtml(nombreCarpeta(carpetaActiva))} <span class="card-sub">${cuenta(carpetaActiva)}</span>`;
+            $('bibSubir').textContent = carpetaActiva === '*' ? 'Subir archivos' : 'Subir aquí';
+            const q = bibBusqueda.toLowerCase();
+            const visibles = documentos.filter((d) => (carpetaActiva === '*' || d.carpeta === carpetaActiva) && (!q || d.nombre.toLowerCase().includes(q)));
+            const imgs = bibFiltro === 'documentos' ? [] : visibles.filter(esImagen);
+            const docs = bibFiltro === 'imagenes' ? [] : visibles.filter((d) => !esImagen(d));
+            const enTodos = carpetaActiva === '*';
+
+            let html = '';
+            if (imgs.length) {
+                html += `<div><h3 class="bib-sub">Imágenes <span>${imgs.length}</span></h3><div class="bib-imagenes">${imgs.map((d) => `
+                    <div class="bib-img" draggable="true" data-doc="${d.id}">
+                        <button type="button" class="bib-img-ver" data-ver="${d.id}" title="Ver ${escaparHtml(d.nombre)}">${d.miniatura ? `<img src="${d.miniatura}" alt="${escaparHtml(d.nombre)}" loading="lazy">` : escaparHtml(extensionDe(d.nombre))}<span class="estado ${d.estado}">${etiquetaEstado(d.estado)}</span></button>
+                        <div class="bib-img-pie">
+                            <div class="bib-img-nombre truncate" title="${escaparHtml(d.nombre)}">${escaparHtml(d.nombre)}</div>
+                            <div class="doc-meta">${tamanoLegible(d.tamano)} · ${horaCorta(d.fecha)}${enTodos ? ` · ${escaparHtml(nombreCarpeta(d.carpeta))}` : ''}</div>
+                            <div class="bib-img-acciones">${selectMover(d)}${botonesDoc(d)}</div>
+                        </div>
+                    </div>`).join('')}</div></div>`;
+            }
+            if (docs.length) {
+                html += `<div><h3 class="bib-sub">Documentos <span>${docs.length}</span></h3><div class="bib-docs">${docs.map((d) => filaDoc(d, { conCarpeta: enTodos, conMover: true })).join('')}</div></div>`;
+            }
+            if (!html) {
+                const motivo = q ? `No hay archivos que coincidan con "${escaparHtml(bibBusqueda)}".`
+                    : bibFiltro !== 'todo' ? `No hay ${bibFiltro === 'imagenes' ? 'imágenes' : 'documentos'} aquí.`
+                    : 'Esta carpeta está vacía. Arrastra archivos aquí o usa el botón para subirlos.';
+                html = `<div class="bib-vacio">${ICONO_CARPETA}<div>${motivo}</div></div>`;
+            }
+            $('bibContenido').innerHTML = html;
+        }
+
+        function renderResumen() {
+            const campos = Object.keys(camposEmpresa);
+            const llenos = campos.filter((k) => empresa[k]).length;
+            const pct = Math.round((llenos / campos.length) * 100);
+            $('resumenBarra').style.width = `${pct}%`;
+            $('resumenPerfil').textContent = `${pct}%`;
+            const nImgs = documentos.filter(esImagen).length;
+            $('resumenDocs').textContent = documentos.length - nImgs;
+            $('resumenImgs').textContent = nImgs;
+            $('resumenTono').textContent = NOMBRE_TONO[asistente.tono] || 'Profesional';
         }
 
         async function subirDocumento(doc, file) {
@@ -1274,34 +1982,48 @@
                 const formData = new FormData();
                 // NOTA: ajusta el nombre del campo ('archivo') según lo que espere el backend
                 formData.append('archivo', file, file.name);
+                formData.append('carpeta', nombreCarpeta(doc.carpeta));
+                formData.append('tipo', esImagen(doc) ? 'imagen' : 'documento');
                 if (empresa.nombre) formData.append('empresa', empresa.nombre);
                 const res = await fetch(UPLOAD_ENDPOINT, { method: 'POST', headers: { ...NGROK_HEADERS }, body: formData });
                 marcarServidor(res.status < 500);
                 if (!res.ok) throw new Error(`Error en /upload: ${res.status}`);
                 doc.estado = 'subido';
                 archivosEnMemoria.delete(doc.id);
-                notificar('ok', `ANA recibió "${doc.nombre}" y ya lo está estudiando.`);
+                notificar('ok', `${nombreIA()} recibió "${doc.nombre}" (${nombreCarpeta(doc.carpeta)}) y ya lo está estudiando.`);
             } catch (err) {
                 console.error('No se pudo subir el documento:', err);
                 if (err instanceof TypeError) marcarServidor(false);
                 doc.estado = 'pendiente';
                 notificar('alerta', `"${doc.nombre}" quedó pendiente: no se pudo enviar al servidor. Puedes reintentar.`);
             }
-            guardar('ana_documentos', documentos);
+            guardarDocumentos();
             renderDocumentos();
         }
 
-        function agregarArchivos(files) {
-            [...files].forEach((file) => {
-                const doc = { id: uid(), nombre: file.name, tamano: file.size, tipo: file.type, fecha: new Date().toISOString(), estado: 'subiendo' };
+        async function agregarArchivos(files, carpetaId = carpetaSubida) {
+            if (!carpetas.some((c) => c.id === carpetaId)) carpetaId = 'general';
+            for (const file of [...files]) {
+                const doc = { id: uid(), nombre: file.name, tamano: file.size, tipo: file.type, fecha: new Date().toISOString(), estado: 'subiendo', carpeta: carpetaId };
+                doc.miniatura = await crearMiniatura(file) || undefined;
                 documentos.unshift(doc);
                 archivosEnMemoria.set(doc.id, file);
                 subirDocumento(doc, file);
-            });
-            guardar('ana_documentos', documentos);
+            }
+            guardarDocumentos();
             renderDocumentos();
         }
 
+        function quitarDocumento(id) {
+            const doc = documentos.find((d) => d.id === id);
+            documentos = documentos.filter((d) => d.id !== id);
+            archivosEnMemoria.delete(id);
+            guardarDocumentos();
+            renderDocumentos();
+            if (doc) notificar('info', `Se quitó "${doc.nombre}" de la biblioteca.`);
+        }
+
+        // Zona de subida
         dropZone.addEventListener('click', () => fileInput.click());
         dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
         fileInput.addEventListener('change', () => { if (fileInput.files.length) agregarArchivos(fileInput.files); fileInput.value = ''; });
@@ -1309,22 +2031,137 @@
         ['dragleave', 'drop'].forEach((ev) => dropZone.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove('sobre'); }));
         dropZone.addEventListener('drop', (e) => { if (e.dataTransfer.files.length) agregarArchivos(e.dataTransfer.files); });
 
-        docsLista.addEventListener('click', (e) => {
+        $('subirCarpeta').addEventListener('change', (e) => {
+            carpetaSubida = e.target.value;
+            guardar('ana_carpeta_subida', carpetaSubida);
+            $('subirDestinoNombre').textContent = nombreCarpeta(carpetaSubida);
+        });
+        $('subirNuevaCarpeta').addEventListener('click', () => {
+            const c = crearCarpeta(prompt('Nombre de la nueva carpeta:'));
+            if (!c) return;
+            carpetaSubida = c.id;
+            guardar('ana_carpetas', carpetas);
+            guardar('ana_carpeta_subida', carpetaSubida);
+            renderDocumentos();
+        });
+
+        // Acciones sobre archivos (en subidas recientes y en la biblioteca)
+        function accionesArchivo(e) {
             const quitar = e.target.closest('[data-quitar]');
             const reintentar = e.target.closest('[data-reintentar]');
-            if (quitar) {
-                const doc = documentos.find((d) => d.id === quitar.dataset.quitar);
-                documentos = documentos.filter((d) => d.id !== quitar.dataset.quitar);
-                archivosEnMemoria.delete(quitar.dataset.quitar);
-                guardar('ana_documentos', documentos);
-                renderDocumentos();
-                if (doc) notificar('info', `Se quitó "${doc.nombre}" de la lista de documentos.`);
-            } else if (reintentar) {
+            const ver = e.target.closest('[data-ver]');
+            if (quitar) quitarDocumento(quitar.dataset.quitar);
+            else if (reintentar) {
                 const doc = documentos.find((d) => d.id === reintentar.dataset.reintentar);
                 const file = archivosEnMemoria.get(reintentar.dataset.reintentar);
                 if (doc && file) subirDocumento(doc, file);
+            } else if (ver) abrirVisor(ver.dataset.ver);
+        }
+        docsLista.addEventListener('click', accionesArchivo);
+        $('bibContenido').addEventListener('click', accionesArchivo);
+        $('bibContenido').addEventListener('change', (e) => {
+            const sel = e.target.closest('[data-mover]');
+            if (sel) moverDocumento(sel.dataset.mover, sel.value);
+        });
+
+        // Carpetas de la biblioteca
+        $('carpetasLista').addEventListener('click', (e) => {
+            const ren = e.target.closest('[data-renombrar-carpeta]');
+            const bor = e.target.closest('[data-borrar-carpeta]');
+            const car = e.target.closest('[data-carpeta]');
+            if (ren) { e.stopPropagation(); renombrarCarpeta(ren.dataset.renombrarCarpeta); return; }
+            if (bor) { e.stopPropagation(); borrarCarpeta(bor.dataset.borrarCarpeta); return; }
+            if (car) {
+                carpetaActiva = car.dataset.carpeta;
+                guardar('ana_carpeta_activa', carpetaActiva);
+                renderBiblioteca();
             }
         });
+        $('carpetasLista').addEventListener('keydown', (e) => {
+            if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-renombrar-carpeta], [data-borrar-carpeta]')) { e.preventDefault(); e.target.click(); }
+        });
+        $('carpetasLista').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const c = crearCarpeta($('carpetaNueva').value);
+            if (!c) return;
+            carpetaActiva = c.id;
+            guardar('ana_carpeta_activa', carpetaActiva);
+            renderDocumentos();
+        });
+
+        // Arrastrar un archivo a una carpeta para moverlo; soltar archivos del equipo para subirlos
+        let arrastrando = null;
+        $('apartado-biblioteca').addEventListener('dragstart', (e) => {
+            const item = e.target.closest('[data-doc]');
+            if (!item) return;
+            arrastrando = item.dataset.doc;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', arrastrando);
+        });
+        $('apartado-biblioteca').addEventListener('dragend', () => {
+            arrastrando = null;
+            document.querySelectorAll('.destino-drop').forEach((el) => el.classList.remove('destino-drop'));
+            $('bibContenido').classList.remove('sobre');
+        });
+        $('carpetasLista').addEventListener('dragover', (e) => {
+            const car = e.target.closest('[data-carpeta]');
+            if (!car || car.dataset.carpeta === '*') return;
+            e.preventDefault();
+            document.querySelectorAll('.destino-drop').forEach((el) => el !== car && el.classList.remove('destino-drop'));
+            car.classList.add('destino-drop');
+        });
+        $('carpetasLista').addEventListener('dragleave', (e) => {
+            const car = e.target.closest('[data-carpeta]');
+            if (car && !car.contains(e.relatedTarget)) car.classList.remove('destino-drop');
+        });
+        $('carpetasLista').addEventListener('drop', (e) => {
+            const car = e.target.closest('[data-carpeta]');
+            if (!car || car.dataset.carpeta === '*') return;
+            e.preventDefault();
+            car.classList.remove('destino-drop');
+            if (arrastrando) moverDocumento(arrastrando, car.dataset.carpeta);
+            else if (e.dataTransfer.files.length) agregarArchivos(e.dataTransfer.files, car.dataset.carpeta);
+        });
+        const bibContenido = $('bibContenido');
+        bibContenido.addEventListener('dragover', (e) => {
+            if (arrastrando || !e.dataTransfer.types.includes('Files')) return;
+            e.preventDefault();
+            bibContenido.classList.add('sobre');
+        });
+        bibContenido.addEventListener('dragleave', (e) => { if (!bibContenido.contains(e.relatedTarget)) bibContenido.classList.remove('sobre'); });
+        bibContenido.addEventListener('drop', (e) => {
+            if (arrastrando || !e.dataTransfer.files.length) return;
+            e.preventDefault();
+            bibContenido.classList.remove('sobre');
+            agregarArchivos(e.dataTransfer.files, carpetaActiva === '*' ? carpetaSubida : carpetaActiva);
+        });
+
+        // Barra de la biblioteca
+        $('bibBuscar').addEventListener('input', (e) => { bibBusqueda = e.target.value.trim(); renderBiblioteca(); });
+        $('bibFiltro').addEventListener('change', (e) => { bibFiltro = e.target.value; renderBiblioteca(); });
+        $('bibSubir').addEventListener('click', () => $('bibFileInput').click());
+        $('bibFileInput').addEventListener('change', (e) => {
+            if (e.target.files.length) agregarArchivos(e.target.files, carpetaActiva === '*' ? carpetaSubida : carpetaActiva);
+            e.target.value = '';
+        });
+
+        // Visor de imágenes (usa el archivo original si sigue en memoria; si no, la miniatura)
+        let visorUrl = null;
+        function abrirVisor(id) {
+            const d = documentos.find((x) => x.id === id);
+            if (!d) return;
+            const file = archivosEnMemoria.get(id);
+            if (visorUrl) { URL.revokeObjectURL(visorUrl); visorUrl = null; }
+            if (file) visorUrl = URL.createObjectURL(file);
+            const src = visorUrl || d.miniatura;
+            if (!src) return;
+            $('visorImg').src = src;
+            $('visorImg').alt = d.nombre;
+            $('visorNombre').textContent = `${d.nombre} · ${nombreCarpeta(d.carpeta)}`;
+            $('visor').showModal();
+        }
+        $('visorCerrar').addEventListener('click', () => $('visor').close());
+        $('visor').addEventListener('click', (e) => { if (e.target === $('visor')) $('visor').close(); });
 
         // ==========================================
         // CHAT
@@ -1345,7 +2182,7 @@
         function renderVozToggle() {
             $('vozOnIcon').classList.toggle('hidden', !vozActiva);
             $('vozOffIcon').classList.toggle('hidden', vozActiva);
-            $('vozToggle').title = vozActiva ? 'Silenciar la voz de ANA' : 'Activar la voz de ANA';
+            $('vozToggle').title = vozActiva ? `Silenciar la voz de ${nombreIA()}` : `Activar la voz de ${nombreIA()}`;
         }
         $('vozToggle').addEventListener('click', () => { vozActiva = !vozActiva; guardar('ana_voz', vozActiva); renderVozToggle(); });
 
@@ -1370,8 +2207,8 @@
             if (!chat.length) {
                 chatMensajes.innerHTML = `<div class="chat-bienvenida">
                     <div class="orbe-mini"></div>
-                    <h2>Hola, soy ANA</h2>
-                    <div class="ayuda">Pregúntame lo que necesites, pídeme que agende fechas en el calendario o sube documentos en la pestaña Empresa para que los estudie.</div>
+                    <h2>Hola, soy ${escaparHtml(nombreIA())}</h2>
+                    <div class="ayuda">${escaparHtml(asistente.saludo || 'Pregúntame lo que necesites, pídeme que agende fechas en el calendario o sube documentos en la pestaña Empresa para que los estudie.')}</div>
                     <div class="sugerencias">${SUGERENCIAS.map((s) => `<button type="button" class="sugerencia" data-sugerencia="${escaparHtml(s)}">${escaparHtml(s)}</button>`).join('')}</div>
                 </div>`;
                 return;
@@ -1430,13 +2267,14 @@
         // Contexto que viaja con cada consulta para que ANA conozca la empresa
         function contextoEmpresa() {
             return {
-                empresa: {
-                    nombre: empresa.nombre || '',
-                    sector: empresa.sector || '',
-                    productos: empresa.productos || '',
-                    otros: empresa.otros || ''
+                empresa: Object.fromEntries(Object.keys(camposEmpresa).map((k) => [k, empresa[k] || ''])),
+                // Cómo debe comportarse el modelo (pestaña Empresa → Asistente)
+                asistente: {
+                    nombre: nombreIA(), tono: asistente.tono, longitud: asistente.longitud, trato: asistente.trato,
+                    idioma: asistente.idioma, emojis: !!asistente.emojis, saludo: asistente.saludo, instrucciones: asistente.instrucciones
                 },
                 documentos: documentos.filter((d) => d.estado === 'subido').map((d) => d.nombre),
+                archivos: documentos.filter((d) => d.estado === 'subido').map((d) => ({ nombre: d.nombre, carpeta: nombreCarpeta(d.carpeta), tipo: esImagen(d) ? 'imagen' : 'documento' })),
                 eventos: eventos.map(({ fecha, titulo }) => ({ fecha, titulo }))
             };
         }
@@ -1606,7 +2444,7 @@
                         notificar('error', 'No se pudo enviar el audio al servidor.');
                     } finally {
                         setOrbState('idle');
-                        userInput.placeholder = 'Escribe un mensaje para ANA...';
+                        userInput.placeholder = `Escribe un mensaje para ${nombreIA()}...`;
                     }
                 };
                 mediaRecorder.start();
@@ -1753,7 +2591,7 @@
             cam.registrada = ok;
             guardar('ana_camaras', camaras);
             notificar(ok ? 'ok' : 'alerta', ok
-                ? `Cámara "${cam.nombre}" conectada. ANA ya puede observarla.`
+                ? `Cámara "${cam.nombre}" conectada. ${nombreIA()} ya puede observarla.`
                 : `Cámara "${cam.nombre}" agregada en el panel, pero el servidor no la registró (se reintentará al recargar).`);
         });
 
@@ -1950,7 +2788,9 @@
         renderNotificaciones();
         renderCalendario();
         renderEmpresa();
+        renderAsistente();
         renderDocumentos();
+        mostrarApartado(apartadoActivo);
         renderChat();
         renderVozToggle();
         revisarRecordatorios();
