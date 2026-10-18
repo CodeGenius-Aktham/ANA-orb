@@ -4,99 +4,123 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ANA - Panel de la empresa</title>
+    <!-- Tema guardado (claro/oscuro) antes de pintar, para evitar parpadeos -->
+    <script>
+        (function () {
+            let tema = null;
+            try { tema = JSON.parse(localStorage.getItem('ana_tema')); } catch (_) { /* sin almacenamiento */ }
+            if (tema !== 'claro' && tema !== 'oscuro') tema = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'oscuro' : 'claro';
+            document.documentElement.dataset.tema = tema;
+        })();
+    </script>
     <!-- Google Fonts (si no cargan, se usa la fuente del sistema) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* ---------- Colores (un solo lugar para cambiar el tema) ---------- */
         :root {
             --verde: #10b981;
             --verde-oscuro: #059669;
+            --verde-texto: #047857;
             --verde-suave: #ecfdf5;
-            --borde: rgba(16, 185, 129, 0.18);
+            --verde-medio: #d1fae5;
+            --azul: #0ea5e9;
+            --azul-suave: #e0f2fe;
+            --ambar: #f59e0b;
+            --rojo: #ef4444;
+            --fondo: #f3f6f5;
+            --superficie: #ffffff;
+            --superficie-2: #f7f9f8;
+            --borde: #e2e9e6;
+            --borde-fuerte: rgba(16, 185, 129, 0.35);
             --texto: #1e293b;
             --texto-suave: #64748b;
+            --texto-tenue: #94a3b8;
+            --sombra: 0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 20px rgba(15, 23, 42, 0.05);
+            --radio: 1rem;
+            color-scheme: light;
         }
+        :root[data-tema="oscuro"] {
+            --verde-texto: #34d399;
+            --verde-suave: rgba(16, 185, 129, 0.12);
+            --verde-medio: rgba(16, 185, 129, 0.22);
+            --azul-suave: rgba(14, 165, 233, 0.16);
+            --fondo: #0c1311;
+            --superficie: #131c19;
+            --superficie-2: #19241f;
+            --borde: #24322d;
+            --borde-fuerte: rgba(52, 211, 153, 0.4);
+            --texto: #e2e8f0;
+            --texto-suave: #94a3b8;
+            --texto-tenue: #64748b;
+            --sombra: 0 1px 2px rgba(0, 0, 0, 0.3);
+            color-scheme: dark;
+        }
+
         * { box-sizing: border-box; }
         html, body { height: 100%; margin: 0; }
         body {
-            font-family: 'Outfit', sans-serif;
-            background: linear-gradient(180deg, #f8fffb 0%, #ffffff 60%);
+            font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
+            background: var(--fondo);
             color: var(--texto);
             height: 100svh;
             height: 100dvh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            -webkit-font-smoothing: antialiased;
         }
+        button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; padding: 0; }
+        :focus-visible { outline: 2px solid var(--verde); outline-offset: 2px; }
 
-
-        /* ---------- Utilidades (sin frameworks externos) ---------- */
-        .flex { display: flex; } .inline-flex { display: inline-flex; }
-        .flex-col { flex-direction: column; } .flex-wrap { flex-wrap: wrap; }
+        /* ---------- Utilidades mínimas (usadas también desde el JS) ---------- */
+        .flex { display: flex; } .flex-col { flex-direction: column; } .flex-wrap { flex-wrap: wrap; }
         .flex-1 { flex: 1 1 0%; } .flex-shrink-0 { flex-shrink: 0; }
-        .items-center { align-items: center; }
-        .justify-center { justify-content: center; } .justify-between { justify-content: space-between; } .justify-end { justify-content: flex-end; }
-        .gap-1\.5 { gap: 0.375rem; } .gap-2 { gap: 0.5rem; } .gap-2\.5 { gap: 0.625rem; } .gap-3 { gap: 0.75rem; }
-        .min-h-0 { min-height: 0; } .min-w-0 { min-width: 0; }
-        .w-1\.5 { width: 0.375rem; } .h-1\.5 { height: 0.375rem; }
-        .w-4 { width: 1rem; } .h-4 { height: 1rem; } .w-6 { width: 1.5rem; } .h-6 { height: 1.5rem; }
-        .p-1\.5 { padding: 0.375rem; } .p-2 { padding: 0.5rem; }
-        .px-1\.5 { padding-left: 0.375rem; padding-right: 0.375rem; } .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
-        .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; } .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; } .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
-        .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; } .py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
-        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; } .pb-3 { padding-bottom: 0.75rem; } .pt-1 { padding-top: 0.25rem; }
+        .items-center { align-items: center; } .justify-between { justify-content: space-between; } .justify-end { justify-content: flex-end; }
+        .gap-1 { gap: 0.25rem; } .gap-2 { gap: 0.5rem; } .gap-3 { gap: 0.75rem; }
+        .min-w-0 { min-width: 0; } .min-h-0 { min-height: 0; }
         .mt-1 { margin-top: 0.25rem; }
-        .rounded-full { border-radius: 9999px; } .rounded-lg { border-radius: 0.5rem; } .rounded-xl { border-radius: 0.75rem; }
-        .border { border: 1px solid var(--borde); } .border-none { border: 0; }
-        .bg-white { background: #fff; } .bg-transparent { background: transparent; }
-        .bg-emerald-50 { background: #ecfdf5; } .bg-emerald-100 { background: #d1fae5; } .bg-emerald-500 { background: #10b981; }
-        .hover\:bg-emerald-50:hover { background: #ecfdf5; } .hover\:bg-emerald-200:hover { background: #a7f3d0; } .hover\:bg-emerald-600:hover { background: #059669; }
-        .hover\:text-emerald-700:hover { color: #047857; }
-        .text-white { color: #fff; } .text-emerald-600 { color: #059669; } .text-emerald-700 { color: #047857; } .text-emerald-800 { color: #065f46; }
-        .text-slate-400 { color: #94a3b8; } .text-slate-500 { color: #64748b; } .text-slate-700 { color: #334155; } .text-slate-800 { color: #1e293b; }
-        .text-xs { font-size: 0.75rem; line-height: 1rem; } .text-sm { font-size: 0.875rem; line-height: 1.25rem; } .text-base { font-size: 1rem; line-height: 1.5rem; }
-        .text-center { text-align: center; } .capitalize { text-transform: capitalize; }
-        .font-normal { font-weight: 400; } .font-medium { font-weight: 500; } .font-semibold { font-weight: 600; }
-        .leading-tight { line-height: 1.25; } .whitespace-nowrap { white-space: nowrap; }
         .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .overflow-x-auto { overflow-x: auto; } .overflow-y-auto { overflow-y: auto; }
-        .resize-none { resize: none; } .hidden { display: none !important; }
-        .shadow-md { box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
-        .transition-all { transition: all 0.15s ease; }
-        .active\:scale-95:active { transform: scale(0.95); }
-        .focus\:outline-none:focus { outline: none; }
-        .focus-within\:ring:focus-within { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
-        .placeholder-slate-400::placeholder { color: #94a3b8; }
-        button { font: inherit; cursor: pointer; border: 0; }
-        .md\:inline { display: none; } .sm\:inline-flex { display: none; }
-        @media (min-width: 640px) { .sm\:inline-flex { display: inline-flex; } }
-        @media (min-width: 1200px) { .md\:inline { display: inline; } }
+        .hidden { display: none !important; }
+        .texto-suave { color: var(--texto-suave); } .texto-tenue { color: var(--texto-tenue); }
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .scroll-fino::-webkit-scrollbar, .card-body::-webkit-scrollbar, main::-webkit-scrollbar { width: 6px; height: 6px; }
+        .scroll-fino::-webkit-scrollbar-thumb, .card-body::-webkit-scrollbar-thumb, main::-webkit-scrollbar-thumb { background: var(--borde-fuerte); border-radius: 999px; }
 
-        /* ---------- Rejilla principal: todo visible sin scroll de página ---------- */
-        #panel {
-            flex: 1;
-            min-height: 0;
+        /* ---------- Barra superior ---------- */
+        .barra {
             display: grid;
-            grid-template-columns: minmax(320px, 38fr) minmax(0, 62fr);
-            grid-template-rows: minmax(0, 1.35fr) minmax(0, 1fr);
-            gap: 0.9rem;
-            padding: 0 0.9rem 0.9rem;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 1rem;
+            flex-shrink: 0;
         }
-        #chatPanel      { grid-column: 1; grid-row: 1; }
-        #notifPanel     { grid-column: 1; grid-row: 2; }
-        #calendarPanel  { grid-column: 2; grid-row: 1; }
-        #rightBottom    { grid-column: 2; grid-row: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; min-height: 0; }
+        .marca { display: flex; align-items: center; gap: 0.7rem; min-width: 0; }
+        .marca-nombre { font-weight: 600; font-size: 1rem; line-height: 1.1; letter-spacing: 0.02em; }
+        .marca-sub { font-size: 0.75rem; color: var(--texto-suave); line-height: 1.2; }
+        .barra-derecha { display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; min-width: 0; }
+        #fechaHoy { font-size: 0.78rem; color: var(--texto-suave); white-space: nowrap; display: inline-block; }
+        #fechaHoy::first-letter, #calDetalleFecha::first-letter { text-transform: uppercase; }
 
+        #tabs { display: flex; gap: 0.2rem; background: var(--superficie); border: 1px solid var(--borde); border-radius: 0.85rem; padding: 0.25rem; box-shadow: var(--sombra); }
+        .tab {
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            padding: 0.45rem 1rem; border-radius: 0.6rem; font-size: 0.85rem; font-weight: 500;
+            color: var(--texto-suave); transition: background 0.15s, color 0.15s; white-space: nowrap;
+        }
+        .tab svg { width: 1rem; height: 1rem; }
+        .tab:hover { color: var(--texto); background: var(--superficie-2); }
+        .tab.activa { background: var(--verde); color: #fff; }
+        .tab-badge { font-size: 0.65rem; font-weight: 600; background: var(--rojo); color: #fff; border-radius: 999px; padding: 0 0.4rem; line-height: 1.15rem; }
+
+        /* ---------- Componentes base ---------- */
         .card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: var(--superficie);
             border: 1px solid var(--borde);
-            border-radius: 1.1rem;
-            box-shadow: 0 8px 28px rgba(16, 185, 129, 0.07);
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
             display: flex;
             flex-direction: column;
             min-height: 0;
@@ -104,63 +128,113 @@
             overflow: hidden;
         }
         .card-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.5rem;
-            padding: 0.7rem 0.95rem;
-            border-bottom: 1px solid var(--borde);
-            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+            padding: 0.75rem 1rem; border-bottom: 1px solid var(--borde); flex-shrink: 0; min-height: 3.25rem;
         }
-        .card-title {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            letter-spacing: 0.01em;
+        .card-title { display: flex; align-items: center; gap: 0.6rem; font-weight: 600; font-size: 0.95rem; min-width: 0; }
+        .card-icono {
+            width: 1.85rem; height: 1.85rem; border-radius: 0.55rem; flex-shrink: 0;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--verde-suave); color: var(--verde-texto);
         }
-        .card-title svg { width: 1rem; height: 1rem; color: var(--verde-oscuro); }
+        .card-icono svg { width: 1rem; height: 1rem; }
+        .card-sub { font-size: 0.75rem; font-weight: 400; color: var(--texto-suave); }
         .card-body { flex: 1; min-height: 0; overflow-y: auto; }
+        .contador { font-size: 0.68rem; font-weight: 600; background: var(--verde); color: #fff; border-radius: 999px; padding: 0.05rem 0.45rem; }
 
-        /* Scrollbars finos */
-        .card-body::-webkit-scrollbar, .scroll-fino::-webkit-scrollbar { width: 6px; height: 6px; }
-        .card-body::-webkit-scrollbar-thumb, .scroll-fino::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.25); border-radius: 999px; }
+        .btn-icon {
+            display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+            width: 2rem; height: 2rem; border-radius: 0.6rem; border: 1px solid var(--borde);
+            background: var(--superficie); color: var(--texto-suave); transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+        .btn-icon:hover { background: var(--verde-suave); color: var(--verde-texto); border-color: var(--borde-fuerte); }
+        .btn-icon svg { width: 1rem; height: 1rem; }
+        .btn-texto { font-size: 0.78rem; color: var(--texto-suave); padding: 0.3rem 0.55rem; border-radius: 0.5rem; transition: background 0.15s, color 0.15s; }
+        .btn-texto:hover { background: var(--verde-suave); color: var(--verde-texto); }
+        .btn-verde {
+            background: var(--verde); color: #fff; border-radius: 0.65rem;
+            padding: 0.55rem 1rem; font-size: 0.85rem; font-weight: 500; white-space: nowrap;
+            transition: background 0.15s, transform 0.1s;
+        }
+        .btn-verde:hover { background: var(--verde-oscuro); }
+        .btn-verde:active { transform: scale(0.97); }
+        .btn-verde:disabled { opacity: 0.5; cursor: default; }
+        .btn-secundario {
+            border: 1px solid var(--borde); background: var(--superficie); color: var(--texto);
+            border-radius: 0.6rem; padding: 0.35rem 0.75rem; font-size: 0.8rem; transition: background 0.15s;
+        }
+        .btn-secundario:hover { background: var(--verde-suave); }
 
-        /* ---------- Avatar de ANA (orbe pequeño) ---------- */
+        .input {
+            width: 100%; border: 1px solid var(--borde); border-radius: 0.65rem;
+            padding: 0.6rem 0.75rem; font: inherit; font-size: 0.875rem; color: var(--texto); background: var(--superficie-2);
+            outline: none; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+        }
+        .input::placeholder { color: var(--texto-tenue); }
+        .input:focus { border-color: var(--verde); background: var(--superficie); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+        .label { font-size: 0.78rem; font-weight: 500; color: var(--texto-suave); margin-bottom: 0.3rem; display: block; }
+        .ayuda { font-size: 0.75rem; color: var(--texto-suave); line-height: 1.45; margin: 0; }
+        .vacio { color: var(--texto-suave); font-size: 0.82rem; text-align: center; padding: 1.25rem 1rem; line-height: 1.5; }
+
+        .pill { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; font-weight: 500; padding: 0.25rem 0.65rem; border-radius: 999px; white-space: nowrap; }
+        .pill .punto { width: 0.45rem; height: 0.45rem; border-radius: 50%; flex-shrink: 0; }
+        .pill.on  { background: var(--verde-medio); color: var(--verde-texto); } .pill.on .punto { background: var(--verde); box-shadow: 0 0 0 3px rgba(16,185,129,0.2); }
+        .pill.off { background: var(--superficie-2); color: var(--texto-suave); border: 1px solid var(--borde); } .pill.off .punto { background: var(--texto-tenue); }
+        .pill.err { background: rgba(239, 68, 68, 0.12); color: #dc2626; } .pill.err .punto { background: var(--rojo); }
+        :root[data-tema="oscuro"] .pill.err { color: #fca5a5; }
+        button.pill:hover { filter: brightness(0.97); }
+
+        /* Botón de tema: muestra la luna en claro y el sol en oscuro */
+        :root[data-tema="oscuro"] #iconoLuna, :root:not([data-tema="oscuro"]) #iconoSol { display: none; }
+
+        /* ---------- Avatar de ANA (orbe) ---------- */
         .orbe-mini {
-            width: 2rem; height: 2rem; border-radius: 50%; flex-shrink: 0;
+            width: 2.2rem; height: 2.2rem; border-radius: 50%; flex-shrink: 0;
             background: radial-gradient(circle at 32% 30%, #6ee7b7 0%, #34d399 30%, #059669 65%, #064e3b 100%);
             box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35), 0 4px 12px rgba(5, 150, 105, 0.35);
             animation: respirar 3.2s ease-in-out infinite;
         }
         .orbe-mini.thinking { animation: respirar 0.9s ease-in-out infinite; }
         .orbe-mini.speaking { animation: hablar 0.5s ease-in-out infinite; }
+        .orbe-chico { width: 1.6rem; height: 1.6rem; animation: none; margin-top: 0.15rem; box-shadow: none; }
         @keyframes respirar {
             0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35), 0 4px 12px rgba(5, 150, 105, 0.35); }
             50%      { transform: scale(1.06); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0), 0 4px 14px rgba(5, 150, 105, 0.45); }
         }
         @keyframes hablar {
-            0%, 100% { transform: scale(1) ; border-radius: 50%; }
+            0%, 100% { transform: scale(1); border-radius: 50%; }
             50%      { transform: scale(1.12); border-radius: 46% 54% 52% 48%; }
         }
+        @keyframes aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; } }
+
+        /* ---------- Pestaña Principal: Chat | Calendario | Agenda y avisos ---------- */
+        main { flex: 1; min-height: 0; padding: 0 1rem 1rem; }
+        #panel {
+            display: grid;
+            grid-template-columns: minmax(340px, 1fr) minmax(0, 1.7fr) minmax(270px, 0.85fr);
+            grid-template-rows: minmax(0, 1fr);
+            gap: 1rem;
+        }
+        #lateral { display: grid; grid-template-rows: minmax(0, 1fr) minmax(0, 1.2fr); gap: 1rem; min-height: 0; min-width: 0; }
 
         /* ---------- Chat ---------- */
-        .msg { display: flex; gap: 0.5rem; max-width: 100%; animation: aparecer 0.25s ease-out; }
+        #chatMensajes { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+        .msg { display: flex; gap: 0.55rem; max-width: 100%; animation: aparecer 0.25s ease-out; }
         .msg.user { justify-content: flex-end; }
         .burbuja {
             max-width: 85%;
-            padding: 0.55rem 0.8rem;
-            border-radius: 1rem;
-            font-size: 0.85rem;
-            line-height: 1.45;
+            padding: 0.65rem 0.9rem;
+            border-radius: 1.1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
             white-space: pre-wrap;
             word-break: break-word;
         }
-        .msg.user .burbuja { background: var(--verde); color: white; border-bottom-right-radius: 0.3rem; }
-        .msg.ana  .burbuja { background: var(--verde-suave); color: var(--texto); border: 1px solid var(--borde); border-bottom-left-radius: 0.3rem; }
-        .msg.ana .fotos { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
-        .msg.ana .fotos img { width: 5.5rem; height: 5.5rem; object-fit: cover; border-radius: 0.6rem; border: 1px solid var(--borde); }
+        .msg.user .burbuja { background: var(--verde); color: #fff; border-bottom-right-radius: 0.35rem; }
+        .msg.ana  .burbuja { background: var(--superficie-2); color: var(--texto); border: 1px solid var(--borde); border-bottom-left-radius: 0.35rem; }
+        .msg.ana .fotos { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.55rem; }
+        .msg.ana .fotos img { width: 6rem; height: 6rem; object-fit: cover; border-radius: 0.65rem; border: 1px solid var(--borde); }
         .escribiendo span {
             display: inline-block; width: 6px; height: 6px; margin: 0 1.5px; border-radius: 50%;
             background: var(--verde-oscuro); animation: puntos 1.2s infinite;
@@ -168,240 +242,278 @@
         .escribiendo span:nth-child(2) { animation-delay: 0.2s; }
         .escribiendo span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes puntos { 0%, 80%, 100% { opacity: 0.25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
-        @keyframes aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-        #voiceBtn.recording { background: #ef4444 !important; color: white !important; animation: pulseRec 1.2s infinite; }
+        .chat-bienvenida { margin: auto; text-align: center; padding: 1rem; max-width: 22rem; }
+        .chat-bienvenida .orbe-mini { width: 3.6rem; height: 3.6rem; margin: 0 auto 0.9rem; }
+        .chat-bienvenida h2 { font-size: 1.1rem; font-weight: 600; margin: 0 0 0.3rem; }
+        .sugerencias { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 1rem; }
+        .sugerencia {
+            text-align: left; font-size: 0.82rem; padding: 0.55rem 0.8rem; border-radius: 0.7rem;
+            border: 1px solid var(--borde); background: var(--superficie-2); color: var(--texto); transition: border-color 0.15s, background 0.15s;
+        }
+        .sugerencia:hover { border-color: var(--borde-fuerte); background: var(--verde-suave); }
+
+        .chat-entrada { padding: 0.75rem; border-top: 1px solid var(--borde); flex-shrink: 0; }
+        .chat-caja {
+            display: flex; align-items: center; gap: 0.4rem; padding: 0.35rem;
+            background: var(--superficie-2); border: 1px solid var(--borde); border-radius: 0.9rem; transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .chat-caja:focus-within { border-color: var(--verde); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+        #userInput { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font: inherit; font-size: 0.9rem; color: var(--texto); padding: 0.45rem 0.6rem; }
+        #userInput::placeholder { color: var(--texto-tenue); }
+        .btn-chat { width: 2.35rem; height: 2.35rem; border-radius: 0.65rem; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s, transform 0.1s; }
+        .btn-chat:active { transform: scale(0.94); }
+        .btn-chat svg { width: 1.1rem; height: 1.1rem; }
+        #voiceBtn { background: var(--verde-medio); color: var(--verde-texto); }
+        #voiceBtn:hover { filter: brightness(0.96); }
+        #sendBtn { background: var(--verde); color: #fff; }
+        #sendBtn:hover { background: var(--verde-oscuro); }
+        #sendBtn:disabled { opacity: 0.5; cursor: default; }
+        #voiceBtn.recording { background: var(--rojo); color: #fff; animation: pulseRec 1.2s infinite; }
         @keyframes pulseRec {
             0%   { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
             70%  { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
-        /* ---------- Notificaciones ---------- */
-        .notif { display: flex; gap: 0.6rem; padding: 0.55rem 0.95rem; border-bottom: 1px solid rgba(16,185,129,0.08); animation: aparecer 0.25s ease-out; }
-        .notif-punto { width: 0.55rem; height: 0.55rem; border-radius: 50%; margin-top: 0.4rem; flex-shrink: 0; }
-        .notif.ok     .notif-punto { background: #10b981; }
-        .notif.info   .notif-punto { background: #0ea5e9; }
-        .notif.alerta .notif-punto { background: #f59e0b; }
-        .notif.error  .notif-punto { background: #ef4444; }
-        .notif-texto { font-size: 0.82rem; line-height: 1.35; }
-        .notif-hora { font-size: 0.7rem; color: var(--texto-suave); margin-top: 0.1rem; }
-
         /* ---------- Calendario ---------- */
         #calGrid {
             display: grid;
             grid-template-columns: repeat(7, minmax(0, 1fr));
-            grid-auto-rows: minmax(0, 1fr);
-            gap: 3px;
+            grid-template-rows: auto repeat(6, minmax(0, 1fr));
+            gap: 4px;
             flex: 1;
             min-height: 0;
-            padding: 0.5rem 0.75rem 0.75rem;
+            padding: 0.5rem 0.85rem 0.85rem;
         }
-        .cal-dia-nombre { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--texto-suave); text-align: center; padding: 0.45rem 0 0.15rem; }
+        .cal-dia-nombre { font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--texto-tenue); text-align: center; padding: 0.35rem 0 0.25rem; }
         .cal-dia {
             position: relative;
-            border-radius: 0.6rem;
+            border-radius: 0.65rem;
             border: 1px solid transparent;
-            background: #f8fafc;
-            padding: 0.25rem 0.3rem;
-            display: flex; flex-direction: column; gap: 2px;
+            background: var(--superficie-2);
+            padding: 0.3rem 0.35rem;
+            display: flex; flex-direction: column; gap: 3px;
             min-height: 0; overflow: hidden;
-            cursor: pointer;
-            transition: background 0.15s, border-color 0.15s, transform 0.1s;
+            transition: background 0.15s, border-color 0.15s;
             text-align: left;
-            font: inherit;
         }
-        .cal-dia:hover { background: var(--verde-suave); border-color: var(--borde); }
-        .cal-dia.otro-mes { opacity: 0.38; }
-        .cal-dia.hoy { border-color: var(--verde); background: var(--verde-suave); }
-        .cal-dia.seleccionado { border-color: var(--verde-oscuro); box-shadow: inset 0 0 0 1px var(--verde-oscuro); }
-        .cal-num { font-size: 0.78rem; font-weight: 500; line-height: 1; }
-        .cal-dia.hoy .cal-num { color: var(--verde-oscuro); font-weight: 700; }
+        .cal-dia:hover { background: var(--verde-suave); border-color: var(--borde-fuerte); }
+        .cal-dia.otro-mes { opacity: 0.4; }
+        .cal-dia.seleccionado { border-color: var(--verde); background: var(--verde-suave); }
+        .cal-num { font-size: 0.8rem; font-weight: 500; line-height: 1; display: inline-flex; align-items: center; justify-content: center; min-width: 1.45rem; height: 1.45rem; border-radius: 999px; align-self: flex-start; }
+        .cal-dia.hoy .cal-num { background: var(--verde); color: #fff; font-weight: 600; }
         .cal-evento {
-            font-size: 0.64rem; line-height: 1.2; padding: 1px 5px; border-radius: 4px;
-            background: var(--verde); color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            font-size: 0.68rem; line-height: 1.25; padding: 1px 6px; border-radius: 5px; flex-shrink: 0;
+            background: var(--verde-medio); color: var(--verde-texto); font-weight: 500;
+            overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; hyphens: auto;
+            border-left: 3px solid var(--verde);
         }
-        .cal-evento.manual { background: #0ea5e9; }
-        .cal-mas { font-size: 0.62rem; color: var(--texto-suave); }
-        .cal-puntos { display: none; gap: 2px; margin-top: auto; }
-        .cal-punto { width: 5px; height: 5px; border-radius: 50%; background: var(--verde); }
-        .cal-punto.manual { background: #0ea5e9; }
+        .cal-evento.manual { background: var(--azul-suave); color: #0369a1; border-left-color: var(--azul); }
+        :root[data-tema="oscuro"] .cal-evento.manual { color: #7dd3fc; }
+        .cal-mas { font-size: 0.66rem; color: var(--texto-suave); padding-left: 2px; }
+        .cal-puntos { display: none; gap: 3px; margin-top: auto; }
+        .cal-punto { width: 6px; height: 6px; border-radius: 50%; background: var(--verde); }
+        .cal-punto.manual { background: var(--azul); }
+        .leyenda { display: inline-flex; align-items: center; gap: 0.75rem; font-size: 0.72rem; color: var(--texto-suave); }
+        .leyenda i { display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 3px; margin-right: 0.3rem; background: var(--verde); vertical-align: -1px; }
+        .leyenda i.manual { background: var(--azul); }
+        #calTitulo { font-size: 0.95rem; font-weight: 600; text-transform: capitalize; min-width: 9.5rem; text-align: center; }
 
-        #calDetalle { border-top: 1px solid var(--borde); padding: 0.5rem 0.75rem; flex-shrink: 0; }
+        #calDetalle { border-top: 1px solid var(--borde); padding: 0.65rem 0.85rem; flex-shrink: 0; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+        #calDetalleFecha { font-size: 0.8rem; font-weight: 600; color: var(--verde-texto); white-space: nowrap; display: inline-block; }
+        #calDetalleEventos { display: flex; gap: 0.4rem; overflow-x: auto; flex: 1; min-width: 8rem; padding: 0.1rem 0; }
         .det-evento {
-            display: inline-flex; align-items: center; gap: 0.35rem;
-            background: var(--verde-suave); border: 1px solid var(--borde);
-            border-radius: 999px; padding: 0.15rem 0.3rem 0.15rem 0.6rem; font-size: 0.74rem; white-space: nowrap;
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            background: var(--superficie-2); border: 1px solid var(--borde);
+            border-radius: 999px; padding: 0.2rem 0.3rem 0.2rem 0.7rem; font-size: 0.78rem; white-space: nowrap;
         }
-        .det-evento button { border: 0; background: transparent; color: var(--texto-suave); cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 0 0.25rem; }
-        .det-evento button:hover { color: #ef4444; }
+        .det-evento button { color: var(--texto-tenue); font-size: 1rem; line-height: 1; padding: 0 0.3rem; }
+        .det-evento button:hover { color: var(--rojo); }
+        #calForm { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
+        #calNuevoTitulo { width: 12rem; padding: 0.45rem 0.65rem; }
+        #calForm .btn-verde { padding: 0.45rem 0.85rem; }
 
-        .btn-icon {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 1.75rem; height: 1.75rem; border-radius: 0.55rem; border: 1px solid var(--borde);
-            background: white; color: var(--verde-oscuro); cursor: pointer; transition: background 0.15s;
-            font: inherit;
+        /* ---------- Próximos eventos ---------- */
+        #proximosLista { padding: 0.4rem; }
+        .prox {
+            display: flex; align-items: center; gap: 0.7rem; width: 100%; text-align: left;
+            padding: 0.5rem 0.6rem; border-radius: 0.7rem; transition: background 0.15s;
         }
-        .btn-icon:hover { background: var(--verde-suave); }
-        .btn-icon svg { width: 0.9rem; height: 0.9rem; }
+        .prox:hover { background: var(--verde-suave); }
+        .prox-fecha {
+            width: 2.6rem; flex-shrink: 0; text-align: center; border-radius: 0.6rem; padding: 0.25rem 0;
+            background: var(--verde-suave); color: var(--verde-texto); line-height: 1.1;
+        }
+        .prox-fecha.manual { background: var(--azul-suave); color: #0369a1; }
+        :root[data-tema="oscuro"] .prox-fecha.manual { color: #7dd3fc; }
+        .prox-fecha b { display: block; font-size: 1rem; font-weight: 600; }
+        .prox-fecha small { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .prox-titulo { font-size: 0.85rem; font-weight: 500; display: block; }
+        .prox-cuando { font-size: 0.72rem; color: var(--texto-suave); display: block; }
+        .prox-cuando.pronto { color: #d97706; font-weight: 500; }
 
-        .input {
-            width: 100%; border: 1px solid var(--borde); border-radius: 0.65rem;
-            padding: 0.45rem 0.65rem; font: inherit; font-size: 0.82rem; color: var(--texto); background: white;
-            outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-        }
-        .input:focus { border-color: var(--verde); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
-        .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--texto-suave); margin-bottom: 0.2rem; display: block; }
-        .btn-verde {
-            background: var(--verde); color: white; border: 0; border-radius: 0.65rem;
-            padding: 0.45rem 0.9rem; font: inherit; font-size: 0.8rem; font-weight: 500; cursor: pointer;
-            transition: background 0.15s, transform 0.1s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
-        }
-        .btn-verde:hover { background: var(--verde-oscuro); }
-        .btn-verde:active { transform: scale(0.97); }
-        .btn-verde:disabled { opacity: 0.5; cursor: default; }
+        /* ---------- Notificaciones ---------- */
+        .notif { display: flex; gap: 0.65rem; padding: 0.65rem 1rem; border-bottom: 1px solid var(--borde); animation: aparecer 0.25s ease-out; }
+        .notif:last-child { border-bottom: 0; }
+        .notif-punto { width: 0.55rem; height: 0.55rem; border-radius: 50%; margin-top: 0.4rem; flex-shrink: 0; }
+        .notif.ok     .notif-punto { background: var(--verde); }
+        .notif.info   .notif-punto { background: var(--azul); }
+        .notif.alerta .notif-punto { background: var(--ambar); }
+        .notif.error  .notif-punto { background: var(--rojo); }
+        .notif-texto { font-size: 0.84rem; line-height: 1.4; }
+        .notif-hora { font-size: 0.72rem; color: var(--texto-tenue); margin-top: 0.15rem; }
 
-        /* ---------- Documentos ---------- */
+        /* ---------- Pestaña Empresa: datos | documentos ---------- */
+        #empresa { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; }
+        #empresaForm { padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.9rem; }
+        .campos-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+        #empOtros { flex: 1; min-height: 7rem; resize: none; }
+        .form-pie { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-shrink: 0; }
+        .docs-body { padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.9rem; }
         #dropZone {
-            border: 1.5px dashed rgba(16, 185, 129, 0.45);
-            border-radius: 0.8rem; background: var(--verde-suave);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.25rem;
-            padding: 0.75rem; text-align: center; cursor: pointer; transition: background 0.15s, border-color 0.15s;
-            flex-shrink: 0;
+            border: 1.5px dashed var(--borde-fuerte);
+            border-radius: 0.9rem; background: var(--verde-suave);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem;
+            padding: 1.4rem 1rem; text-align: center; cursor: pointer; transition: background 0.15s, border-color 0.15s;
+            flex-shrink: 0; color: var(--verde-texto);
         }
-        #dropZone.sobre { background: #d1fae5; border-color: var(--verde-oscuro); }
+        #dropZone svg { width: 1.6rem; height: 1.6rem; }
+        #dropZone:hover, #dropZone.sobre { background: var(--verde-medio); border-color: var(--verde); }
+        .drop-titulo { font-size: 0.88rem; font-weight: 500; }
+        .drop-sub { font-size: 0.75rem; color: var(--texto-suave); }
+        #docsLista { flex: 1; min-height: 0; overflow-y: auto; }
         .doc {
-            display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.2rem;
-            border-bottom: 1px solid rgba(16,185,129,0.08); font-size: 0.78rem; animation: aparecer 0.25s ease-out;
+            display: flex; align-items: center; gap: 0.65rem; padding: 0.55rem 0.25rem;
+            border-bottom: 1px solid var(--borde); font-size: 0.84rem; animation: aparecer 0.25s ease-out;
         }
-        .doc-icono { width: 1.9rem; height: 1.9rem; border-radius: 0.5rem; background: var(--verde-suave); color: var(--verde-oscuro); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; flex-shrink: 0; text-transform: uppercase; }
-        .doc-meta { font-size: 0.68rem; color: var(--texto-suave); }
-        .estado { font-size: 0.65rem; padding: 1px 6px; border-radius: 999px; white-space: nowrap; }
-        .estado.subido    { background: #d1fae5; color: #047857; }
-        .estado.pendiente { background: #fef3c7; color: #b45309; }
-        .estado.subiendo  { background: #e0f2fe; color: #0369a1; }
+        .doc:last-child { border-bottom: 0; }
+        .doc-icono { width: 2.2rem; height: 2.2rem; border-radius: 0.55rem; background: var(--verde-suave); color: var(--verde-texto); display: flex; align-items: center; justify-content: center; font-size: 0.62rem; font-weight: 700; flex-shrink: 0; text-transform: uppercase; }
+        .doc-meta { font-size: 0.72rem; color: var(--texto-suave); }
+        .estado { font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; white-space: nowrap; font-weight: 500; }
+        .estado.subido    { background: var(--verde-medio); color: var(--verde-texto); }
+        .estado.pendiente { background: rgba(245, 158, 11, 0.15); color: #b45309; }
+        .estado.subiendo  { background: var(--azul-suave); color: #0369a1; }
+        :root[data-tema="oscuro"] .estado.pendiente { color: #fcd34d; }
+        :root[data-tema="oscuro"] .estado.subiendo { color: #7dd3fc; }
 
-        .vacio { color: var(--texto-suave); font-size: 0.78rem; text-align: center; padding: 1rem; }
-
-
-        /* ---------- Pestañas ---------- */
-        #tabs { display: flex; gap: 0.25rem; background: rgba(16,185,129,0.08); border: 1px solid var(--borde); border-radius: 0.8rem; padding: 0.2rem; }
-        .tab {
-            display: inline-flex; align-items: center; gap: 0.4rem;
-            padding: 0.4rem 0.95rem; border-radius: 0.6rem; font-size: 0.82rem; font-weight: 500;
-            color: var(--texto-suave); background: transparent; transition: background 0.15s, color 0.15s;
-        }
-        .tab svg { width: 0.9rem; height: 0.9rem; }
-        .tab:hover { color: var(--verde-oscuro); }
-        .tab.activa { background: white; color: var(--verde-oscuro); box-shadow: 0 2px 8px rgba(16,185,129,0.15); }
-        .tab-badge { font-size: 0.62rem; font-weight: 600; background: var(--verde); color: white; border-radius: 999px; padding: 0 0.4rem; line-height: 1.2rem; }
-
-        /* ---------- Conexiones ---------- */
-        #conexiones {
-            flex: 1; min-height: 0; overflow-y: auto; padding: 0 0.9rem 0.9rem;
-            display: flex; flex-direction: column; gap: 0.9rem;
-        }
-        #conexiones::-webkit-scrollbar { width: 6px; }
-        #conexiones::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.25); border-radius: 999px; }
-        .canales { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+        /* ---------- Pestaña Conexiones ---------- */
+        #conexiones { overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
+        .canales { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .canal-head-extra { display: flex; align-items: center; gap: 0.5rem; }
-        .pill { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; font-weight: 500; padding: 0.15rem 0.55rem; border-radius: 999px; white-space: nowrap; }
-        .pill .punto { width: 0.45rem; height: 0.45rem; border-radius: 50%; }
-        .pill.on  { background: #d1fae5; color: #047857; } .pill.on .punto { background: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.2); }
-        .pill.off { background: #f1f5f9; color: #64748b; } .pill.off .punto { background: #94a3b8; }
-        .pill.err { background: #fee2e2; color: #b91c1c; } .pill.err .punto { background: #ef4444; }
-        .logo-canal { width: 1.6rem; height: 1.6rem; border-radius: 0.5rem; display: inline-flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
-        .logo-canal svg { width: 1rem; height: 1rem; }
+        .seccion { padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.9rem; }
+        .logo-canal { width: 1.85rem; height: 1.85rem; border-radius: 0.55rem; display: inline-flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+        .logo-canal svg { width: 1.05rem; height: 1.05rem; }
         .logo-ws { background: #25d366; }
         .logo-ig { background: linear-gradient(45deg, #f58529, #dd2a7b 55%, #8134af); }
         .logo-cam { background: var(--verde-oscuro); }
 
         .webhook-fila { display: flex; align-items: center; gap: 0.5rem; }
         .webhook-url {
-            flex: 1; min-width: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.72rem;
-            background: #f8fafc; border: 1px solid var(--borde); border-radius: 0.55rem; padding: 0.4rem 0.6rem;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #334155;
+            flex: 1; min-width: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.75rem;
+            background: var(--superficie-2); border: 1px solid var(--borde); border-radius: 0.6rem; padding: 0.5rem 0.65rem;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--texto);
         }
-        .ayuda { font-size: 0.7rem; color: var(--texto-suave); line-height: 1.35; }
 
         .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 0.6rem; }
-        .kpi { background: #f8fafc; border: 1px solid rgba(16,185,129,0.12); border-radius: 0.7rem; padding: 0.55rem 0.7rem; min-width: 0; }
-        .kpi-label { font-size: 0.68rem; color: var(--texto-suave); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .kpi-valor { font-size: 1.35rem; font-weight: 600; line-height: 1.2; margin-top: 0.1rem; color: var(--texto); }
-        .kpi-delta { font-size: 0.68rem; margin-top: 0.1rem; color: var(--texto-suave); }
-        .kpi-delta.sube { color: #047857; } .kpi-delta.baja { color: #b91c1c; }
+        .kpi { background: var(--superficie-2); border: 1px solid var(--borde); border-radius: 0.75rem; padding: 0.6rem 0.75rem; min-width: 0; }
+        .kpi-label { font-size: 0.72rem; color: var(--texto-suave); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .kpi-valor { font-size: 1.4rem; font-weight: 600; line-height: 1.2; margin-top: 0.1rem; color: var(--texto); }
+        .kpi-delta { font-size: 0.72rem; margin-top: 0.1rem; color: var(--texto-suave); }
+        .kpi-delta.sube { color: var(--verde-texto); } .kpi-delta.baja { color: #dc2626; }
 
         .grafica { position: relative; }
         .grafica svg { width: 100%; height: 9.5rem; display: block; overflow: visible; }
-        .grafica .eje { stroke: #e2e8f0; stroke-width: 1; }
-        .grafica .tick { font-size: 0.62rem; fill: #94a3b8; }
+        .grafica .eje { stroke: var(--borde); stroke-width: 1; }
+        .grafica .tick { font-size: 0.62rem; fill: var(--texto-tenue); }
         .grafica .barra { fill: var(--verde-oscuro); transition: opacity 0.15s; }
-        .grafica .barra.contexto { fill: #a7f3d0; }
+        .grafica .barra.contexto { fill: var(--verde-medio); }
         .grafica .hit { fill: transparent; }
         .grafica .hit:hover + .barra, .grafica .barra:hover { opacity: 0.75; }
-        .grafica .etiqueta { font-size: 0.66rem; fill: #334155; font-weight: 500; }
+        .grafica .etiqueta { font-size: 0.66rem; fill: var(--texto); font-weight: 500; }
         .tooltip {
             position: absolute; pointer-events: none; z-index: 5; display: none;
-            background: #0f172a; color: white; font-size: 0.7rem; padding: 0.3rem 0.5rem; border-radius: 0.4rem;
+            background: #0f172a; color: #fff; font-size: 0.72rem; padding: 0.3rem 0.5rem; border-radius: 0.4rem;
             white-space: nowrap; transform: translate(-50%, calc(-100% - 8px));
         }
-        .grafica-titulo { font-size: 0.72rem; color: var(--texto-suave); margin-bottom: 0.2rem; }
+        .grafica-titulo { font-size: 0.75rem; color: var(--texto-suave); margin-bottom: 0.25rem; }
 
         .evento-feed { display: flex; flex-direction: column; }
-        .evento { display: flex; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid rgba(16,185,129,0.08); font-size: 0.78rem; }
-        .evento-hora { font-size: 0.66rem; color: var(--texto-suave); white-space: nowrap; margin-top: 0.1rem; min-width: 3rem; }
+        .evento { display: flex; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid var(--borde); font-size: 0.82rem; }
+        .evento:last-child { border-bottom: 0; }
+        .evento-hora { font-size: 0.7rem; color: var(--texto-tenue); white-space: nowrap; margin-top: 0.1rem; min-width: 3rem; }
         .evento-titulo { font-weight: 500; }
-        .evento-texto { color: var(--texto-suave); font-size: 0.74rem; }
+        .evento-texto { color: var(--texto-suave); font-size: 0.78rem; }
 
         .camaras-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.75rem; }
         .camara { border: 1px solid var(--borde); border-radius: 0.8rem; overflow: hidden; background: #0f172a; position: relative; aspect-ratio: 16 / 9; }
         .camara img, .camara video { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .camara .sin-senal { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; color: #94a3b8; font-size: 0.72rem; background: #0f172a; }
+        .camara .sin-senal { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; color: #94a3b8; font-size: 0.75rem; background: #0f172a; }
         .camara .sin-senal svg { width: 1.6rem; height: 1.6rem; }
-        .camara-barra { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; padding: 0.35rem 0.55rem; background: linear-gradient(transparent, rgba(15,23,42,0.85)); color: white; font-size: 0.72rem; }
-        .camara-barra .btn-icon { width: 1.4rem; height: 1.4rem; background: rgba(255,255,255,0.15); border-color: transparent; color: white; }
+        .camara-barra { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; padding: 0.4rem 0.6rem; background: linear-gradient(transparent, rgba(15,23,42,0.85)); color: #fff; font-size: 0.75rem; }
+        .camara-barra .btn-icon { width: 1.5rem; height: 1.5rem; background: rgba(255,255,255,0.15); border-color: transparent; color: #fff; }
         .camara-barra .btn-icon:hover { background: rgba(239,68,68,0.8); }
         .vivo { display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 600; font-size: 0.62rem; letter-spacing: 0.08em; }
-        .vivo .punto { width: 0.4rem; height: 0.4rem; border-radius: 50%; background: #ef4444; animation: parpadeo 1.2s infinite; }
+        .vivo .punto { width: 0.4rem; height: 0.4rem; border-radius: 50%; background: var(--rojo); animation: parpadeo 1.2s infinite; }
         .vivo.off .punto { background: #94a3b8; animation: none; }
         @keyframes parpadeo { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        .form-inline { display: grid; grid-template-columns: 1fr 2fr auto auto; gap: 0.5rem; align-items: end; }
+        .form-inline { display: grid; grid-template-columns: 1fr 2fr auto auto; gap: 0.6rem; align-items: end; }
+        .form-inline .input, .form-inline .btn-verde { height: 2.6rem; }
 
-        @media (max-width: 900px) {
-            .canales { grid-template-columns: 1fr; }
-            .form-inline { grid-template-columns: 1fr; }
-            #tabs { width: 100%; justify-content: center; }
-            header { flex-wrap: wrap; }
-        }
-
-        /* ---------- Responsivo: en pantallas angostas se apila y la página hace scroll ---------- */
-        @media (max-width: 900px) {
-            body { overflow: auto; height: auto; min-height: 100svh; }
-            #panel { grid-template-columns: 1fr; grid-template-rows: none; }
-            #chatPanel, #notifPanel, #calendarPanel, #rightBottom { grid-column: 1; grid-row: auto; }
-            #chatPanel { height: 70vh; }
-            #notifPanel { height: 40vh; }
-            #calendarPanel { height: 80vh; }
-            #rightBottom { grid-template-columns: 1fr; }
-            #rightBottom .card { height: 55vh; }
-            #calendarPanel .card-head { flex-wrap: wrap; }
-            #calendarPanel .card-head > div:last-child { width: 100%; justify-content: space-between; }
-        }
+        /* ---------- Responsivo ---------- */
+        /* Calendario angosto: puntos en vez de títulos */
         @media (max-width: 1100px) and (min-width: 901px) {
             .cal-evento, .cal-mas { display: none; }
             .cal-puntos { display: flex; }
+        }
+        /* Portátiles: la columna de agenda y avisos baja debajo del calendario */
+        @media (max-width: 1280px) and (min-width: 901px) {
+            #panel { grid-template-columns: minmax(320px, 1fr) minmax(0, 1.6fr); grid-template-rows: minmax(0, 1.5fr) minmax(0, 1fr); }
+            #chatPanel { grid-row: 1 / span 2; }
+            #lateral { grid-template-rows: none; grid-template-columns: 1fr 1fr; }
+            #fechaHoy { display: none; }
+        }
+        /* Tablet y móvil: todo se apila y la página hace scroll */
+        @media (max-width: 900px) {
+            body { overflow: auto; height: auto; min-height: 100svh; }
+            .barra { grid-template-columns: 1fr auto; }
+            #tabs { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; }
+            .tab { flex: 1; justify-content: center; padding: 0.5rem 0.5rem; }
+            #fechaHoy { display: none; }
+            main { padding: 0 0.75rem 0.75rem; }
+            #panel, #empresa { display: flex; flex-direction: column; }
+            #lateral { display: flex; flex-direction: column; }
+            #chatPanel { height: 75vh; }
+            #calendarPanel { height: 78vh; }
+            #proximosPanel { max-height: 50vh; }
+            #notifPanel { max-height: 50vh; }
+            #empresaPanel, #docsPanel { min-height: 60vh; }
+            #calendarPanel .card-head { flex-wrap: wrap; }
+            #calForm { width: 100%; }
+            #calNuevoTitulo { flex: 1; width: auto; }
+            .canales { grid-template-columns: 1fr; }
+            .form-inline { grid-template-columns: 1fr; }
+            .campos-2 { grid-template-columns: 1fr; }
+            .leyenda { display: none; }
+        }
+        @media (max-width: 520px) {
+            .tab svg { display: none; }
+            #estadoServidor .texto-pill { display: none; }
+            .cal-evento, .cal-mas { display: none; }
+            .cal-puntos { display: flex; }
+            #calGrid { padding: 0.4rem; gap: 3px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Barra superior -->
-    <header class="flex items-center justify-between px-4 py-2.5 flex-shrink-0">
-        <div class="flex items-center gap-3">
+    <!-- ================= BARRA SUPERIOR ================= -->
+    <header class="barra">
+        <div class="marca">
             <div id="orbeHeader" class="orbe-mini"></div>
-            <div>
-                <div class="font-semibold text-sm leading-tight">ANA</div>
-                <div id="empresaHeader" class="text-xs text-slate-500 leading-tight">Asistente de tu empresa</div>
+            <div class="min-w-0">
+                <div class="marca-nombre">ANA</div>
+                <div id="empresaHeader" class="marca-sub truncate">Asistente de tu empresa</div>
             </div>
         </div>
         <nav id="tabs" role="tablist" aria-label="Secciones">
@@ -409,152 +521,177 @@
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h5v7H4V5zm0 9h6v6H5a1 1 0 01-1-1v-5zm10-10h5a1 1 0 011 1v4h-6V4zm0 8h6v7a1 1 0 01-1 1h-5v-8z"/></svg>
                 Principal
             </button>
+            <button class="tab" role="tab" data-tab="empresa" aria-selected="false">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V5a1 1 0 011-1h8a1 1 0 011 1v16M15 9h3a1 1 0 011 1v11M9 8h2m-2 4h2m-2 4h2"/></svg>
+                Empresa
+            </button>
             <button class="tab" role="tab" data-tab="conexiones" aria-selected="false">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.8 10.2a4 4 0 010 5.6l-2 2a4 4 0 01-5.6-5.6l1-1m3-3l1-1a4 4 0 015.6 5.6l-1 1"/></svg>
                 Conexiones
                 <span id="tabConexionesBadge" class="tab-badge hidden">0</span>
             </button>
         </nav>
-        <div class="flex items-center gap-3 text-xs text-slate-500">
+        <div class="barra-derecha">
             <span id="fechaHoy"></span>
-            <span class="sm:inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-50 text-emerald-700" style="border:1px solid #d1fae5;">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Demo
-            </span>
+            <button id="estadoServidor" class="pill off" type="button" title="Cambiar la dirección del servidor">
+                <span class="punto"></span><span class="texto-pill">Conectando…</span>
+            </button>
+            <button id="temaToggle" class="btn-icon" type="button" title="Cambiar entre tema claro y oscuro">
+                <svg id="iconoLuna" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></svg>
+                <svg id="iconoSol" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4l1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4l1.4-1.4"/></svg>
+            </button>
         </div>
     </header>
 
+    <!-- ================= PRINCIPAL ================= -->
     <main id="panel">
 
-        <!-- ================= CHAT ================= -->
+        <!-- Chat -->
         <section id="chatPanel" class="card">
             <div class="card-head">
                 <div class="card-title">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8M8 14h5m-9 7l3.5-3.5H18a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v15z"/></svg>
+                    <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8M8 14h5m-9 7l3.5-3.5H18a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v15z"/></svg></span>
                     Chat con ANA
                 </div>
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1">
                     <button id="vozToggle" class="btn-icon" title="Activar o silenciar la voz de ANA">
                         <svg id="vozOnIcon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.5 8.5a5 5 0 010 7M18 6a8.5 8.5 0 010 12M5 9v6h3l4 4V5L8 9H5z"/></svg>
                         <svg id="vozOffIcon" class="hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 9v6h3l4 4V5L8 9H5zm11 2l4 4m0-4l-4 4"/></svg>
                     </button>
                     <button id="limpiarChat" class="btn-icon" title="Nueva conversación">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M5.6 9A7 7 0 0118.4 9M18.4 15A7 7 0 015.6 15"/></svg>
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14"/></svg>
                     </button>
                 </div>
             </div>
-            <div id="chatMensajes" class="card-body px-3 py-3 flex flex-col gap-2.5"></div>
-            <div class="px-3 pb-3 pt-1 flex-shrink-0">
-                <div class="flex items-center gap-1.5 bg-white border rounded-xl p-1.5 focus-within:ring" style="border-color: var(--borde);">
-                    <input type="text" id="userInput" placeholder="Escribe un mensaje para ANA..."
-                        class="flex-1 min-w-0 bg-transparent border-none px-2.5 py-1.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none">
-                    <button id="voiceBtn" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 p-2 rounded-lg transition-all active:scale-95 flex items-center justify-center flex-shrink-0" title="Hablar directamente">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg>
+            <div id="chatMensajes" class="card-body"></div>
+            <div class="chat-entrada">
+                <div class="chat-caja">
+                    <input type="text" id="userInput" placeholder="Escribe un mensaje para ANA..." autocomplete="off">
+                    <button id="voiceBtn" class="btn-chat" title="Hablar con ANA">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3zm7-3a7 7 0 01-14 0m7 7v3"/></svg>
                     </button>
-                    <button id="sendBtn" class="bg-emerald-500 hover:bg-emerald-600 text-white p-2 rounded-lg transition-all shadow-md active:scale-95 flex items-center justify-center flex-shrink-0" title="Enviar">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    <button id="sendBtn" class="btn-chat" title="Enviar">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6l6 6-6 6"/></svg>
                     </button>
                 </div>
             </div>
         </section>
 
-        <!-- ================= NOTIFICACIONES ================= -->
-        <section id="notifPanel" class="card">
-            <div class="card-head">
-                <div class="card-title">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3A6 6 0 006 11v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                    Notificaciones
-                    <span id="notifContador" class="font-semibold bg-emerald-500 text-white rounded-full px-1.5 py-0.5 hidden" style="font-size:0.65rem;">0</span>
-                </div>
-                <button id="limpiarNotif" class="text-xs text-slate-500 hover:text-emerald-700">Limpiar</button>
-            </div>
-            <div id="notifLista" class="card-body"></div>
-        </section>
-
-        <!-- ================= CALENDARIO ================= -->
+        <!-- Calendario -->
         <section id="calendarPanel" class="card">
             <div class="card-head">
                 <div class="card-title">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 3v3m8-3v3M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/></svg>
+                    <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 3v3m8-3v3M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/></svg></span>
                     Calendario
-                    <span class="text-xs font-normal text-slate-500 md:inline">· pídele a ANA que agende fechas y aparecerán aquí</span>
+                    <span class="leyenda" title="Pídele a ANA que agende fechas y aparecerán aquí"><span><i></i>ANA</span><span><i class="manual"></i>Tú</span></span>
                 </div>
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1">
                     <button id="calPrev" class="btn-icon" title="Mes anterior">
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                     </button>
-                    <span id="calTitulo" class="text-sm font-semibold text-center capitalize" style="min-width:9rem;"></span>
+                    <span id="calTitulo"></span>
                     <button id="calNext" class="btn-icon" title="Mes siguiente">
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </button>
-                    <button id="calHoy" class="text-xs px-2 py-1 rounded-lg border hover:bg-emerald-50" style="border-color: var(--borde);">Hoy</button>
+                    <button id="calHoy" class="btn-secundario">Hoy</button>
                 </div>
             </div>
             <div id="calGrid"></div>
             <div id="calDetalle">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <span id="calDetalleFecha" class="text-xs font-semibold text-emerald-700 whitespace-nowrap"></span>
-                    <div id="calDetalleEventos" class="flex gap-1.5 overflow-x-auto scroll-fino flex-1 min-w-0 py-0.5"></div>
-                    <form id="calForm" class="flex items-center gap-1.5 flex-shrink-0">
-                        <input id="calNuevoTitulo" class="input" style="width: 11rem; padding: 0.3rem 0.55rem;" placeholder="Nuevo evento..." maxlength="80">
-                        <button type="submit" class="btn-verde" style="padding: 0.3rem 0.7rem;">Agregar</button>
-                    </form>
-                </div>
+                <span id="calDetalleFecha"></span>
+                <div id="calDetalleEventos" class="scroll-fino"></div>
+                <form id="calForm">
+                    <input id="calNuevoTitulo" class="input" placeholder="Nuevo evento para este día..." maxlength="80">
+                    <button type="submit" class="btn-verde">Agregar</button>
+                </form>
             </div>
         </section>
 
-        <div id="rightBottom">
-            <!-- ================= DATOS DE LA EMPRESA ================= -->
-            <section id="empresaPanel" class="card">
+        <!-- Agenda y avisos -->
+        <div id="lateral">
+            <section id="proximosPanel" class="card">
                 <div class="card-head">
                     <div class="card-title">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V5a1 1 0 011-1h8a1 1 0 011 1v16M15 9h3a1 1 0 011 1v11M9 8h2m-2 4h2m-2 4h2"/></svg>
-                        Datos de la empresa
+                        <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l2.5 2.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
+                        Próximos eventos
                     </div>
-                    <span id="empresaEstado" class="text-xs text-slate-500"></span>
+                    <span id="proximosContador" class="card-sub"></span>
                 </div>
-                <form id="empresaForm" class="card-body px-4 py-3 flex flex-col gap-2.5">
+                <div id="proximosLista" class="card-body"></div>
+            </section>
+
+            <section id="notifPanel" class="card">
+                <div class="card-head">
+                    <div class="card-title">
+                        <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3A6 6 0 006 11v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg></span>
+                        Notificaciones
+                        <span id="notifContador" class="contador hidden">0</span>
+                    </div>
+                    <button id="limpiarNotif" class="btn-texto">Limpiar</button>
+                </div>
+                <div id="notifLista" class="card-body"></div>
+            </section>
+        </div>
+    </main>
+
+    <!-- ================= EMPRESA ================= -->
+    <main id="empresa" class="hidden">
+
+        <!-- Datos de la empresa -->
+        <section id="empresaPanel" class="card">
+            <div class="card-head">
+                <div class="card-title">
+                    <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V5a1 1 0 011-1h8a1 1 0 011 1v16M15 9h3a1 1 0 011 1v11M9 8h2m-2 4h2m-2 4h2"/></svg></span>
+                    Datos de la empresa
+                </div>
+                <span id="empresaEstado" class="card-sub"></span>
+            </div>
+            <form id="empresaForm" class="card-body">
+                <p class="ayuda">ANA usa estos datos como contexto en cada respuesta. Cuanto más completos, mejores respuestas.</p>
+                <div class="campos-2">
                     <div>
                         <label class="label" for="empNombre">Nombre de la empresa</label>
                         <input id="empNombre" class="input" placeholder="Ej. Bytes Technology" autocomplete="organization">
                     </div>
                     <div>
                         <label class="label" for="empSector">A qué se dedica</label>
-                        <input id="empSector" class="input" placeholder="Ej. Desarrollo de software y consultoría tecnológica">
+                        <input id="empSector" class="input" placeholder="Ej. Desarrollo de software y consultoría">
                     </div>
-                    <div>
-                        <label class="label" for="empProductos">Qué hace / qué vende</label>
-                        <input id="empProductos" class="input" placeholder="Ej. Aplicaciones a medida, soporte TI, licencias">
-                    </div>
-                    <div class="flex-1 min-h-0 flex flex-col">
-                        <label class="label" for="empOtros">Otros datos útiles para ANA</label>
-                        <textarea id="empOtros" class="input flex-1 resize-none" rows="3" placeholder="Horarios, número de empleados, clientes principales, políticas internas, etc."></textarea>
-                    </div>
-                    <div class="flex items-center justify-end gap-2 flex-shrink-0">
-                        <button type="submit" class="btn-verde">Guardar datos</button>
-                    </div>
-                </form>
-            </section>
+                </div>
+                <div>
+                    <label class="label" for="empProductos">Qué hace / qué vende</label>
+                    <input id="empProductos" class="input" placeholder="Ej. Aplicaciones a medida, soporte TI, licencias">
+                </div>
+                <div class="flex-1 min-h-0 flex flex-col">
+                    <label class="label" for="empOtros">Otros datos útiles para ANA</label>
+                    <textarea id="empOtros" class="input" rows="4" placeholder="Horarios, número de empleados, clientes principales, políticas internas, etc."></textarea>
+                </div>
+                <div class="form-pie">
+                    <span class="ayuda">Se guardan en este navegador.</span>
+                    <button type="submit" class="btn-verde">Guardar datos</button>
+                </div>
+            </form>
+        </section>
 
-            <!-- ================= DOCUMENTOS ================= -->
-            <section id="docsPanel" class="card">
-                <div class="card-head">
-                    <div class="card-title">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zm0 0v5h5"/></svg>
-                        Documentos de la empresa
-                    </div>
-                    <span id="docsContador" class="text-xs text-slate-500"></span>
+        <!-- Documentos -->
+        <section id="docsPanel" class="card">
+            <div class="card-head">
+                <div class="card-title">
+                    <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zm0 0v5h5"/></svg></span>
+                    Documentos de la empresa
                 </div>
-                <div class="card-body px-3 py-3 flex flex-col gap-2.5">
-                    <div id="dropZone" tabindex="0" role="button" aria-label="Subir documentos">
-                        <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-                        <div class="text-xs font-medium text-emerald-800">Arrastra aquí contratos, facturas, nóminas...</div>
-                        <div class="text-slate-500" style="font-size:0.68rem;">o haz clic para elegir archivos. ANA los estudiará.</div>
-                        <input type="file" id="fileInput" class="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg">
-                    </div>
-                    <div id="docsLista" class="flex-1 min-h-0 overflow-y-auto scroll-fino"></div>
+                <span id="docsContador" class="card-sub"></span>
+            </div>
+            <div class="card-body docs-body">
+                <div id="dropZone" tabindex="0" role="button" aria-label="Subir documentos">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+                    <div class="drop-titulo">Arrastra aquí contratos, facturas, nóminas...</div>
+                    <div class="drop-sub">o haz clic para elegir archivos (PDF, Word, Excel, CSV, TXT, imágenes). ANA los estudiará.</div>
+                    <input type="file" id="fileInput" class="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg">
                 </div>
-            </section>
-        </div>
+                <div id="docsLista" class="scroll-fino"></div>
+            </div>
+        </section>
     </main>
 
     <!-- ================= CONEXIONES ================= -->
@@ -566,11 +703,11 @@
                 <div class="card-title">
                     <span class="logo-canal logo-cam"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.5-2.5v9L15 14M4 7h9a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V9a2 2 0 012-2z"/></svg></span>
                     Cámaras del negocio
-                    <span id="camarasContador" class="text-xs font-normal text-slate-500"></span>
+                    <span id="camarasContador" class="card-sub"></span>
                 </div>
-                <span class="ayuda md:inline">ANA observa las cámaras conectadas para responder sobre lo que pasa en el local.</span>
             </div>
-            <div class="px-4 py-3 flex flex-col gap-3">
+            <div class="seccion">
+                <p class="ayuda">ANA observa las cámaras conectadas para responder sobre lo que pasa en el local. Las cámaras RTSP no se pueden ver directamente en el navegador: configura en el servidor una ruta HTTP que reenvíe el video o entregue capturas.</p>
                 <form id="camaraForm" class="form-inline">
                     <div>
                         <label class="label" for="camNombre">Nombre</label>
@@ -589,7 +726,6 @@
                     </div>
                     <button type="submit" class="btn-verde">Conectar cámara</button>
                 </form>
-                <p class="ayuda">Las cámaras RTSP no se pueden ver directamente en el navegador: configura en el servidor una ruta HTTP que reenvíe el video o entregue capturas.</p>
                 <div id="camarasGrid" class="camaras-grid"></div>
             </div>
         </section>
@@ -604,13 +740,13 @@
                         <span class="pill off" data-estado="whatsapp"><span class="punto"></span>Sin conectar</span>
                     </div>
                     <div class="canal-head-extra">
-                        <span class="text-xs text-slate-500" data-actualizado="whatsapp"></span>
+                        <span class="card-sub" data-actualizado="whatsapp"></span>
                         <button class="btn-icon" data-refrescar="whatsapp" title="Actualizar ahora">
                             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M5.6 9A7 7 0 0118.4 9M18.4 15A7 7 0 015.6 15"/></svg>
                         </button>
                     </div>
                 </div>
-                <div class="px-4 py-3 flex flex-col gap-3">
+                <div class="seccion">
                     <div>
                         <span class="label">Webhook (pégalo en Meta for Developers → WhatsApp → Configuración)</span>
                         <div class="webhook-fila">
@@ -638,13 +774,13 @@
                         <span class="pill off" data-estado="instagram"><span class="punto"></span>Sin conectar</span>
                     </div>
                     <div class="canal-head-extra">
-                        <span class="text-xs text-slate-500" data-actualizado="instagram"></span>
+                        <span class="card-sub" data-actualizado="instagram"></span>
                         <button class="btn-icon" data-refrescar="instagram" title="Actualizar ahora">
                             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M5.6 9A7 7 0 0118.4 9M18.4 15A7 7 0 015.6 15"/></svg>
                         </button>
                     </div>
                 </div>
-                <div class="px-4 py-3 flex flex-col gap-3">
+                <div class="seccion">
                     <div>
                         <span class="label">Webhook (pégalo en Meta for Developers → Instagram → Webhooks)</span>
                         <div class="webhook-fila">
@@ -685,8 +821,18 @@
         //   DELETE /query/cameras/<id> -> quita la cámara
         //   GET  /query/send_image/images/<nombre_imagen> -> devuelve el archivo de 'images_inventory'
         // ==========================================
-        // NOTA: si cambia la URL de ngrok, solo hay que actualizar esta constante.
-        const API_BASE = 'https://f333-186-29-72-11.ngrok-free.app/query';
+        // NOTA: si cambia la URL de ngrok no hace falta tocar el código: haz clic en el indicador
+        // del servidor (arriba a la derecha) o abre la página con ?api=https://nueva-url/query.
+        // La dirección elegida se guarda en este navegador; API_POR_DEFECTO es la de fábrica.
+        const API_POR_DEFECTO = 'https://f333-186-29-72-11.ngrok-free.app/query';
+        const limpiarUrlApi = (url) => String(url || '').trim().replace(/\/+$/, '');
+        const API_BASE = (() => {
+            try {
+                const desdeUrl = new URLSearchParams(location.search).get('api');
+                if (desdeUrl) localStorage.setItem('ana_api_base', limpiarUrlApi(desdeUrl));
+                return limpiarUrlApi(localStorage.getItem('ana_api_base')) || API_POR_DEFECTO;
+            } catch (_) { return API_POR_DEFECTO; }
+        })();
         const NGROK_HEADERS = { 'ngrok-skip-browser-warning': 'true' };
         const IMAGE_ENDPOINT = `${API_BASE}/send_image/images`;
         const UPLOAD_ENDPOINT = `${API_BASE}/upload`;
@@ -710,10 +856,10 @@
                 return v ? JSON.parse(v) : porDefecto;
             } catch (_) { return porDefecto; }
         }
+        // Escapa también las comillas: el resultado se usa dentro de atributos (title, src, alt)
+        const ENTIDADES_HTML = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
         function escaparHtml(str) {
-            const div = document.createElement('div');
-            div.innerText = String(str ?? '');
-            return div.innerHTML;
+            return String(str ?? '').replace(/[&<>"']/g, (c) => ENTIDADES_HTML[c]);
         }
         function claveFecha(d) {
             const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
@@ -734,6 +880,30 @@
         }
 
         $('fechaHoy').textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+        // ---------- Tema claro / oscuro ----------
+        $('temaToggle').addEventListener('click', () => {
+            const tema = document.documentElement.dataset.tema === 'oscuro' ? 'claro' : 'oscuro';
+            document.documentElement.dataset.tema = tema;
+            guardar('ana_tema', tema);
+        });
+
+        // ---------- Estado del servidor (se actualiza con cada respuesta del backend) ----------
+        const estadoServidor = $('estadoServidor');
+        estadoServidor.title = `Servidor: ${API_BASE}\nHaz clic para cambiar la dirección.`;
+        function marcarServidor(ok) {
+            estadoServidor.className = `pill ${ok ? 'on' : 'err'}`;
+            estadoServidor.querySelector('.texto-pill').textContent = ok ? 'Servidor conectado' : 'Servidor sin conexión';
+        }
+        estadoServidor.addEventListener('click', () => {
+            const nueva = prompt('Dirección del servidor de ANA (termina en /query).\nDéjala vacía para volver a la de fábrica.', API_BASE);
+            if (nueva === null) return;
+            try {
+                if (limpiarUrlApi(nueva)) localStorage.setItem('ana_api_base', limpiarUrlApi(nueva));
+                else localStorage.removeItem('ana_api_base');
+            } catch (_) { /* almacenamiento no disponible */ }
+            location.href = location.pathname + location.hash; // recarga sin ?api= para que gane la nueva
+        });
 
         // ==========================================
         // ESTADO
@@ -845,6 +1015,39 @@
             }
             calGrid.innerHTML = html;
             renderDetalleDia();
+            renderProximos();
+        }
+
+        // Lista de los próximos eventos (desde hoy), para ver la agenda sin recorrer el calendario
+        function renderProximos() {
+            const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+            const hoyClave = claveFecha(hoy);
+            const proximos = eventos.filter((e) => e.fecha >= hoyClave);
+            $('proximosContador').textContent = proximos.length ? `${proximos.length} pendiente${proximos.length === 1 ? '' : 's'}` : '';
+            if (!proximos.length) {
+                $('proximosLista').innerHTML = '<div class="vacio">No hay eventos próximos. Pídele a ANA que agende algo o agrégalo en el calendario.</div>';
+                return;
+            }
+            $('proximosLista').innerHTML = proximos.slice(0, 20).map((e) => {
+                const f = fechaDesdeClave(e.fecha);
+                const dias = Math.round((f - hoy) / 86400000);
+                const cuando = dias === 0 ? 'Hoy' : dias === 1 ? 'Mañana' : dias < 7 ? `En ${dias} días` : formatearFechaLarga(f).replace(/^./, (c) => c.toUpperCase());
+                const quien = e.origen === 'ana' ? 'Agendado por ANA' : 'Agregado por ti';
+                return `<button type="button" class="prox" data-fecha="${e.fecha}">
+                    <span class="prox-fecha ${e.origen}"><b>${f.getDate()}</b><small>${MESES[f.getMonth()].slice(0, 3)}</small></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="prox-titulo truncate" title="${escaparHtml(e.titulo)}">${escaparHtml(e.titulo)}</span>
+                        <span class="prox-cuando ${dias <= 1 ? 'pronto' : ''}">${cuando} · ${quien}</span>
+                    </span>
+                </button>`;
+            }).join('');
+        }
+
+        function irAFecha(clave) {
+            diaSeleccionado = clave;
+            const f = fechaDesdeClave(clave);
+            mesVisible = new Date(f.getFullYear(), f.getMonth(), 1);
+            renderCalendario();
         }
 
         function renderDetalleDia() {
@@ -853,7 +1056,7 @@
             const evs = eventosDe(diaSeleccionado);
             $('calDetalleEventos').innerHTML = evs.length
                 ? evs.map((e) => `<span class="det-evento" title="${e.origen === 'ana' ? 'Agendado por ANA' : 'Agregado manualmente'}">${escaparHtml(e.titulo)}<button type="button" data-borrar="${e.id}" title="Quitar">×</button></span>`).join('')
-                : '<span class="text-xs text-slate-400">Sin eventos este día.</span>';
+                : '<span class="text-xs texto-tenue">Sin eventos este día.</span>';
         }
 
         function agregarEvento(fecha, titulo, origen = 'manual', silencioso = false) {
@@ -883,11 +1086,13 @@
         calGrid.addEventListener('click', (e) => {
             const btn = e.target.closest('.cal-dia');
             if (!btn) return;
-            diaSeleccionado = btn.dataset.fecha;
-            const f = fechaDesdeClave(diaSeleccionado);
-            if (f.getMonth() !== mesVisible.getMonth()) { mesVisible = new Date(f.getFullYear(), f.getMonth(), 1); }
-            renderCalendario();
-            $('calNuevoTitulo').focus();
+            irAFecha(btn.dataset.fecha);
+            // En móvil no se enfoca para no abrir el teclado en cada toque
+            if (matchMedia('(hover: hover)').matches) $('calNuevoTitulo').focus({ preventScroll: true });
+        });
+        $('proximosLista').addEventListener('click', (e) => {
+            const btn = e.target.closest('.prox');
+            if (btn) irAFecha(btn.dataset.fecha);
         });
         $('calDetalleEventos').addEventListener('click', (e) => {
             const btn = e.target.closest('[data-borrar]');
@@ -918,8 +1123,9 @@
                 const d = new Date(+m[1], +m[2] - 1, +m[3]);
                 if (!isNaN(d)) res.add(claveFecha(d));
             }
-            // 15/10/2026, 15-10-26, 15/10
-            for (const m of texto.matchAll(/\b(\d{1,2})[\/-](\d{1,2})(?:[\/-](\d{2,4}))?\b/g)) {
+            // 15/10/2026, 15-10-26, 15/10 (sin las fechas ISO: "2026-01-05" no debe leerse además como 1 de mayo)
+            const sinIso = texto.replace(/\b\d{4}-\d{1,2}-\d{1,2}\b/g, ' ');
+            for (const m of sinIso.matchAll(/\b(\d{1,2})[\/-](\d{1,2})(?:[\/-](\d{2,4}))?\b/g)) {
                 let y = m[3] ? +m[3] : anio;
                 if (m[3] && m[3].length === 2) y += 2000;
                 const d = new Date(y, +m[2] - 1, +m[1]);
@@ -1070,12 +1276,14 @@
                 formData.append('archivo', file, file.name);
                 if (empresa.nombre) formData.append('empresa', empresa.nombre);
                 const res = await fetch(UPLOAD_ENDPOINT, { method: 'POST', headers: { ...NGROK_HEADERS }, body: formData });
+                marcarServidor(res.status < 500);
                 if (!res.ok) throw new Error(`Error en /upload: ${res.status}`);
                 doc.estado = 'subido';
                 archivosEnMemoria.delete(doc.id);
                 notificar('ok', `ANA recibió "${doc.nombre}" y ya lo está estudiando.`);
             } catch (err) {
                 console.error('No se pudo subir el documento:', err);
+                if (err instanceof TypeError) marcarServidor(false);
                 doc.estado = 'pendiente';
                 notificar('alerta', `"${doc.nombre}" quedó pendiente: no se pudo enviar al servidor. Puedes reintentar.`);
             }
@@ -1145,15 +1353,26 @@
             const fotos = (msg.fotos || []).length
                 ? `<div class="fotos">${msg.fotos.map((f) => `<img src="${escaparHtml(f.url)}" alt="${escaparHtml(f.nombre)}" title="${escaparHtml(f.nombre)}">`).join('')}</div>`
                 : '';
-            return `<div class="msg ${msg.rol}">${msg.rol === 'ana' ? '<div class="orbe-mini" style="width:1.4rem;height:1.4rem;animation:none;margin-top:0.2rem;"></div>' : ''}<div class="burbuja">${escaparHtml(msg.texto)}${fotos}</div></div>`;
+            return `<div class="msg ${msg.rol}">${msg.rol === 'ana' ? '<div class="orbe-mini orbe-chico"></div>' : ''}<div class="burbuja">${escaparHtml(msg.texto)}${fotos}</div></div>`;
         }
+
+        const SUGERENCIAS = [
+            '¿Qué tengo agendado esta semana?',
+            'Agenda el pago de nómina para el 30 de octubre',
+            'Resume los documentos que te subí'
+        ];
+        chatMensajes.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-sugerencia]');
+            if (btn) enviarMensaje(btn.dataset.sugerencia);
+        });
 
         function renderChat() {
             if (!chat.length) {
-                chatMensajes.innerHTML = `<div class="vacio" style="margin:auto;">
-                    <div class="orbe-mini" style="width:3.2rem;height:3.2rem;margin:0 auto 0.7rem;"></div>
-                    <div class="text-slate-700 font-medium text-base">Hola, soy ANA</div>
-                    <div class="mt-1">Pregúntame lo que necesites, pídeme que agende fechas en el calendario o sube documentos para que los estudie.</div>
+                chatMensajes.innerHTML = `<div class="chat-bienvenida">
+                    <div class="orbe-mini"></div>
+                    <h2>Hola, soy ANA</h2>
+                    <div class="ayuda">Pregúntame lo que necesites, pídeme que agende fechas en el calendario o sube documentos en la pestaña Empresa para que los estudie.</div>
+                    <div class="sugerencias">${SUGERENCIAS.map((s) => `<button type="button" class="sugerencia" data-sugerencia="${escaparHtml(s)}">${escaparHtml(s)}</button>`).join('')}</div>
                 </div>`;
                 return;
             }
@@ -1175,7 +1394,7 @@
             const actual = $('escribiendo');
             if (actual) actual.remove();
             if (mostrar) {
-                chatMensajes.insertAdjacentHTML('beforeend', `<div id="escribiendo" class="msg ana"><div class="orbe-mini thinking" style="width:1.4rem;height:1.4rem;margin-top:0.2rem;"></div><div class="burbuja escribiendo"><span></span><span></span><span></span></div></div>`);
+                chatMensajes.insertAdjacentHTML('beforeend', `<div id="escribiendo" class="msg ana"><div class="orbe-mini orbe-chico thinking"></div><div class="burbuja escribiendo"><span></span><span></span><span></span></div></div>`);
                 chatMensajes.scrollTop = chatMensajes.scrollHeight;
             }
         }
@@ -1237,6 +1456,7 @@
                     headers: { 'Content-Type': 'application/json', ...NGROK_HEADERS },
                     body: JSON.stringify({ texto: textoUsuario, ...contextoEmpresa() })
                 });
+                marcarServidor(resResponse.status < 500);
                 if (!resResponse.ok) throw new Error(`Error en /response: ${resResponse.status}`);
 
                 const dataResponse = await resResponse.json();
@@ -1265,6 +1485,7 @@
                 procesarEventosDeRespuesta(dataResponse, textoUsuario, respuestaIA);
             } catch (error) {
                 console.error('Error al conectar con el modelo:', error);
+                if (error instanceof TypeError) marcarServidor(false);
                 mostrarEscribiendo(false);
                 agregarMensaje('ana', 'No pude conectarme con el servidor en este momento. Inténtalo de nuevo en unos segundos.');
                 notificar('error', 'Error de conexión con el modelo. Revisa que el servidor esté activo.');
@@ -1277,6 +1498,7 @@
         }
 
         sendBtn.addEventListener('click', () => {
+            if (ocupado) return; // se conserva lo escrito hasta que ANA termine de responder
             const texto = userInput.value.trim();
             if (texto) { userInput.value = ''; enviarMensaje(texto); }
         });
@@ -1295,9 +1517,10 @@
                 if (!resVoz.ok) throw new Error(`Error en /generate (voz): ${resVoz.status}`);
 
                 const contentType = resVoz.headers.get('Content-Type') || '';
-                let audioSrc = null;
+                let audioSrc = null, esBlob = false;
                 if (contentType.startsWith('audio/')) {
                     audioSrc = URL.createObjectURL(await resVoz.blob());
+                    esBlob = true;
                 } else {
                     // NOTA: ajusta estas claves según lo que realmente devuelva tu backend
                     const dataVoz = await resVoz.json();
@@ -1310,6 +1533,7 @@
                         audio.onerror = resolve;
                         audio.play().catch(resolve);
                     });
+                    if (esBlob) URL.revokeObjectURL(audioSrc);
                 }
             } catch (error) {
                 console.error('Error al generar voz en /generate:', error);
@@ -1372,7 +1596,10 @@
                     userInput.placeholder = 'Transcribiendo audio...';
                     try {
                         const texto = await transcribirAudio(new Blob(audioChunks, { type: 'audio/webm' }));
-                        if (texto) await enviarMensaje(texto);
+                        if (texto && ocupado) {
+                            // ANA sigue respondiendo: el texto queda en la caja para enviarlo después
+                            userInput.value = texto;
+                        } else if (texto) await enviarMensaje(texto);
                         else notificar('alerta', 'No se pudo transcribir el audio. Intenta de nuevo.');
                     } catch (error) {
                         console.error('Error al enviar audio a /into:', error);
@@ -1406,7 +1633,7 @@
         // ==========================================
         // PESTAÑAS
         // ==========================================
-        const PESTANAS = { principal: $('panel'), conexiones: $('conexiones') };
+        const PESTANAS = { principal: $('panel'), empresa: $('empresa'), conexiones: $('conexiones') };
         let pestanaActiva = null;
 
         function mostrarPestana(nombre) {
@@ -1424,6 +1651,7 @@
                 eventosNuevos = 0;
                 renderBadgeConexiones();
                 refrescarCanales();
+                refrescarCapturas();
             }
         }
         document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => mostrarPestana(t.dataset.tab)));
@@ -1439,7 +1667,7 @@
         // ==========================================
         // CÁMARAS
         // ==========================================
-        let camaras = cargar('ana_camaras', []); // [{ id, nombre, url, tipo: 'imagen'|'video' }]
+        let camaras = cargar('ana_camaras', []); // [{ id, nombre, url, tipo: 'imagen'|'video', registrada?: boolean }]
         const camarasGrid = $('camarasGrid');
         let camarasTimer = null;
 
@@ -1480,6 +1708,7 @@
 
         // Las capturas (snapshot) se refrescan cada 5 s; los streams MJPEG y los videos no lo necesitan
         function refrescarCapturas() {
+            if (pestanaActiva !== 'conexiones' || document.hidden) return; // no gastar red si no se ven
             camarasGrid.querySelectorAll('.camara img').forEach((img) => {
                 const cam = camaras.find((c) => c.id === img.closest('.camara').dataset.cam);
                 if (!cam || /mjpe?g|stream|video/i.test(cam.url)) return;
@@ -1494,10 +1723,22 @@
                 const res = await fetch(url, {
                     method: metodo,
                     headers: { 'Content-Type': 'application/json', ...NGROK_HEADERS },
-                    body: metodo === 'DELETE' ? undefined : JSON.stringify(cam)
+                    body: metodo === 'DELETE' ? undefined : JSON.stringify({ id: cam.id, nombre: cam.nombre, url: cam.url, tipo: cam.tipo })
                 });
                 return res.ok;
             } catch (_) { return false; }
+        }
+
+        // Reintenta registrar en el servidor las cámaras que no se pudieron registrar antes
+        async function reintentarCamarasPendientes() {
+            const pendientes = camaras.filter((c) => c.registrada === false);
+            for (const cam of pendientes) {
+                if (await registrarCamaraEnBackend(cam)) {
+                    cam.registrada = true;
+                    notificar('ok', `Cámara "${cam.nombre}" registrada en el servidor.`);
+                }
+            }
+            if (pendientes.length) guardar('ana_camaras', camaras);
         }
 
         $('camaraForm').addEventListener('submit', async (e) => {
@@ -1509,6 +1750,8 @@
             renderCamaras();
             e.target.reset();
             const ok = await registrarCamaraEnBackend(cam);
+            cam.registrada = ok;
+            guardar('ana_camaras', camaras);
             notificar(ok ? 'ok' : 'alerta', ok
                 ? `Cámara "${cam.nombre}" conectada. ANA ya puede observarla.`
                 : `Cámara "${cam.nombre}" agregada en el panel, pero el servidor no la registró (se reintentará al recargar).`);
@@ -1664,6 +1907,7 @@
         async function cargarMetricas(canal, manual = false) {
             try {
                 const res = await fetch(METRICS_ENDPOINT(canal), { headers: { ...NGROK_HEADERS } });
+                marcarServidor(res.status < 500); // cualquier respuesta legible (incluso 404) viene del servidor
                 if (!res.ok) throw new Error(`Error en /metrics/${canal}: ${res.status}`);
                 const data = await res.json();
                 data.actualizado = data.actualizado || new Date().toISOString();
@@ -1685,6 +1929,7 @@
                 renderCanal(canal);
             } catch (err) {
                 console.error(`No se pudieron cargar las métricas de ${canal}:`, err);
+                if (err instanceof TypeError) marcarServidor(false);
                 if (datosCanal[canal]) {
                     renderCanal(canal);
                     setEstadoCanal(canal, 'err', 'Servidor sin respuesta');
@@ -1710,6 +1955,7 @@
         renderVozToggle();
         revisarRecordatorios();
         renderCamaras();
+        reintentarCamarasPendientes();
         camarasTimer = setInterval(refrescarCapturas, 5000);
         CANALES.forEach(renderCanal);
         refrescarCanales();
