@@ -186,7 +186,6 @@
         .pill.off { background: var(--superficie-2); color: var(--texto-suave); border: 1px solid var(--borde); } .pill.off .punto { background: var(--texto-tenue); }
         .pill.err { background: rgba(239, 68, 68, 0.12); color: #dc2626; } .pill.err .punto { background: var(--rojo); }
         :root[data-tema="oscuro"] .pill.err { color: #fca5a5; }
-        button.pill:hover { filter: brightness(0.97); }
 
         /* Botón de tema: muestra la luna en claro y el sol en oscuro */
         :root[data-tema="oscuro"] #iconoLuna, :root:not([data-tema="oscuro"]) #iconoSol { display: none; }
@@ -545,20 +544,16 @@
 
         /* ---------- Pestaña Conexiones ---------- */
         #conexiones { overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
-        .canales { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .canal-head-extra { display: flex; align-items: center; gap: 0.5rem; }
         .seccion { padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.9rem; }
         .logo-canal { width: 1.85rem; height: 1.85rem; border-radius: 0.55rem; display: inline-flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
         .logo-canal svg { width: 1.05rem; height: 1.05rem; }
-        .logo-ws { background: #25d366; }
         .logo-ig { background: linear-gradient(45deg, #f58529, #dd2a7b 55%, #8134af); }
 
-        .webhook-fila { display: flex; align-items: center; gap: 0.5rem; }
-        .webhook-url {
-            flex: 1; min-width: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.75rem;
-            background: var(--superficie-2); border: 1px solid var(--borde); border-radius: 0.6rem; padding: 0.5rem 0.65rem;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--texto);
-        }
+        .webhook-fila { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+        .webhook-fila .label { margin-bottom: 0.15rem; }
+        .webhook-fila .btn-secundario { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.5rem 0.85rem; }
+        .icono-boton { width: 0.95rem; height: 0.95rem; flex-shrink: 0; }
 
         .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 0.6rem; }
         .kpi { background: var(--superficie-2); border: 1px solid var(--borde); border-radius: 0.75rem; padding: 0.6rem 0.75rem; min-width: 0; }
@@ -709,7 +704,6 @@
             #calendarPanel .card-head { flex-wrap: wrap; }
             #calForm { width: 100%; }
             #calNuevoTitulo { flex: 1; width: auto; }
-            .canales { grid-template-columns: 1fr; }
             .campos-2 { grid-template-columns: 1fr; }
             .leyenda { display: none; }
             .metodos { grid-template-columns: 1fr; }
@@ -773,9 +767,9 @@
         </nav>
         <div class="barra-derecha">
             <span id="fechaHoy"></span>
-            <button id="estadoServidor" class="pill off" type="button" title="Cambiar la dirección del servidor">
+            <span id="estadoServidor" class="pill off" role="status" title="Estado de la conexión con el servidor">
                 <span class="punto"></span><span class="texto-pill">Conectando…</span>
-            </button>
+            </span>
             <button id="temaToggle" class="btn-icon" type="button" title="Cambiar entre tema claro y oscuro">
                 <svg id="iconoLuna" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></svg>
                 <svg id="iconoSol" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4l1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4l1.4-1.4"/></svg>
@@ -1298,7 +1292,7 @@
                     <div class="destino">
                         <div>
                             <label class="label" for="invUrl">Enlace del inventario</label>
-                            <input id="invUrl" class="input" type="url" placeholder="https://docs.google.com/spreadsheets/d/...">
+                            <input id="invUrl" class="input" type="url" placeholder="Pega aquí el enlace de tu hoja o archivo" autocomplete="off">
                         </div>
                         <button type="button" id="invLeerEnlace" class="btn-secundario" style="height: 2.6rem;">Leer enlace</button>
                     </div>
@@ -1407,42 +1401,7 @@
     <!-- ================= CONEXIONES ================= -->
     <main id="conexiones" class="hidden">
 
-        <!-- WhatsApp e Instagram -->
-        <div class="canales">
-            <section class="card" id="canal-whatsapp" style="flex-shrink: 0;">
-                <div class="card-head">
-                    <div class="card-title">
-                        <span class="logo-canal logo-ws"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm0 18.2a8.2 8.2 0 01-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1112 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 01-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 00-.7.3 3 3 0 00-.9 2.2 5.2 5.2 0 001.1 2.8 12 12 0 004.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 001.8-1.3 2.3 2.3 0 00.2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg></span>
-                        WhatsApp
-                        <span class="pill off" data-estado="whatsapp"><span class="punto"></span>Sin conectar</span>
-                    </div>
-                    <div class="canal-head-extra">
-                        <span class="card-sub" data-actualizado="whatsapp"></span>
-                        <button class="btn-icon" data-refrescar="whatsapp" title="Actualizar ahora">
-                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M5.6 9A7 7 0 0118.4 9M18.4 15A7 7 0 015.6 15"/></svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="seccion">
-                    <div>
-                        <span class="label">Webhook (pégalo en Meta for Developers → WhatsApp → Configuración)</span>
-                        <div class="webhook-fila">
-                            <code class="webhook-url" data-webhook="whatsapp"></code>
-                            <button class="btn-icon" data-copiar="whatsapp" title="Copiar URL"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M6 8h8a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2z"/></svg></button>
-                        </div>
-                    </div>
-                    <div class="kpis" data-kpis="whatsapp"></div>
-                    <div>
-                        <div class="grafica-titulo" data-grafica-titulo="whatsapp">Mensajes recibidos por día</div>
-                        <div class="grafica" data-grafica="whatsapp"></div>
-                    </div>
-                    <div>
-                        <span class="label">Actividad reciente</span>
-                        <div class="evento-feed" data-eventos="whatsapp"></div>
-                    </div>
-                </div>
-            </section>
-
+        <!-- Instagram -->
             <section class="card" id="canal-instagram" style="flex-shrink: 0;">
                 <div class="card-head">
                     <div class="card-title">
@@ -1458,12 +1417,15 @@
                     </div>
                 </div>
                 <div class="seccion">
-                    <div>
-                        <span class="label">Webhook (pégalo en Meta for Developers → Instagram → Webhooks)</span>
-                        <div class="webhook-fila">
-                            <code class="webhook-url" data-webhook="instagram"></code>
-                            <button class="btn-icon" data-copiar="instagram" title="Copiar URL"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M6 8h8a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2z"/></svg></button>
+                    <div class="webhook-fila">
+                        <div class="min-w-0">
+                            <span class="label">Webhook de Instagram</span>
+                            <p class="ayuda">Cópialo y pégalo en Meta for Developers → Instagram → Webhooks.</p>
                         </div>
+                        <button type="button" class="btn-secundario" data-copiar="instagram">
+                            <svg class="icono-boton" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M6 8h8a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2z"/></svg>
+                            Copiar URL del webhook
+                        </button>
                     </div>
                     <div class="kpis" data-kpis="instagram"></div>
                     <div>
@@ -1476,7 +1438,6 @@
                     </div>
                 </div>
             </section>
-        </div>
     </main>
 
     <script>
@@ -1500,22 +1461,26 @@
         //   POST /query/upload    -> FormData con 'archivo', 'carpeta' (nombre de la carpeta), 'tipo' ('documento'|'imagen') y 'empresa'
         //   POST /query/generate  -> recibe { texto } y devuelve la voz (texto a voz)
         //   GET  /query/send_image/images/<nombre_imagen> -> devuelve el archivo de 'images_inventory'
-        //   GET  /query/metrics/whatsapp  y  GET /query/metrics/instagram  -> métricas reales del canal:
+        //   GET  /query/metrics/instagram -> métricas reales de Instagram:
         //        { conectado: true, actualizado: "ISO", metricas: [{ etiqueta, valor, delta?: "+12% vs ayer", direccion?: "sube"|"baja" }],
         //          serie: [{ fecha: "2026-10-01", valor: 12 }, ...],   (últimos 7 a 30 días)
         //          eventos: [{ id?, hora: "ISO", titulo: "Mensaje de Juan", texto: "Hola, ¿tienen...?" }] }
-        //   POST /query/webhooks/whatsapp -> webhook de WhatsApp
         // ==========================================
-        // NOTA: si cambia la URL de ngrok no hace falta tocar el código: haz clic en el indicador
-        // del servidor (arriba a la derecha) o abre la página con ?api=https://nueva-url/query.
-        // La dirección elegida se guarda en este navegador; API_POR_DEFECTO es la de fábrica.
+        // NOTA: la dirección del servidor no se muestra en ninguna parte del panel. Si cambia la URL de ngrok,
+        // actualiza API_POR_DEFECTO. Para probar otra sin tocar el código, abre la página una vez con
+        // ?api=https://nueva-url/query: se guarda en este navegador, se quita de la barra de direcciones y
+        // deja de usarse en cuanto API_POR_DEFECTO cambie.
         const API_POR_DEFECTO = 'https://unrotund-imani-diarthrodial.ngrok-free.dev/query';
         const limpiarUrlApi = (url) => String(url || '').trim().replace(/\/+$/, '');
         const API_BASE = (() => {
             try {
-                const desdeUrl = new URLSearchParams(location.search).get('api');
-                if (desdeUrl) localStorage.setItem('ana_api_base', limpiarUrlApi(desdeUrl));
-                return limpiarUrlApi(localStorage.getItem('ana_api_base')) || API_POR_DEFECTO;
+                const desdeUrl = limpiarUrlApi(new URLSearchParams(location.search).get('api'));
+                if (desdeUrl) {
+                    localStorage.setItem('ana_api_base', JSON.stringify({ url: desdeUrl, defecto: API_POR_DEFECTO }));
+                    history.replaceState(null, '', location.pathname + location.hash);
+                }
+                const guardada = JSON.parse(localStorage.getItem('ana_api_base') || 'null');
+                return guardada && guardada.url && guardada.defecto === API_POR_DEFECTO ? guardada.url : API_POR_DEFECTO;
             } catch (_) { return API_POR_DEFECTO; }
         })();
         const API_RAIZ = API_BASE.replace(/\/query$/i, ''); // /empresa y /message_into no van bajo /query
@@ -1523,8 +1488,8 @@
         const IMAGE_ENDPOINT = `${API_BASE}/send_image/images`;
         const UPLOAD_ENDPOINT = `${API_BASE}/upload`;
         const METRICS_ENDPOINT = (canal) => `${API_BASE}/metrics/${canal}`;
-        const WEBHOOK_URL = (canal) => (canal === 'instagram' ? `${API_RAIZ}/message_into` : `${API_BASE}/webhooks/${canal}`);
-        const METRICS_INTERVALO_MS = 30000; // cada cuánto se refrescan las métricas de WhatsApp e Instagram
+        const WEBHOOK_URL = { instagram: `${API_RAIZ}/message_into` }; // se copia con un botón, nunca se muestra
+        const METRICS_INTERVALO_MS = 30000; // cada cuánto se refrescan las métricas de Instagram
 
         // ---------- Utilidades ----------
         const $ = (id) => document.getElementById(id);
@@ -1575,20 +1540,10 @@
 
         // ---------- Estado del servidor (se actualiza con cada respuesta del backend) ----------
         const estadoServidor = $('estadoServidor');
-        estadoServidor.title = `Servidor: ${API_BASE}\nHaz clic para cambiar la dirección.`;
         function marcarServidor(ok) {
             estadoServidor.className = `pill ${ok ? 'on' : 'err'}`;
             estadoServidor.querySelector('.texto-pill').textContent = ok ? 'Servidor conectado' : 'Servidor sin conexión';
         }
-        estadoServidor.addEventListener('click', () => {
-            const nueva = prompt('Dirección del servidor del asistente (termina en /query).\nDéjala vacía para volver a la de fábrica.', API_BASE);
-            if (nueva === null) return;
-            try {
-                if (limpiarUrlApi(nueva)) localStorage.setItem('ana_api_base', limpiarUrlApi(nueva));
-                else localStorage.removeItem('ana_api_base');
-            } catch (_) { /* almacenamiento no disponible */ }
-            location.href = location.pathname + location.hash; // recarga sin ?api= para que gane la nueva
-        });
 
         // ==========================================
         // ESTADO
@@ -2388,7 +2343,7 @@
                 if (err instanceof TypeError) marcarServidor(false);
                 doc.estado = 'pendiente';
                 notificar('alerta', err.status === 404
-                    ? `"${doc.nombre}" quedó guardado solo en el panel: el servidor todavía no tiene la ruta para recibir archivos (/query/upload).`
+                    ? `"${doc.nombre}" quedó guardado solo en el panel: el servidor todavía no puede recibir archivos.`
                     : `"${doc.nombre}" quedó pendiente: no se pudo enviar al servidor. Puedes reintentar.`);
             }
             guardarDocumentos();
@@ -2730,7 +2685,7 @@
                 agregarMensaje('ana', error.status === 503 ? 'No pude generar la respuesta: el modelo no contestó. Inténtalo de nuevo en unos segundos.'
                     : error.status === 400 ? 'El servidor no aceptó el mensaje. Revisa que el nombre de la empresa esté guardado en la pestaña Empresa.'
                     : 'No pude conectarme con el servidor en este momento. Inténtalo de nuevo en unos segundos.');
-                notificar('error', error.status ? `El servidor respondió con error ${error.status} en /response.` : 'Error de conexión con el modelo. Revisa que el servidor esté activo.');
+                notificar('error', error.status ? `El servidor respondió con error ${error.status} al generar la respuesta.` : 'Error de conexión con el modelo. Revisa que el servidor esté activo.');
             } finally {
                 setOrbState('idle');
                 ocupado = false;
@@ -3455,6 +3410,7 @@
                 inventario.productos = asegurarIds(productos);
                 guardarInventario('conexion', true);
                 renderConexion();
+                $('invUrl').value = ''; // el enlace no queda a la vista
                 notificar('ok', `Inventario conectado a ${NOMBRE_FUENTE[imp.fuente]}: ${productos.length} productos importados.`);
             }
             importaciones[tipo] = null;
@@ -3538,7 +3494,6 @@
                 <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.8 10.2a4 4 0 010 5.6l-2 2a4 4 0 01-5.6-5.6l1-1m3-3l1-1a4 4 0 015.6 5.6l-1 1"/></svg></span>
                 <div class="flex-1 min-w-0">
                     <b>Conectado a ${escaparHtml(NOMBRE_FUENTE[conexionInv.fuente] || 'un enlace')}</b>
-                    <small class="truncate" title="${escaparHtml(conexionInv.url)}">${escaparHtml(conexionInv.url)}</small>
                     <small>${invSincronizando ? 'Sincronizando...' : `Última lectura ${conexionInv.ultima ? horaCorta(conexionInv.ultima) : '—'} · ${TEXTO_INTERVALO[conexionInv.intervalo] || ''}`}</small>
                     ${conexionInv.error ? `<small class="ayuda error">Último intento falló: ${escaparHtml(conexionInv.error)}</small>` : ''}
                 </div>
@@ -3632,23 +3587,33 @@
         // ==========================================
         // CANALES: WHATSAPP E INSTAGRAM (webhooks + métricas reales del backend)
         // ==========================================
-        const CANALES = ['whatsapp', 'instagram'];
-        const NOMBRE_CANAL = { whatsapp: 'WhatsApp', instagram: 'Instagram' };
+        const CANALES = ['instagram'];
+        const NOMBRE_CANAL = { instagram: 'Instagram' };
         let datosCanal = cargar('ana_canales', {}); // último payload recibido por canal
         let eventosVistos = new Set(cargar('ana_eventos_vistos', []));
         let metricsTimer = null;
 
         function q(sel, canal) { return document.querySelector(`[data-${sel}="${canal}"]`); }
 
-        CANALES.forEach((c) => { q('webhook', c).textContent = WEBHOOK_URL(c); });
+        // Copia al portapapeles sin mostrar la dirección (con respaldo para navegadores sin Clipboard API)
+        function copiarTexto(texto) {
+            if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(texto);
+            const area = Object.assign(document.createElement('textarea'), { value: texto });
+            area.style.cssText = 'position:fixed;opacity:0;pointer-events:none;';
+            document.body.appendChild(area);
+            area.select();
+            const ok = document.execCommand('copy');
+            area.remove();
+            return ok ? Promise.resolve() : Promise.reject(new Error('No se pudo copiar'));
+        }
 
         document.querySelectorAll('[data-copiar]').forEach((btn) => btn.addEventListener('click', async () => {
             const canal = btn.dataset.copiar;
             try {
-                await navigator.clipboard.writeText(WEBHOOK_URL(canal));
-                notificar('info', `URL del webhook de ${NOMBRE_CANAL[canal]} copiada.`);
+                await copiarTexto(WEBHOOK_URL[canal]);
+                notificar('info', `URL del webhook de ${NOMBRE_CANAL[canal]} copiada. Pégala en Meta for Developers.`);
             } catch (_) {
-                notificar('alerta', 'No se pudo copiar automáticamente. Selecciona la URL y cópiala a mano.');
+                notificar('alerta', 'No se pudo copiar la URL del webhook. Inténtalo de nuevo.');
             }
         }));
         document.querySelectorAll('[data-refrescar]').forEach((btn) => btn.addEventListener('click', () => cargarMetricas(btn.dataset.refrescar, true)));
@@ -3672,7 +3637,7 @@
 
             if (!data) {
                 setEstadoCanal(canal, 'off', 'Sin conectar');
-                kpis.innerHTML = `<div class="vacio" style="grid-column: 1 / -1;">Todavía no llegan datos de ${NOMBRE_CANAL[canal]}. Configura el webhook en Meta y asegúrate de que el servidor responda en /metrics/${canal}.</div>`;
+                kpis.innerHTML = `<div class="vacio" style="grid-column: 1 / -1;">Todavía no llegan datos de ${NOMBRE_CANAL[canal]}. Cuando el servidor empiece a enviar las métricas, aparecerán aquí.</div>`;
                 graf.innerHTML = '';
                 feed.innerHTML = '';
                 q('actualizado', canal).textContent = '';
