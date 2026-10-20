@@ -753,7 +753,7 @@
 </head>
 <body>
 
-    <!-- ================= LOGIN (solo si FIREBASE_CONFIG está configurado) ================= -->
+    <!-- ================= LOGIN (con FIREBASE_CONFIG y el servidor que lo exige) ================= -->
     <div id="login" class="login hidden" role="dialog" aria-modal="true" aria-labelledby="loginTitulo">
         <form id="loginForm" class="card login-tarjeta" novalidate>
             <div class="login-marca">
@@ -1487,7 +1487,7 @@
     <script>
         // ==========================================
         // CONEXIÓN CON EL BACKEND FLASK (app.py)
-        // Con login (FIREBASE_CONFIG lleno), todas las rutas menos /message_into llevan la cabecera
+        // Con login (FIREBASE_CONFIG lleno y servidor con la versión que lo exige), todas las rutas menos /message_into llevan la cabecera
         // Authorization: Bearer <ID token de Firebase> y el servidor saca de ahí la empresa (autenticacion/firebase.py).
         // Rutas que existen hoy en el servidor:
         //   POST /query/into      -> FormData con 'audio'; devuelve { texto } transcrito
@@ -1538,17 +1538,23 @@
         const METRICS_INTERVALO_MS = 30000; // cada cuánto se refrescan las métricas de Instagram
 
         // ---------- Login de las empresas (Firebase Authentication) ----------
-        // Pega aquí la configuración web del proyecto (Firebase > Configuración del proyecto > Tus apps).
-        // Mientras apiKey esté vacía, el panel funciona sin login, como antes. Las cuentas las crea Bytes
-        // con scripts/cuentas.py del backend: cada una lleva su empresa y nadie puede registrarse solo.
+        // Configuración web del proyecto (Firebase > Configuración del proyecto > Tus apps). No es secreta.
+        // Si apiKey queda vacía, el panel funciona sin login. Las cuentas las crea Bytes con
+        // scripts/cuentas.py del backend: cada una lleva su empresa y nadie puede registrarse solo.
         const FIREBASE_CONFIG = {
-            apiKey: '',
-            authDomain: '',
-            projectId: '',
-            appId: ''
+            apiKey: 'AIzaSyDaGsG5h7lijk8bIj5Fpx8qLMlSiSAa-Bg',
+            authDomain: 'ana-demo-c6a27.firebaseapp.com',
+            projectId: 'ana-demo-c6a27',
+            appId: '1:176425022120:web:ebfdd9b9fc62fd45d4489d'
         };
         const FIREBASE_SDK = 'https://www.gstatic.com/firebasejs/12.4.0';
-        const LOGIN_ACTIVO = !!FIREBASE_CONFIG.apiKey;
+        // El login se usa solo si el servidor ya tiene la versión que lo exige (rama login-firebase del backend);
+        // con la versión anterior el panel sigue sin login. Lo decide revisarLoginDelServidor() y se recuerda
+        // en este navegador; si nunca se pudo averiguar, se pide login.
+        const FIREBASE_CONFIGURADO = !!FIREBASE_CONFIG.apiKey;
+        const LOGIN_ACTIVO = FIREBASE_CONFIGURADO && (() => {
+            try { return JSON.parse(localStorage.getItem('ana_servidor_con_login')) !== false; } catch (_) { return true; }
+        })();
 
         // Firebase restaura la sesión de forma asíncrona; para pintar el panel de una vez se guarda un
         // resumen de la cuenta (uid, correo, empresa) y Firebase lo confirma en segundo plano (verificarSesion).
@@ -1588,6 +1594,24 @@
             if (window.ANA_EMULADOR_AUTH) firebaseAuth.useEmulator(window.ANA_EMULADOR_AUTH); // solo para pruebas locales
             return new Promise((resolve) => { const parar = firebaseAuth.onAuthStateChanged((u) => { parar(); resolve(u); }); });
         })();
+
+        // Pregunta al servidor sin token por una ruta protegida: la versión con login responde 401 y la
+        // anterior 404. Si cambió respecto de lo recordado, se guarda y se recarga una vez.
+        async function revisarLoginDelServidor() {
+            if (!FIREBASE_CONFIGURADO) return;
+            let conLogin;
+            try {
+                const res = await fetch(`${API_RAIZ}/empresa/search/__sonda__`, { headers: { ...NGROK_HEADERS } });
+                if (res.status === 401) conLogin = true;
+                else if (res.status === 404) conLogin = false;
+                else return;
+            } catch (_) { return; /* servidor apagado: se mantiene lo último que se supo */ }
+            if (conLogin === LOGIN_ACTIVO) return;
+            try {
+                localStorage.setItem('ana_servidor_con_login', JSON.stringify(conLogin));
+                if (JSON.parse(localStorage.getItem('ana_servidor_con_login')) === conLogin) location.reload();
+            } catch (_) { /* sin almacenamiento: no se puede recordar, no se recarga */ }
+        }
 
         // Cierra la sesión y vuelve al login con un aviso
         let cerrandoSesion = false;
@@ -4050,6 +4074,7 @@
             $('cerrarSesion').classList.remove('hidden');
             $('cerrarSesion').title = `Cerrar sesión (${SESION.correo})`;
         }
+        revisarLoginDelServidor();
         if (LOGIN_ACTIVO) verificarSesion();
         if (LOGIN_ACTIVO && !SESION) {
             mostrarLogin(); // sin sesión no se pide nada al servidor
