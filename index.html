@@ -659,6 +659,22 @@
         .dialogo-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.8rem; max-height: 65vh; overflow-y: auto; }
         .dialogo-body textarea.input { min-height: 4.5rem; }
 
+        /* ---------- Login ---------- */
+        body.sin-sesion > :not(#login) { display: none !important; }
+        .login { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 1rem; background: var(--fondo); overflow-y: auto; }
+        .login-tarjeta { width: min(400px, 100%); padding: 1.75rem; gap: 1rem; overflow: visible; }
+        .login-marca { display: flex; align-items: center; gap: 0.75rem; }
+        .login-marca .orbe-mini { width: 2.8rem; height: 2.8rem; }
+        .login-marca b { display: block; font-size: 1.2rem; font-weight: 600; }
+        .login-marca small { display: block; font-size: 0.8rem; color: var(--texto-suave); }
+        .login-tarjeta .btn-verde { width: 100%; padding: 0.7rem 1rem; font-size: 0.92rem; }
+        .campo-clave { position: relative; }
+        .campo-clave .input { padding-right: 5.5rem; }
+        .campo-clave .btn-texto { position: absolute; right: 0.35rem; top: 50%; transform: translateY(-50%); }
+        .login-pie { text-align: center; }
+        .ayuda.info { color: var(--verde-texto); }
+        .input[readonly] { color: var(--texto-suave); cursor: default; }
+
         /* ---------- Responsivo ---------- */
         /* Calendario angosto: puntos en vez de títulos */
         @media (max-width: 1100px) and (min-width: 901px) {
@@ -737,6 +753,31 @@
 </head>
 <body>
 
+    <!-- ================= LOGIN (solo si FIREBASE_CONFIG está configurado) ================= -->
+    <div id="login" class="login hidden" role="dialog" aria-modal="true" aria-labelledby="loginTitulo">
+        <form id="loginForm" class="card login-tarjeta" novalidate>
+            <div class="login-marca">
+                <span class="orbe-mini"></span>
+                <div><b id="loginTitulo">Bienvenido a ANA</b><small>Panel de tu empresa</small></div>
+            </div>
+            <p class="ayuda">Entra con la cuenta que te dio el equipo de Bytes.</p>
+            <div>
+                <label class="label" for="loginCorreo">Correo</label>
+                <input id="loginCorreo" class="input" type="email" autocomplete="username" required>
+            </div>
+            <div>
+                <label class="label" for="loginClave">Contraseña</label>
+                <div class="campo-clave">
+                    <input id="loginClave" class="input" type="password" autocomplete="current-password" required>
+                    <button type="button" id="loginVerClave" class="btn-texto" aria-label="Mostrar contraseña">Mostrar</button>
+                </div>
+            </div>
+            <p id="loginError" class="ayuda error hidden" role="alert"></p>
+            <button type="submit" id="loginEntrar" class="btn-verde">Entrar</button>
+            <p class="ayuda login-pie">¿No tienes cuenta u olvidaste tu contraseña? Escríbele al equipo de Bytes.</p>
+        </form>
+    </div>
+
     <!-- ================= BARRA SUPERIOR ================= -->
     <header class="barra">
         <div class="marca">
@@ -773,6 +814,9 @@
             <button id="temaToggle" class="btn-icon" type="button" title="Cambiar entre tema claro y oscuro">
                 <svg id="iconoLuna" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></svg>
                 <svg id="iconoSol" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4l1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4l1.4-1.4"/></svg>
+            </button>
+            <button id="cerrarSesion" class="btn-icon hidden" type="button" title="Cerrar sesión">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 16l4-4m0 0l-4-4m4 4H9m4 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1"/></svg>
             </button>
         </div>
     </header>
@@ -919,7 +963,7 @@
                         <div class="grupo-titulo">Identidad</div>
                         <div class="campos-2">
                             <div>
-                                <label class="label" for="empNombre">Nombre de la empresa <span class="texto-tenue">(obligatorio)</span></label>
+                                <label class="label" for="empNombre">Nombre de la empresa <span id="empNombreNota" class="texto-tenue">(obligatorio)</span></label>
                                 <input id="empNombre" class="input" placeholder="Ej. Bytes Technology" autocomplete="organization" maxlength="80" required>
                             </div>
                             <div>
@@ -1443,6 +1487,8 @@
     <script>
         // ==========================================
         // CONEXIÓN CON EL BACKEND FLASK (app.py)
+        // Con login (FIREBASE_CONFIG lleno), todas las rutas menos /message_into llevan la cabecera
+        // Authorization: Bearer <ID token de Firebase> y el servidor saca de ahí la empresa (autenticacion/firebase.py).
         // Rutas que existen hoy en el servidor:
         //   POST /query/into      -> FormData con 'audio'; devuelve { texto } transcrito
         //   POST /query/response  -> { texto, empresa: "Nombre de la empresa" } -> { output }
@@ -1491,18 +1537,101 @@
         const WEBHOOK_URL = { instagram: `${API_RAIZ}/message_into` }; // se copia con un botón, nunca se muestra
         const METRICS_INTERVALO_MS = 30000; // cada cuánto se refrescan las métricas de Instagram
 
+        // ---------- Login de las empresas (Firebase Authentication) ----------
+        // Pega aquí la configuración web del proyecto (Firebase > Configuración del proyecto > Tus apps).
+        // Mientras apiKey esté vacía, el panel funciona sin login, como antes. Las cuentas las crea Bytes
+        // con scripts/cuentas.py del backend: cada una lleva su empresa y nadie puede registrarse solo.
+        const FIREBASE_CONFIG = {
+            apiKey: '',
+            authDomain: '',
+            projectId: '',
+            appId: ''
+        };
+        const FIREBASE_SDK = 'https://www.gstatic.com/firebasejs/12.4.0';
+        const LOGIN_ACTIVO = !!FIREBASE_CONFIG.apiKey;
+
+        // Firebase restaura la sesión de forma asíncrona; para pintar el panel de una vez se guarda un
+        // resumen de la cuenta (uid, correo, empresa) y Firebase lo confirma en segundo plano (verificarSesion).
+        function leerSesionGuardada() {
+            try {
+                const s = JSON.parse(localStorage.getItem('ana_sesion'));
+                return s && s.uid && s.empresa ? s : null;
+            } catch (_) { return null; }
+        }
+        function guardarSesion(usuario, empresaSesion) {
+            try {
+                localStorage.setItem('ana_sesion', JSON.stringify({ uid: usuario.uid, correo: usuario.email, empresa: empresaSesion }));
+                const s = leerSesionGuardada();
+                return !!s && s.uid === usuario.uid && s.empresa === empresaSesion;
+            } catch (_) { return false; }
+        }
+        const SESION = LOGIN_ACTIVO ? leerSesionGuardada() : null;
+
+        function cargarScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = () => reject(new Error('No se pudo cargar el inicio de sesión.'));
+                document.head.appendChild(script);
+            });
+        }
+
+        // Se resuelve con el usuario de Firebase (o null) cuando el SDK terminó de restaurar la sesión
+        let firebaseAuth = null;
+        const firebaseListo = !LOGIN_ACTIVO ? Promise.resolve(null) : (async () => {
+            await cargarScript(`${FIREBASE_SDK}/firebase-app-compat.js`);
+            await cargarScript(`${FIREBASE_SDK}/firebase-auth-compat.js`);
+            firebase.initializeApp(FIREBASE_CONFIG);
+            firebaseAuth = firebase.auth();
+            firebaseAuth.languageCode = 'es';
+            if (window.ANA_EMULADOR_AUTH) firebaseAuth.useEmulator(window.ANA_EMULADOR_AUTH); // solo para pruebas locales
+            return new Promise((resolve) => { const parar = firebaseAuth.onAuthStateChanged((u) => { parar(); resolve(u); }); });
+        })();
+
+        // Cierra la sesión y vuelve al login con un aviso
+        let cerrandoSesion = false;
+        async function terminarSesion(texto, informativo = false) {
+            if (cerrandoSesion) return;
+            cerrandoSesion = true;
+            try { sessionStorage.setItem('ana_login_aviso', JSON.stringify({ texto, informativo })); } catch (_) { /* sin almacenamiento */ }
+            try { localStorage.removeItem('ana_sesion'); } catch (_) { /* sin almacenamiento */ }
+            try { await firebaseListo; if (firebaseAuth) await firebaseAuth.signOut(); } catch (_) { /* sin conexión: igual se sale */ }
+            location.reload();
+        }
+
+        // Todas las llamadas al backend pasan por aquí: cabecera de ngrok y, con login, el token de la sesión
+        async function apiFetch(url, opciones = {}) {
+            const headers = { ...NGROK_HEADERS, ...(opciones.headers || {}) };
+            if (LOGIN_ACTIVO) {
+                if (!SESION) throw new Error('Sin sesión');
+                await firebaseListo;
+                const usuario = firebaseAuth && firebaseAuth.currentUser;
+                if (!usuario) { terminarSesion('Tu sesión terminó. Vuelve a iniciar sesión.'); throw new Error('Sin sesión'); }
+                headers.Authorization = `Bearer ${await usuario.getIdToken()}`;
+            }
+            const res = await fetch(url, { ...opciones, headers });
+            if (LOGIN_ACTIVO && res.status === 401) terminarSesion('Tu sesión terminó. Vuelve a iniciar sesión.');
+            return res;
+        }
+
         // ---------- Utilidades ----------
         const $ = (id) => document.getElementById(id);
         const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
         const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
         const DIAS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 
+        // Con login, lo guardado en el navegador va aparte por cada cuenta (dos empresas en el mismo equipo no se mezclan)
+        const PREFIJO_ALMACEN = SESION ? `ana:${SESION.uid}:` : '';
+        const CLAVES_GLOBALES = ['ana_tema'];
+        const claveAlmacen = (clave) => (CLAVES_GLOBALES.includes(clave) ? clave : PREFIJO_ALMACEN + clave);
+
         function guardar(clave, valor) {
-            try { localStorage.setItem(clave, JSON.stringify(valor)); return true; } catch (_) { return false; /* almacenamiento lleno o no disponible */ }
+            try { localStorage.setItem(claveAlmacen(clave), JSON.stringify(valor)); return true; } catch (_) { return false; /* almacenamiento lleno o no disponible */ }
         }
         function cargar(clave, porDefecto) {
             try {
-                const v = localStorage.getItem(clave);
+                const v = localStorage.getItem(claveAlmacen(clave));
                 return v ? JSON.parse(v) : porDefecto;
             } catch (_) { return porDefecto; }
         }
@@ -1550,6 +1679,7 @@
         // ==========================================
         let eventos = cargar('ana_eventos', []);            // [{ id, fecha: 'YYYY-MM-DD', titulo, origen: 'ana'|'manual' }]
         let empresa = cargar('ana_empresa', {});            // { ...camposEmpresa, actualizado, enServidor }
+        if (SESION) empresa.nombre = SESION.empresa;        // con login, el nombre lo da la cuenta
         let documentos = cargar('ana_documentos', []);      // [{ id, nombre, tamano, tipo, fecha, estado }]
         let notificaciones = cargar('ana_notificaciones', []); // [{ id, tipo, texto, hora }]
         let chat = cargar('ana_chat', []);                  // [{ rol: 'user'|'ana', texto, fotos?: [nombres] }]
@@ -1945,7 +2075,7 @@
             if (!empresa.nombre) return false;
             renderEstadoEmpresa('Enviando al servidor...');
             const cuerpo = JSON.stringify(empresaParaServidor());
-            const pedir = (url, method) => fetch(url, { method, headers: { 'Content-Type': 'application/json', ...NGROK_HEADERS }, body: cuerpo });
+            const pedir = (url, method) => apiFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: cuerpo });
             try {
                 let res = await pedir(`${API_RAIZ}/empresa/carga`, 'POST');
                 if (res.status === 409) res = await pedir(`${API_RAIZ}/empresa/update/${encodeURIComponent(empresa.nombre)}`, 'PUT');
@@ -1960,6 +2090,54 @@
             guardar('ana_empresa', empresa);
             renderEstadoEmpresa();
             return !!empresa.enServidor;
+        }
+
+        // Con login, al entrar desde un navegador sin datos se trae la ficha guardada en el servidor, para no
+        // pisarla con un formulario vacío. Es lo inverso de empresaParaServidor().
+        const FRASES_ESTILO = [
+            [/^Trata al cliente de usted$/, (a) => { a.trato = 'usted'; }],
+            [/^Tutea al cliente$/, (a) => { a.trato = 'tu'; }],
+            [/^Responde de forma breve$/, (a) => { a.longitud = 'breve'; }],
+            [/^Responde con detalle$/, (a) => { a.longitud = 'detallada'; }],
+            [/^Puedes usar algún emoji$/, (a) => { a.emojis = true; }],
+            [/^No uses emojis$/, (a) => { a.emojis = false; }],
+            [/^Para saludar usa: (.+)$/, (a, m) => { a.saludo = m[1]; }]
+        ];
+        async function traerEmpresaDelServidor() {
+            if (!SESION || empresa.actualizado) return;
+            try {
+                const res = await apiFetch(`${API_RAIZ}/empresa/search/${encodeURIComponent(empresa.nombre)}`);
+                marcarServidor(res.status < 500);
+                if (!res.ok) return; // 404: la empresa todavía no tiene ficha
+                const d = await res.json();
+                const texto = (v) => { const t = String(v ?? '').trim(); return ['None', 'null', '[]'].includes(t) ? '' : t.replace(/^\[['"]?|['"]?\]$/g, ''); };
+                const info = d.companyInfo || {}, redes = d.socials || {}, ahora = new Date().toISOString();
+                empresa = {
+                    nombre: SESION.empresa, sector: texto(info.biz), productos: texto(info.does),
+                    mision: texto(info.mission), vision: texto(info.vision), valores: texto(info.values),
+                    whatsapp: texto(redes.whatsapp), instagram: texto(redes.instagram), facebook: texto(redes.facebook), linkedin: texto(redes.linkedin),
+                    actualizado: ahora, enServidor: ahora
+                };
+                guardar('ana_empresa', empresa);
+                if (!asistente.actualizado) {
+                    const buscar = (mapa, valor) => Object.keys(mapa).find((k) => mapa[k].toLowerCase() === texto(valor).toLowerCase());
+                    const cfg = { ...ASISTENTE_DEFECTO, nombre: texto(d.name) || ASISTENTE_DEFECTO.nombre, rol: texto(d.role),
+                        tono: buscar(NOMBRE_TONO, d.tone) || ASISTENTE_DEFECTO.tono, idioma: buscar(IDIOMA_SERVIDOR, d.lang) || ASISTENTE_DEFECTO.idioma };
+                    // Las indicaciones juntan el estilo (frases que arma el panel) y las instrucciones escritas a mano
+                    const instrucciones = [];
+                    texto(d.restrictions).split(/\.\s+/).map((f) => f.trim().replace(/\.$/, '')).filter(Boolean).forEach((frase) => {
+                        const estilo = FRASES_ESTILO.find(([re]) => re.test(frase));
+                        if (estilo) estilo[1](cfg, frase.match(estilo[0])); else instrucciones.push(frase);
+                    });
+                    cfg.instrucciones = instrucciones.join('. ');
+                    asistente = { ...cfg, actualizado: ahora };
+                    guardar('ana_asistente', asistente);
+                }
+                renderEmpresa();
+                renderAsistente();
+            } catch (err) {
+                console.error('No se pudo traer la ficha de la empresa:', err);
+            }
         }
 
         empresaForm.addEventListener('input', () => marcarPendiente('perfil', true));
@@ -2332,7 +2510,7 @@
                 formData.append('carpeta', nombreCarpeta(doc.carpeta));
                 formData.append('tipo', esImagen(doc) ? 'imagen' : 'documento');
                 if (empresa.nombre) formData.append('empresa', empresa.nombre);
-                const res = await fetch(UPLOAD_ENDPOINT, { method: 'POST', headers: { ...NGROK_HEADERS }, body: formData });
+                const res = await apiFetch(UPLOAD_ENDPOINT, { method: 'POST', body: formData });
                 marcarServidor(res.status < 500);
                 if (!res.ok) throw Object.assign(new Error(`Error en /upload: ${res.status}`), { status: res.status });
                 doc.estado = 'subido';
@@ -2646,9 +2824,9 @@
             mostrarEscribiendo(true);
 
             try {
-                const resResponse = await fetch(`${API_BASE}/response`, {
+                const resResponse = await apiFetch(`${API_BASE}/response`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', ...NGROK_HEADERS },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ texto: textoUsuario, ...contextoEmpresa() })
                 });
                 marcarServidor(resResponse.status < 500);
@@ -2706,9 +2884,9 @@
         // ---------- Texto a voz vía /generate ----------
         async function generarVoz(texto) {
             try {
-                const resVoz = await fetch(`${API_BASE}/generate`, {
+                const resVoz = await apiFetch(`${API_BASE}/generate`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', ...NGROK_HEADERS },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ texto })
                 });
                 if (!resVoz.ok) throw new Error(`Error en /generate (voz): ${resVoz.status}`);
@@ -2745,7 +2923,7 @@
         }
 
         async function descargarImagenInventario(nombreImagen) {
-            const resImagen = await fetch(`${IMAGE_ENDPOINT}/${encodeURIComponent(nombreImagen)}`, { method: 'GET', headers: { ...NGROK_HEADERS } });
+            const resImagen = await apiFetch(`${IMAGE_ENDPOINT}/${encodeURIComponent(nombreImagen)}`);
             const contentType = resImagen.headers.get('Content-Type') || '';
             if (!resImagen.ok || !contentType.startsWith('image/')) {
                 let detalle = `status ${resImagen.status}`;
@@ -2773,7 +2951,7 @@
             const formData = new FormData();
             // NOTA: ajusta el nombre del campo ('audio') según lo que espere captura_audio()
             formData.append('audio', audioBlob, 'grabacion.webm');
-            const resInto = await fetch(`${API_BASE}/into`, { method: 'POST', headers: { ...NGROK_HEADERS }, body: formData });
+            const resInto = await apiFetch(`${API_BASE}/into`, { method: 'POST', body: formData });
             if (!resInto.ok) throw new Error(`Error en /into: ${resInto.status}`);
             const dataInto = await resInto.json();
             // NOTA: ajusta esta clave según lo que realmente devuelva captura_audio()
@@ -3062,14 +3240,14 @@
             try {
                 let res;
                 if (!inventario.productos.length) {
-                    res = await fetch(`${API_RAIZ}/inventario/delete/${nombre}`, { method: 'DELETE', headers: { ...NGROK_HEADERS } });
+                    res = await apiFetch(`${API_RAIZ}/inventario/delete/${nombre}`, { method: 'DELETE' });
                     if (res.status === 404) res = { ok: true, status: 200 }; // ya no había inventario en el servidor
                 } else {
                     const json = JSON.stringify(inventarioParaServidor());
                     const formData = new FormData();
                     formData.append('inventory', new Blob([json], { type: 'application/json' }), 'inventario.json');
-                    res = await fetch(`${API_RAIZ}/inventario/load`, { method: 'POST', headers: { ...NGROK_HEADERS }, body: formData });
-                    if (res.status === 409) res = await fetch(`${API_RAIZ}/inventario/update/${nombre}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...NGROK_HEADERS }, body: json });
+                    res = await apiFetch(`${API_RAIZ}/inventario/load`, { method: 'POST', body: formData });
+                    if (res.status === 409) res = await apiFetch(`${API_RAIZ}/inventario/update/${nombre}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: json });
                 }
                 marcarServidor(res.status < 500);
                 if (!res.ok) throw new Error(`Error en /inventario: ${res.status}`);
@@ -3110,7 +3288,7 @@
             if (invRevisadoServidor || !empresa.nombre || inventario.productos.length) return;
             invRevisadoServidor = true;
             try {
-                const res = await fetch(`${API_RAIZ}/inventario/search/${encodeURIComponent(empresa.nombre)}`, { headers: { ...NGROK_HEADERS } });
+                const res = await apiFetch(`${API_RAIZ}/inventario/search/${encodeURIComponent(empresa.nombre)}`);
                 if (!res.ok) return;
                 const lista = (await res.json())?.companies?.[0]?.inventory;
                 if (!Array.isArray(lista) || !lista.length || inventario.productos.length) return;
@@ -3730,7 +3908,7 @@
 
         async function cargarMetricas(canal, manual = false) {
             try {
-                const res = await fetch(METRICS_ENDPOINT(canal), { headers: { ...NGROK_HEADERS } });
+                const res = await apiFetch(METRICS_ENDPOINT(canal));
                 marcarServidor(res.status < 500); // cualquier respuesta legible (incluso 404) viene del servidor
                 if (!res.ok) throw new Error(`Error en /metrics/${canal}: ${res.status}`);
                 const data = await res.json();
@@ -3769,6 +3947,88 @@
         }
 
         // ==========================================
+        // LOGIN DE LAS EMPRESAS
+        // ==========================================
+        const ERRORES_LOGIN = {
+            'auth/invalid-credential': 'Correo o contraseña incorrectos.',
+            'auth/invalid-login-credentials': 'Correo o contraseña incorrectos.',
+            'auth/wrong-password': 'Correo o contraseña incorrectos.',
+            'auth/user-not-found': 'Correo o contraseña incorrectos.',
+            'auth/invalid-email': 'Escribe un correo válido.',
+            'auth/user-disabled': 'Esta cuenta está desactivada. Escríbele al equipo de Bytes.',
+            'auth/too-many-requests': 'Demasiados intentos seguidos. Espera unos minutos y vuelve a intentarlo.',
+            'auth/network-request-failed': 'No hay conexión a internet.',
+            'ana/sin-empresa': 'Tu cuenta todavía no tiene una empresa asignada. Escríbele al equipo de Bytes.'
+        };
+
+        function mostrarErrorLogin(texto, informativo = false) {
+            const el = $('loginError');
+            el.textContent = texto;
+            el.classList.toggle('hidden', !texto);
+            el.classList.toggle('info', informativo);
+        }
+        function mostrarLogin() {
+            document.body.classList.add('sin-sesion');
+            $('login').classList.remove('hidden');
+            try {
+                const aviso = JSON.parse(sessionStorage.getItem('ana_login_aviso') || 'null');
+                sessionStorage.removeItem('ana_login_aviso');
+                if (aviso && aviso.texto) mostrarErrorLogin(aviso.texto, aviso.informativo);
+            } catch (_) { /* sin almacenamiento */ }
+            $('loginCorreo').focus();
+        }
+
+        // Confirma con Firebase la sesión guardada; si cambió (otra cuenta, sesión cerrada, sin empresa) se ajusta
+        function verificarSesion() {
+            firebaseListo.then(async (usuario) => {
+                if (!usuario) {
+                    if (SESION) terminarSesion('Tu sesión terminó. Vuelve a iniciar sesión.');
+                    return;
+                }
+                const { claims } = await usuario.getIdTokenResult();
+                if (!claims.empresa) return terminarSesion(ERRORES_LOGIN['ana/sin-empresa']);
+                const distinta = !SESION || SESION.uid !== usuario.uid || SESION.empresa !== claims.empresa;
+                if (distinta && guardarSesion(usuario, claims.empresa)) location.reload();
+            }).catch((err) => console.error('No se pudo verificar la sesión:', err));
+        }
+
+        $('loginVerClave').addEventListener('click', () => {
+            const campo = $('loginClave'), boton = $('loginVerClave');
+            const ver = campo.type === 'password';
+            campo.type = ver ? 'text' : 'password';
+            boton.textContent = ver ? 'Ocultar' : 'Mostrar';
+            boton.setAttribute('aria-label', ver ? 'Ocultar contraseña' : 'Mostrar contraseña');
+        });
+
+        $('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const correo = $('loginCorreo').value.trim(), clave = $('loginClave').value;
+            if (!correo || !clave) { mostrarErrorLogin('Escribe tu correo y tu contraseña.'); return; }
+            const boton = $('loginEntrar');
+            boton.disabled = true;
+            boton.textContent = 'Entrando...';
+            mostrarErrorLogin('');
+            try {
+                await firebaseListo;
+                const { user } = await firebaseAuth.signInWithEmailAndPassword(correo, clave);
+                const { claims } = await user.getIdTokenResult();
+                if (!claims.empresa) {
+                    await firebaseAuth.signOut();
+                    throw Object.assign(new Error('Cuenta sin empresa'), { code: 'ana/sin-empresa' });
+                }
+                if (!guardarSesion(user, claims.empresa)) throw new Error('No se pudo guardar la sesión en este navegador.');
+                location.reload();
+            } catch (err) {
+                console.error('No se pudo iniciar sesión:', err);
+                mostrarErrorLogin(ERRORES_LOGIN[err.code] || (firebaseAuth ? 'No se pudo iniciar sesión. Inténtalo de nuevo.' : 'No se pudo cargar el inicio de sesión. Revisa tu conexión a internet.'));
+                boton.disabled = false;
+                boton.textContent = 'Entrar';
+            }
+        });
+
+        $('cerrarSesion').addEventListener('click', () => terminarSesion('Cerraste sesión.', true));
+
+        // ==========================================
         // ARRANQUE
         // ==========================================
         renderNotificaciones();
@@ -3780,16 +4040,29 @@
         renderChat();
         renderVozToggle();
         revisarRecordatorios();
-        if (empresa.nombre && !empresa.enServidor) enviarEmpresaAlServidor(); // datos guardados antes de que llegaran al servidor
         renderInventario();
         renderConexion();
         mostrarVistaInv(vistaInv);
-        if (empresa.nombre && inventario.actualizado && !inventario.enServidor) enviarInventario();
-        setInterval(revisarSincronizacion, 60000);
-        setTimeout(revisarSincronizacion, 3000);
         CANALES.forEach(renderCanal);
-        refrescarCanales();
-        metricsTimer = setInterval(refrescarCanales, METRICS_INTERVALO_MS);
+        if (SESION) {
+            $('empNombre').readOnly = true;
+            $('empNombreNota').textContent = '(viene de tu cuenta)';
+            $('cerrarSesion').classList.remove('hidden');
+            $('cerrarSesion').title = `Cerrar sesión (${SESION.correo})`;
+        }
+        if (LOGIN_ACTIVO) verificarSesion();
+        if (LOGIN_ACTIVO && !SESION) {
+            mostrarLogin(); // sin sesión no se pide nada al servidor
+        } else {
+            traerEmpresaDelServidor();
+            traerInventarioDelServidor();
+            if (empresa.actualizado && empresa.nombre && !empresa.enServidor) enviarEmpresaAlServidor(); // datos guardados antes de que llegaran al servidor
+            if (empresa.nombre && inventario.actualizado && !inventario.enServidor) enviarInventario();
+            setInterval(revisarSincronizacion, 60000);
+            setTimeout(revisarSincronizacion, 3000);
+            refrescarCanales();
+            metricsTimer = setInterval(refrescarCanales, METRICS_INTERVALO_MS);
+        }
         mostrarPestana(location.hash.replace('#', '') || cargar('ana_pestana', 'principal'));
     </script>
 </body>
