@@ -832,8 +832,8 @@
                         <div class="grupo-titulo">Identidad</div>
                         <div class="campos-2">
                             <div>
-                                <label class="label" for="empNombre">Nombre de la empresa</label>
-                                <input id="empNombre" class="input" placeholder="Ej. Bytes Technology" autocomplete="organization">
+                                <label class="label" for="empNombre">Nombre de la empresa <span class="texto-tenue">(obligatorio)</span></label>
+                                <input id="empNombre" class="input" placeholder="Ej. Bytes Technology" autocomplete="organization" maxlength="80" required>
                             </div>
                             <div>
                                 <label class="label" for="empSector">A qué se dedica</label>
@@ -843,6 +843,23 @@
                         <div>
                             <label class="label" for="empProductos">Qué hace / qué vende</label>
                             <input id="empProductos" class="input" placeholder="Ej. Aplicaciones a medida, soporte TI, licencias">
+                        </div>
+                    </div>
+                    <div class="grupo">
+                        <div class="grupo-titulo">Misión, visión y valores</div>
+                        <div>
+                            <label class="label" for="empMision">Misión</label>
+                            <textarea id="empMision" class="input" rows="2" placeholder="Ej. Ofrecer soluciones tecnológicas que hagan crecer a las pequeñas empresas"></textarea>
+                        </div>
+                        <div class="campos-2">
+                            <div>
+                                <label class="label" for="empVision">Visión</label>
+                                <input id="empVision" class="input" placeholder="Ej. Ser el aliado tecnológico líder de la región">
+                            </div>
+                            <div>
+                                <label class="label" for="empValores">Valores</label>
+                                <input id="empValores" class="input" placeholder="Ej. Honestidad, cercanía, puntualidad">
+                            </div>
                         </div>
                     </div>
                     <div class="grupo">
@@ -859,12 +876,35 @@
                         </div>
                         <div class="campos-2">
                             <div>
-                                <label class="label" for="empWeb">Sitio web o redes</label>
-                                <input id="empWeb" class="input" placeholder="Ej. www.empresa.com · @empresa">
-                            </div>
-                            <div>
                                 <label class="label" for="empUbicacion">Ubicación</label>
                                 <input id="empUbicacion" class="input" placeholder="Ej. Calle 10 #20-30, Bogotá">
+                            </div>
+                            <div>
+                                <label class="label" for="empWeb">Sitio web</label>
+                                <input id="empWeb" class="input" placeholder="Ej. www.empresa.com">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grupo">
+                        <div class="grupo-titulo">Redes sociales</div>
+                        <div class="campos-2">
+                            <div>
+                                <label class="label" for="empWhatsapp">WhatsApp</label>
+                                <input id="empWhatsapp" class="input" placeholder="Ej. +57 300 000 0000">
+                            </div>
+                            <div>
+                                <label class="label" for="empInstagram">Instagram</label>
+                                <input id="empInstagram" class="input" placeholder="Ej. @empresa">
+                            </div>
+                        </div>
+                        <div class="campos-2">
+                            <div>
+                                <label class="label" for="empFacebook">Facebook</label>
+                                <input id="empFacebook" class="input" placeholder="Ej. facebook.com/empresa">
+                            </div>
+                            <div>
+                                <label class="label" for="empLinkedin">LinkedIn</label>
+                                <input id="empLinkedin" class="input" placeholder="Ej. linkedin.com/company/empresa">
                             </div>
                         </div>
                     </div>
@@ -911,6 +951,10 @@
                                             <option value="auto">El mismo del usuario</option>
                                         </select>
                                     </div>
+                                </div>
+                                <div>
+                                    <label class="label" for="iaRol">Función del asistente</label>
+                                    <input id="iaRol" class="input" placeholder="Ej. Vendedor, recepcionista, soporte técnico" maxlength="60">
                                 </div>
                                 <div>
                                     <label class="label" for="iaSaludo">Saludo inicial <span class="texto-tenue">(opcional)</span></label>
@@ -1133,22 +1177,26 @@
 
     <script>
         // ==========================================
-        // ZONA DE CONEXIÓN CON EL BACKEND FLASK (blueprint 'input')
-        //   POST /query/into      -> ingreso de audio, devuelve el texto transcrito
-        //   POST /query/response  -> recibe { texto, empresa, documentos } y devuelve la respuesta del modelo
-        //                            Opcionalmente puede devolver:
-        //                              image_url: "a.png" | "a.png, b.png" | ["a.png", "b.png"]  (fotos del inventario)
-        //                              eventos:   [{ fecha: "2026-10-15", titulo: "Pago de nómina" }, ...]  (para el calendario)
+        // CONEXIÓN CON EL BACKEND FLASK (app.py)
+        // Rutas que existen hoy en el servidor:
+        //   POST /query/into      -> FormData con 'audio'; devuelve { texto } transcrito
+        //   POST /query/response  -> { texto, empresa: "Nombre de la empresa" } -> { output }
+        //                            'empresa' es el NOMBRE (texto): con él el servidor carga la ficha guardada con /empresa/carga.
+        //                            Sin 'empresa' responde 400. El panel envía además asistente, documentos, archivos y
+        //                            eventos (hoy el servidor los ignora). Si algún día devuelve image_url (fotos del inventario)
+        //                            o eventos [{ fecha: "2026-10-15", titulo }] (calendario), el panel ya los muestra.
+        //   POST /empresa/carga            -> crea la ficha de la empresa (409 si ya existe)
+        //   PUT  /empresa/update/<empresa> -> la actualiza. Cuerpo de ambas: ver empresaParaServidor()
+        //   GET/POST /message_into         -> webhook de Instagram (se pega en Meta for Developers)
+        // Rutas que el panel usa pero el servidor todavía no tiene (responden 404 y el panel lo indica):
+        //   POST /query/upload    -> FormData con 'archivo', 'carpeta' (nombre de la carpeta), 'tipo' ('documento'|'imagen') y 'empresa'
         //   POST /query/generate  -> recibe { texto } y devuelve la voz (texto a voz)
-        //   POST /query/upload    -> recibe FormData con 'archivo', 'carpeta' (nombre de la carpeta), 'tipo' ('documento'|'imagen') y 'empresa'
-        //   /query/response recibe también 'asistente' { nombre, tono, longitud, trato, idioma, emojis, saludo, instrucciones }
-        //   y 'archivos' [{ nombre, carpeta, tipo }] para que el modelo hable como se configuró en la pestaña Empresa
+        //   GET  /query/send_image/images/<nombre_imagen> -> devuelve el archivo de 'images_inventory'
         //   GET  /query/metrics/whatsapp  y  GET /query/metrics/instagram  -> métricas reales del canal:
         //        { conectado: true, actualizado: "ISO", metricas: [{ etiqueta, valor, delta?: "+12% vs ayer", direccion?: "sube"|"baja" }],
         //          serie: [{ fecha: "2026-10-01", valor: 12 }, ...],   (últimos 7 a 30 días)
         //          eventos: [{ id?, hora: "ISO", titulo: "Mensaje de Juan", texto: "Hola, ¿tienen...?" }] }
-        //   POST /query/webhooks/whatsapp y POST /query/webhooks/instagram -> reciben los webhooks de Meta (los expone el backend)
-        //   GET  /query/send_image/images/<nombre_imagen> -> devuelve el archivo de 'images_inventory'
+        //   POST /query/webhooks/whatsapp -> webhook de WhatsApp
         // ==========================================
         // NOTA: si cambia la URL de ngrok no hace falta tocar el código: haz clic en el indicador
         // del servidor (arriba a la derecha) o abre la página con ?api=https://nueva-url/query.
@@ -1162,11 +1210,12 @@
                 return limpiarUrlApi(localStorage.getItem('ana_api_base')) || API_POR_DEFECTO;
             } catch (_) { return API_POR_DEFECTO; }
         })();
+        const API_RAIZ = API_BASE.replace(/\/query$/i, ''); // /empresa y /message_into no van bajo /query
         const NGROK_HEADERS = { 'ngrok-skip-browser-warning': 'true' };
         const IMAGE_ENDPOINT = `${API_BASE}/send_image/images`;
         const UPLOAD_ENDPOINT = `${API_BASE}/upload`;
         const METRICS_ENDPOINT = (canal) => `${API_BASE}/metrics/${canal}`;
-        const WEBHOOK_URL = (canal) => `${API_BASE}/webhooks/${canal}`;
+        const WEBHOOK_URL = (canal) => (canal === 'instagram' ? `${API_RAIZ}/message_into` : `${API_BASE}/webhooks/${canal}`);
         const METRICS_INTERVALO_MS = 30000; // cada cuánto se refrescan las métricas de WhatsApp e Instagram
 
         // ---------- Utilidades ----------
@@ -1237,7 +1286,7 @@
         // ESTADO
         // ==========================================
         let eventos = cargar('ana_eventos', []);            // [{ id, fecha: 'YYYY-MM-DD', titulo, origen: 'ana'|'manual' }]
-        let empresa = cargar('ana_empresa', {});            // { nombre, sector, productos, otros }
+        let empresa = cargar('ana_empresa', {});            // { ...camposEmpresa, actualizado, enServidor }
         let documentos = cargar('ana_documentos', []);      // [{ id, nombre, tamano, tipo, fecha, estado }]
         let notificaciones = cargar('ana_notificaciones', []); // [{ id, tipo, texto, hora }]
         let chat = cargar('ana_chat', []);                  // [{ rol: 'user'|'ana', texto, fotos?: [nombres] }]
@@ -1565,20 +1614,93 @@
         // ---------- Datos de la empresa ----------
         const empresaForm = $('empresaForm');
         const camposEmpresa = {
-            nombre: 'empNombre', sector: 'empSector', productos: 'empProductos', horario: 'empHorario',
-            contacto: 'empContacto', web: 'empWeb', ubicacion: 'empUbicacion', otros: 'empOtros'
+            nombre: 'empNombre', sector: 'empSector', productos: 'empProductos',
+            mision: 'empMision', vision: 'empVision', valores: 'empValores',
+            horario: 'empHorario', contacto: 'empContacto', ubicacion: 'empUbicacion', web: 'empWeb',
+            whatsapp: 'empWhatsapp', instagram: 'empInstagram', facebook: 'empFacebook', linkedin: 'empLinkedin',
+            otros: 'empOtros'
         };
 
         function renderEmpresa() {
             Object.entries(camposEmpresa).forEach(([k, id]) => { $(id).value = empresa[k] || ''; });
             $('empresaHeader').textContent = empresa.nombre ? `Asistente de ${empresa.nombre}` : 'Asistente de tu empresa';
-            $('empresaEstado').textContent = empresa.actualizado ? `Guardado ${horaCorta(empresa.actualizado)}` : 'Sin guardar todavía';
             marcarPendiente('perfil', false);
+            renderEstadoEmpresa();
             renderResumen();
         }
 
+        // Pie del formulario: si los datos llegaron al servidor o solo están en este navegador
+        function renderEstadoEmpresa(texto) {
+            const estado = $('empresaEstado');
+            if (!document.querySelector('[data-pendiente="perfil"]').classList.contains('hidden')) return; // hay cambios sin guardar
+            const sinEnviar = !!empresa.actualizado && !empresa.enServidor;
+            estado.textContent = texto || (!empresa.actualizado ? 'Sin guardar todavía'
+                : sinEnviar ? 'Guardado solo en este navegador: no llegó al servidor'
+                : `Guardado y enviado al servidor ${horaCorta(empresa.enServidor)}`);
+            estado.classList.toggle('pendiente', !texto && sinEnviar);
+        }
+
+        // ---------- Envío de la ficha de la empresa al backend (/empresa) ----------
+        // company.py espera { name, company, color, tone, voice, lang, tags, restrictions, role,
+        // companyInfo: { biz, does, mission, values, vision }, socials: { instagram, facebook, linkedin, whatsapp } }.
+        // Lo que no tiene campo propio en el servidor viaja como texto: horario, ubicación, contacto, web y otros
+        // dentro de la descripción (biz), y el estilo del asistente dentro de las indicaciones (restrictions).
+        const IDIOMA_SERVIDOR = { es: 'español', en: 'inglés', pt: 'portugués', auto: 'el mismo idioma que use el cliente' };
+        const unirFrases = (...partes) => partes.map((p) => String(p || '').trim().replace(/[.\s]+$/, '')).filter(Boolean).join('. ');
+        const conEtiqueta = (etiqueta, valor) => (valor ? `${etiqueta}: ${valor}` : '');
+
+        function empresaParaServidor() {
+            const e = empresa, a = asistente;
+            return {
+                name: nombreIA(),
+                company: e.nombre,
+                color: '', voice: '', tags: '',
+                tone: NOMBRE_TONO[a.tono] || '',
+                lang: IDIOMA_SERVIDOR[a.idioma] || '',
+                role: a.rol || '',
+                restrictions: unirFrases(
+                    a.trato === 'usted' ? 'Trata al cliente de usted' : 'Tutea al cliente',
+                    { breve: 'Responde de forma breve', detallada: 'Responde con detalle' }[a.longitud],
+                    a.emojis ? 'Puedes usar algún emoji' : 'No uses emojis',
+                    conEtiqueta('Para saludar usa', a.saludo),
+                    a.instrucciones
+                ),
+                companyInfo: {
+                    biz: unirFrases(e.sector, conEtiqueta('Horario de atención', e.horario), conEtiqueta('Ubicación', e.ubicacion),
+                        conEtiqueta('Contacto', e.contacto), conEtiqueta('Sitio web', e.web), e.otros),
+                    does: e.productos || '',
+                    mission: e.mision || '',
+                    values: e.valores || '',
+                    vision: e.vision || ''
+                },
+                socials: { instagram: e.instagram || '', facebook: e.facebook || '', linkedin: e.linkedin || '', whatsapp: e.whatsapp || '' }
+            };
+        }
+
+        // Crea la ficha (POST /empresa/carga) o, si ya existe (409), la actualiza (PUT /empresa/update/<nombre>)
+        async function enviarEmpresaAlServidor() {
+            if (!empresa.nombre) return false;
+            renderEstadoEmpresa('Enviando al servidor...');
+            const cuerpo = JSON.stringify(empresaParaServidor());
+            const pedir = (url, method) => fetch(url, { method, headers: { 'Content-Type': 'application/json', ...NGROK_HEADERS }, body: cuerpo });
+            try {
+                let res = await pedir(`${API_RAIZ}/empresa/carga`, 'POST');
+                if (res.status === 409) res = await pedir(`${API_RAIZ}/empresa/update/${encodeURIComponent(empresa.nombre)}`, 'PUT');
+                marcarServidor(res.status < 500);
+                if (!res.ok) throw new Error(`Error en /empresa: ${res.status}`);
+                empresa.enServidor = new Date().toISOString();
+            } catch (err) {
+                console.error('No se pudieron enviar los datos de la empresa:', err);
+                if (err instanceof TypeError) marcarServidor(false);
+                empresa.enServidor = null;
+            }
+            guardar('ana_empresa', empresa);
+            renderEstadoEmpresa();
+            return !!empresa.enServidor;
+        }
+
         empresaForm.addEventListener('input', () => marcarPendiente('perfil', true));
-        empresaForm.addEventListener('submit', (e) => {
+        empresaForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const nuevo = {};
             Object.entries(camposEmpresa).forEach(([k, id]) => { nuevo[k] = $(id).value.trim(); });
@@ -1587,11 +1709,17 @@
             guardar('ana_empresa', empresa);
             renderEmpresa();
             renderAsistente();
-            notificar('ok', empresa.nombre ? `Datos de ${empresa.nombre} guardados. ${nombreIA()} los usará como contexto.` : 'Datos de la empresa guardados.');
+            const boton = empresaForm.querySelector('button[type="submit"]');
+            boton.disabled = true;
+            const ok = await enviarEmpresaAlServidor();
+            boton.disabled = false;
+            notificar(ok ? 'ok' : 'alerta', ok
+                ? `Datos de ${empresa.nombre} guardados y enviados. ${nombreIA()} ya los usa para responder.`
+                : `Datos de ${empresa.nombre} guardados en este navegador, pero no llegaron al servidor. Vuelve a guardar para reintentar.`);
         });
 
         // ---------- Configuración del asistente ----------
-        const ASISTENTE_DEFECTO = { nombre: 'ANA', idioma: 'es', saludo: '', tono: 'profesional', longitud: 'equilibrada', trato: 'tu', emojis: false, instrucciones: '' };
+        const ASISTENTE_DEFECTO = { nombre: 'ANA', idioma: 'es', rol: '', saludo: '', tono: 'profesional', longitud: 'equilibrada', trato: 'tu', emojis: false, instrucciones: '' };
         const NOMBRE_TONO = { profesional: 'Profesional', cercano: 'Cercano', formal: 'Formal', entusiasta: 'Entusiasta', directo: 'Directo' };
         const NOMBRE_IDIOMA = { es: 'Español', en: 'Inglés', pt: 'Portugués', auto: 'Idioma del usuario' };
         let asistente = { ...ASISTENTE_DEFECTO, ...cargar('ana_asistente', {}) };
@@ -1604,6 +1732,7 @@
             return {
                 nombre: $('iaNombre').value.trim(),
                 idioma: $('iaIdioma').value,
+                rol: $('iaRol').value.trim(),
                 saludo: $('iaSaludo').value.trim(),
                 tono: marcado('iaTono') || ASISTENTE_DEFECTO.tono,
                 longitud: marcado('iaLongitud') || ASISTENTE_DEFECTO.longitud,
@@ -1642,15 +1771,16 @@
             $('previaNombre').textContent = cfg.nombre || 'ANA';
             $('previaSaludo').textContent = saludoSegun(cfg);
             $('previaRespuesta').textContent = respuestaEjemplo(cfg);
-            const chips = [NOMBRE_TONO[cfg.tono], `Respuestas ${cfg.longitud === 'equilibrada' ? 'equilibradas' : cfg.longitud + 's'}`, cfg.trato === 'usted' ? 'Trata de usted' : 'Trata de tú', NOMBRE_IDIOMA[cfg.idioma]];
+            const chips = [cfg.rol, NOMBRE_TONO[cfg.tono], `Respuestas ${cfg.longitud === 'equilibrada' ? 'equilibradas' : cfg.longitud + 's'}`, cfg.trato === 'usted' ? 'Trata de usted' : 'Trata de tú', NOMBRE_IDIOMA[cfg.idioma]];
             if (cfg.emojis) chips.push('Con emojis');
             if (cfg.instrucciones) chips.push('Con instrucciones');
-            $('previaChips').innerHTML = chips.map((c) => `<span class="etiqueta-chip">${escaparHtml(c)}</span>`).join('');
+            $('previaChips').innerHTML = chips.filter(Boolean).map((c) => `<span class="etiqueta-chip">${escaparHtml(c)}</span>`).join('');
         }
 
         function renderAsistente() {
             $('iaNombre').value = asistente.nombre === ASISTENTE_DEFECTO.nombre ? '' : asistente.nombre;
             $('iaIdioma').value = asistente.idioma;
+            $('iaRol').value = asistente.rol;
             $('iaSaludo').value = asistente.saludo;
             $('iaEmojis').checked = !!asistente.emojis;
             $('iaInstrucciones').value = asistente.instrucciones;
@@ -1679,13 +1809,17 @@
 
         const asistenteForm = $('asistenteForm');
         asistenteForm.addEventListener('input', () => { marcarPendiente('asistente', true); renderVistaPrevia(); });
-        asistenteForm.addEventListener('submit', (e) => {
+        asistenteForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             asistente = { ...ASISTENTE_DEFECTO, ...leerAsistenteForm(), actualizado: new Date().toISOString() };
             if (!asistente.nombre) asistente.nombre = ASISTENTE_DEFECTO.nombre;
             guardar('ana_asistente', asistente);
             renderAsistente();
-            notificar('ok', `Configuración guardada: ${nombreIA()} hablará con tono ${NOMBRE_TONO[asistente.tono].toLowerCase()}.`);
+            // La configuración del asistente forma parte de la ficha de la empresa en el servidor
+            const ok = empresa.nombre ? await enviarEmpresaAlServidor() : null;
+            const base = `Configuración guardada: ${nombreIA()} hablará con tono ${NOMBRE_TONO[asistente.tono].toLowerCase()}.`;
+            notificar(ok === false ? 'alerta' : 'ok', ok === false ? `${base} No llegó al servidor; vuelve a guardar para reintentar.`
+                : ok ? base : `${base} Para enviarla al servidor, guarda primero los datos de la empresa.`);
         });
         $('asistenteRestablecer').addEventListener('click', () => {
             const actualizado = asistente.actualizado;
@@ -1935,7 +2069,7 @@
                 if (empresa.nombre) formData.append('empresa', empresa.nombre);
                 const res = await fetch(UPLOAD_ENDPOINT, { method: 'POST', headers: { ...NGROK_HEADERS }, body: formData });
                 marcarServidor(res.status < 500);
-                if (!res.ok) throw new Error(`Error en /upload: ${res.status}`);
+                if (!res.ok) throw Object.assign(new Error(`Error en /upload: ${res.status}`), { status: res.status });
                 doc.estado = 'subido';
                 archivosEnMemoria.delete(doc.id);
                 notificar('ok', `${nombreIA()} recibió "${doc.nombre}" (${nombreCarpeta(doc.carpeta)}) y ya lo está estudiando.`);
@@ -1943,7 +2077,9 @@
                 console.error('No se pudo subir el documento:', err);
                 if (err instanceof TypeError) marcarServidor(false);
                 doc.estado = 'pendiente';
-                notificar('alerta', `"${doc.nombre}" quedó pendiente: no se pudo enviar al servidor. Puedes reintentar.`);
+                notificar('alerta', err.status === 404
+                    ? `"${doc.nombre}" quedó guardado solo en el panel: el servidor todavía no tiene la ruta para recibir archivos (/query/upload).`
+                    : `"${doc.nombre}" quedó pendiente: no se pudo enviar al servidor. Puedes reintentar.`);
             }
             guardarDocumentos();
             renderDocumentos();
@@ -2215,7 +2351,8 @@
         // Contexto que viaja con cada consulta para que ANA conozca la empresa
         function contextoEmpresa() {
             return {
-                empresa: Object.fromEntries(Object.keys(camposEmpresa).map((k) => [k, empresa[k] || ''])),
+                // El servidor espera el NOMBRE de la empresa (texto) y con él carga la ficha guardada en /empresa
+                empresa: empresa.nombre || '',
                 // Cómo debe comportarse el modelo (pestaña Empresa → Asistente)
                 asistente: {
                     nombre: nombreIA(), tono: asistente.tono, longitud: asistente.longitud, trato: asistente.trato,
@@ -2230,6 +2367,13 @@
         async function enviarMensaje(textoUsuario) {
             textoUsuario = String(textoUsuario || '').trim();
             if (!textoUsuario || ocupado) return;
+            if (!empresa.nombre) {
+                // Sin el nombre de la empresa /query/response responde 400: se explica en vez de mostrar un error
+                agregarMensaje('user', textoUsuario);
+                agregarMensaje('ana', 'Antes de responderte necesito saber para qué empresa trabajo. Escribe su nombre en la pestaña Empresa, guárdalo y vuelve a escribirme.');
+                notificar('alerta', 'Falta el nombre de la empresa: el servidor lo necesita para responder en el chat.');
+                return;
+            }
             ocupado = true;
             sendBtn.disabled = true;
             agregarMensaje('user', textoUsuario);
@@ -2243,7 +2387,7 @@
                     body: JSON.stringify({ texto: textoUsuario, ...contextoEmpresa() })
                 });
                 marcarServidor(resResponse.status < 500);
-                if (!resResponse.ok) throw new Error(`Error en /response: ${resResponse.status}`);
+                if (!resResponse.ok) throw Object.assign(new Error(`Error en /response: ${resResponse.status}`), { status: resResponse.status });
 
                 const dataResponse = await resResponse.json();
                 // NOTA: ajusta esta clave según lo que realmente devuelva response_modelo()
@@ -2273,8 +2417,10 @@
                 console.error('Error al conectar con el modelo:', error);
                 if (error instanceof TypeError) marcarServidor(false);
                 mostrarEscribiendo(false);
-                agregarMensaje('ana', 'No pude conectarme con el servidor en este momento. Inténtalo de nuevo en unos segundos.');
-                notificar('error', 'Error de conexión con el modelo. Revisa que el servidor esté activo.');
+                agregarMensaje('ana', error.status === 503 ? 'No pude generar la respuesta: el modelo no contestó. Inténtalo de nuevo en unos segundos.'
+                    : error.status === 400 ? 'El servidor no aceptó el mensaje. Revisa que el nombre de la empresa esté guardado en la pestaña Empresa.'
+                    : 'No pude conectarme con el servidor en este momento. Inténtalo de nuevo en unos segundos.');
+                notificar('error', error.status ? `El servidor respondió con error ${error.status} en /response.` : 'Error de conexión con el modelo. Revisa que el servidor esté activo.');
             } finally {
                 setOrbState('idle');
                 ocupado = false;
@@ -2635,6 +2781,7 @@
         renderChat();
         renderVozToggle();
         revisarRecordatorios();
+        if (empresa.nombre && !empresa.enServidor) enviarEmpresaAlServidor(); // datos guardados antes de que llegaran al servidor
         CANALES.forEach(renderCanal);
         refrescarCanales();
         metricsTimer = setInterval(refrescarCanales, METRICS_INTERVALO_MS);
