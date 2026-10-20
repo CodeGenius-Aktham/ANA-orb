@@ -549,7 +549,6 @@
         .logo-canal svg { width: 1.05rem; height: 1.05rem; }
         .logo-ws { background: #25d366; }
         .logo-ig { background: linear-gradient(45deg, #f58529, #dd2a7b 55%, #8134af); }
-        .logo-cam { background: var(--verde-oscuro); }
 
         .webhook-fila { display: flex; align-items: center; gap: 0.5rem; }
         .webhook-url {
@@ -588,20 +587,6 @@
         .evento-titulo { font-weight: 500; }
         .evento-texto { color: var(--texto-suave); font-size: 0.78rem; }
 
-        .camaras-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.75rem; }
-        .camara { border: 1px solid var(--borde); border-radius: 0.8rem; overflow: hidden; background: #0f172a; position: relative; aspect-ratio: 16 / 9; }
-        .camara img, .camara video { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .camara .sin-senal { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; color: #94a3b8; font-size: 0.75rem; background: #0f172a; }
-        .camara .sin-senal svg { width: 1.6rem; height: 1.6rem; }
-        .camara-barra { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; padding: 0.4rem 0.6rem; background: linear-gradient(transparent, rgba(15,23,42,0.85)); color: #fff; font-size: 0.75rem; }
-        .camara-barra .btn-icon { width: 1.5rem; height: 1.5rem; background: rgba(255,255,255,0.15); border-color: transparent; color: #fff; }
-        .camara-barra .btn-icon:hover { background: rgba(239,68,68,0.8); }
-        .vivo { display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 600; font-size: 0.62rem; letter-spacing: 0.08em; }
-        .vivo .punto { width: 0.4rem; height: 0.4rem; border-radius: 50%; background: var(--rojo); animation: parpadeo 1.2s infinite; }
-        .vivo.off .punto { background: #94a3b8; animation: none; }
-        @keyframes parpadeo { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        .form-inline { display: grid; grid-template-columns: 1fr 2fr auto auto; gap: 0.6rem; align-items: end; }
-        .form-inline .input, .form-inline .btn-verde { height: 2.6rem; }
 
         /* ---------- Responsivo ---------- */
         /* Calendario angosto: puntos en vez de títulos */
@@ -649,7 +634,6 @@
             #calForm { width: 100%; }
             #calNuevoTitulo { flex: 1; width: auto; }
             .canales { grid-template-columns: 1fr; }
-            .form-inline { grid-template-columns: 1fr; }
             .campos-2 { grid-template-columns: 1fr; }
             .leyenda { display: none; }
         }
@@ -1075,39 +1059,6 @@
     <!-- ================= CONEXIONES ================= -->
     <main id="conexiones" class="hidden">
 
-        <!-- Cámaras del negocio -->
-        <section class="card" style="flex-shrink: 0;">
-            <div class="card-head">
-                <div class="card-title">
-                    <span class="logo-canal logo-cam"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.5-2.5v9L15 14M4 7h9a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V9a2 2 0 012-2z"/></svg></span>
-                    Cámaras del negocio
-                    <span id="camarasContador" class="card-sub"></span>
-                </div>
-            </div>
-            <div class="seccion">
-                <p class="ayuda"><span data-nombre-ia>ANA</span> observa las cámaras conectadas para responder sobre lo que pasa en el local. Las cámaras RTSP no se pueden ver directamente en el navegador: configura en el servidor una ruta HTTP que reenvíe el video o entregue capturas.</p>
-                <form id="camaraForm" class="form-inline">
-                    <div>
-                        <label class="label" for="camNombre">Nombre</label>
-                        <input id="camNombre" class="input" placeholder="Ej. Entrada principal" maxlength="40" required>
-                    </div>
-                    <div>
-                        <label class="label" for="camUrl">URL del video o imagen (HTTP/HTTPS)</label>
-                        <input id="camUrl" class="input" type="url" placeholder="https://192.168.1.20:8080/video  ·  http://cam.local/snapshot.jpg" required>
-                    </div>
-                    <div>
-                        <label class="label" for="camTipo">Tipo</label>
-                        <select id="camTipo" class="input">
-                            <option value="imagen">Imagen / MJPEG</option>
-                            <option value="video">Video (MP4, WebM, HLS)</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-verde">Conectar cámara</button>
-                </form>
-                <div id="camarasGrid" class="camaras-grid"></div>
-            </div>
-        </section>
-
         <!-- WhatsApp e Instagram -->
         <div class="canales">
             <section class="card" id="canal-whatsapp" style="flex-shrink: 0;">
@@ -1197,8 +1148,6 @@
         //          serie: [{ fecha: "2026-10-01", valor: 12 }, ...],   (últimos 7 a 30 días)
         //          eventos: [{ id?, hora: "ISO", titulo: "Mensaje de Juan", texto: "Hola, ¿tienen...?" }] }
         //   POST /query/webhooks/whatsapp y POST /query/webhooks/instagram -> reciben los webhooks de Meta (los expone el backend)
-        //   POST /query/cameras   -> registra una cámara { nombre, url, tipo } para que ANA pueda analizarla
-        //   DELETE /query/cameras/<id> -> quita la cámara
         //   GET  /query/send_image/images/<nombre_imagen> -> devuelve el archivo de 'images_inventory'
         // ==========================================
         // NOTA: si cambia la URL de ngrok no hace falta tocar el código: haz clic en el indicador
@@ -1218,7 +1167,6 @@
         const UPLOAD_ENDPOINT = `${API_BASE}/upload`;
         const METRICS_ENDPOINT = (canal) => `${API_BASE}/metrics/${canal}`;
         const WEBHOOK_URL = (canal) => `${API_BASE}/webhooks/${canal}`;
-        const CAMERAS_ENDPOINT = `${API_BASE}/cameras`;
         const METRICS_INTERVALO_MS = 30000; // cada cuánto se refrescan las métricas de WhatsApp e Instagram
 
         // ---------- Utilidades ----------
@@ -2489,7 +2437,6 @@
                 eventosNuevos = 0;
                 renderBadgeConexiones();
                 refrescarCanales();
-                refrescarCapturas();
             }
         }
         document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => mostrarPestana(t.dataset.tab)));
@@ -2501,112 +2448,6 @@
             badge.textContent = eventosNuevos > 99 ? '99+' : eventosNuevos;
             badge.classList.toggle('hidden', eventosNuevos === 0 || pestanaActiva === 'conexiones');
         }
-
-        // ==========================================
-        // CÁMARAS
-        // ==========================================
-        let camaras = cargar('ana_camaras', []); // [{ id, nombre, url, tipo: 'imagen'|'video', registrada?: boolean }]
-        const camarasGrid = $('camarasGrid');
-        let camarasTimer = null;
-
-        function renderCamaras() {
-            $('camarasContador').textContent = camaras.length ? `· ${camaras.length} conectada${camaras.length === 1 ? '' : 's'}` : '';
-            if (!camaras.length) {
-                camarasGrid.innerHTML = '<div class="vacio" style="grid-column: 1 / -1;">Aún no hay cámaras conectadas. Agrega la primera con el formulario de arriba.</div>';
-                return;
-            }
-            camarasGrid.innerHTML = camaras.map((c) => `
-                <div class="camara" data-cam="${c.id}">
-                    ${c.tipo === 'video'
-                        ? `<video src="${escaparHtml(c.url)}" autoplay muted playsinline loop></video>`
-                        : `<img src="${escaparHtml(c.url)}" alt="${escaparHtml(c.nombre)}">`}
-                    <div class="sin-senal hidden">
-                        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18M15 10l4.5-2.5v9M4 7h9a2 2 0 012 2v6M4 7a2 2 0 00-2 2v6a2 2 0 002 2h9"/></svg>
-                        Sin señal
-                    </div>
-                    <div class="camara-barra">
-                        <span class="truncate">${escaparHtml(c.nombre)}</span>
-                        <span class="flex items-center gap-2">
-                            <span class="vivo"><span class="punto"></span>EN VIVO</span>
-                            <button class="btn-icon" data-quitar-cam="${c.id}" title="Quitar cámara"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
-                        </span>
-                    </div>
-                </div>`).join('');
-
-            camarasGrid.querySelectorAll('.camara').forEach((tile) => {
-                const media = tile.querySelector('img, video');
-                const marcar = (ok) => {
-                    tile.querySelector('.sin-senal').classList.toggle('hidden', ok);
-                    tile.querySelector('.vivo').classList.toggle('off', !ok);
-                };
-                media.addEventListener('error', () => marcar(false));
-                media.addEventListener(media.tagName === 'VIDEO' ? 'playing' : 'load', () => marcar(true));
-            });
-        }
-
-        // Las capturas (snapshot) se refrescan cada 5 s; los streams MJPEG y los videos no lo necesitan
-        function refrescarCapturas() {
-            if (pestanaActiva !== 'conexiones' || document.hidden) return; // no gastar red si no se ven
-            camarasGrid.querySelectorAll('.camara img').forEach((img) => {
-                const cam = camaras.find((c) => c.id === img.closest('.camara').dataset.cam);
-                if (!cam || /mjpe?g|stream|video/i.test(cam.url)) return;
-                const sep = cam.url.includes('?') ? '&' : '?';
-                img.src = `${cam.url}${sep}t=${Date.now()}`;
-            });
-        }
-
-        async function registrarCamaraEnBackend(cam, metodo = 'POST') {
-            try {
-                const url = metodo === 'DELETE' ? `${CAMERAS_ENDPOINT}/${encodeURIComponent(cam.id)}` : CAMERAS_ENDPOINT;
-                const res = await fetch(url, {
-                    method: metodo,
-                    headers: { 'Content-Type': 'application/json', ...NGROK_HEADERS },
-                    body: metodo === 'DELETE' ? undefined : JSON.stringify({ id: cam.id, nombre: cam.nombre, url: cam.url, tipo: cam.tipo })
-                });
-                return res.ok;
-            } catch (_) { return false; }
-        }
-
-        // Reintenta registrar en el servidor las cámaras que no se pudieron registrar antes
-        async function reintentarCamarasPendientes() {
-            const pendientes = camaras.filter((c) => c.registrada === false);
-            for (const cam of pendientes) {
-                if (await registrarCamaraEnBackend(cam)) {
-                    cam.registrada = true;
-                    notificar('ok', `Cámara "${cam.nombre}" registrada en el servidor.`);
-                }
-            }
-            if (pendientes.length) guardar('ana_camaras', camaras);
-        }
-
-        $('camaraForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const cam = { id: uid(), nombre: $('camNombre').value.trim(), url: $('camUrl').value.trim(), tipo: $('camTipo').value };
-            if (!cam.nombre || !cam.url) return;
-            camaras.push(cam);
-            guardar('ana_camaras', camaras);
-            renderCamaras();
-            e.target.reset();
-            const ok = await registrarCamaraEnBackend(cam);
-            cam.registrada = ok;
-            guardar('ana_camaras', camaras);
-            notificar(ok ? 'ok' : 'alerta', ok
-                ? `Cámara "${cam.nombre}" conectada. ${nombreIA()} ya puede observarla.`
-                : `Cámara "${cam.nombre}" agregada en el panel, pero el servidor no la registró (se reintentará al recargar).`);
-        });
-
-        camarasGrid.addEventListener('click', async (e) => {
-            const btn = e.target.closest('[data-quitar-cam]');
-            if (!btn) return;
-            const cam = camaras.find((c) => c.id === btn.dataset.quitarCam);
-            camaras = camaras.filter((c) => c.id !== btn.dataset.quitarCam);
-            guardar('ana_camaras', camaras);
-            renderCamaras();
-            if (cam) {
-                registrarCamaraEnBackend(cam, 'DELETE');
-                notificar('info', `Cámara "${cam.nombre}" desconectada.`);
-            }
-        });
 
         // ==========================================
         // CANALES: WHATSAPP E INSTAGRAM (webhooks + métricas reales del backend)
@@ -2794,9 +2635,6 @@
         renderChat();
         renderVozToggle();
         revisarRecordatorios();
-        renderCamaras();
-        reintentarCamarasPendientes();
-        camarasTimer = setInterval(refrescarCapturas, 5000);
         CANALES.forEach(renderCanal);
         refrescarCanales();
         metricsTimer = setInterval(refrescarCanales, METRICS_INTERVALO_MS);
