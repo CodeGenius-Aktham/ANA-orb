@@ -83,6 +83,7 @@
         .items-center { align-items: center; } .justify-between { justify-content: space-between; } .justify-end { justify-content: flex-end; }
         .gap-1 { gap: 0.25rem; } .gap-2 { gap: 0.5rem; } .gap-3 { gap: 0.75rem; }
         .min-w-0 { min-width: 0; } .min-h-0 { min-height: 0; }
+        .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
         .mt-1 { margin-top: 0.25rem; }
         .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .hidden { display: none !important; }
@@ -364,9 +365,9 @@
         .notif-texto { font-size: 0.84rem; line-height: 1.4; }
         .notif-hora { font-size: 0.72rem; color: var(--texto-tenue); margin-top: 0.15rem; }
 
-        /* ---------- Pestaña Empresa: menú de apartados | apartado activo ---------- */
-        #empresa { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 1rem; }
-        #empresaNav { padding: 0.6rem; gap: 0.2rem; overflow-y: auto; }
+        /* ---------- Pestañas Empresa e Inventario: menú de apartados | apartado activo ---------- */
+        #empresa, #inventario { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 1rem; }
+        #empresaNav, #inventarioNav { padding: 0.6rem; gap: 0.2rem; overflow-y: auto; }
         .subnav-titulo { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--texto-tenue); padding: 0.5rem 0.6rem 0.35rem; }
         .subnav-item {
             display: flex; align-items: center; gap: 0.7rem; width: 100%; text-align: left;
@@ -381,6 +382,7 @@
         .subnav-item small { display: block; font-size: 0.72rem; color: var(--texto-suave); margin-top: 0.05rem; }
         .subnav-num { margin-left: auto; font-size: 0.7rem; font-weight: 600; color: var(--texto-suave); background: var(--superficie-2); border: 1px solid var(--borde); border-radius: 999px; padding: 0 0.45rem; line-height: 1.2rem; }
         .subnav-punto { margin-left: auto; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--ambar); flex-shrink: 0; }
+        .subnav-punto.ok { background: var(--verde); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
 
         .resumen { margin-top: auto; padding: 0.85rem; border-radius: 0.8rem; background: var(--superficie-2); border: 1px solid var(--borde); display: flex; flex-direction: column; gap: 0.5rem; }
         .resumen-titulo { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 600; }
@@ -395,6 +397,7 @@
         .grupo-titulo { font-size: 0.8rem; font-weight: 600; color: var(--texto); display: flex; align-items: center; gap: 0.5rem; }
         .grupo-titulo::after { content: ''; flex: 1; height: 1px; background: var(--borde); }
         .campos-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+        .campos-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
         textarea.input { resize: vertical; min-height: 6rem; line-height: 1.5; }
         .form-pie {
             display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-shrink: 0;
@@ -588,6 +591,79 @@
         .evento-texto { color: var(--texto-suave); font-size: 0.78rem; }
 
 
+        /* ---------- Pestaña Inventario ---------- */
+        #inv-productos .card-head { flex-wrap: wrap; }
+        .inv-herramientas { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .inv-herramientas select.input { width: auto; max-width: 12rem; padding: 0.45rem 0.6rem; }
+        .inv-herramientas .btn-verde { padding: 0.5rem 0.9rem; }
+        .inv-aviso {
+            display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;
+            margin: 0.75rem 1rem 0; padding: 0.6rem 0.85rem; border-radius: 0.75rem; font-size: 0.8rem; line-height: 1.45;
+            background: var(--azul-suave); color: #0369a1;
+        }
+        .inv-aviso.alerta { background: rgba(245, 158, 11, 0.14); color: #b45309; }
+        :root[data-tema="oscuro"] .inv-aviso { color: #7dd3fc; }
+        :root[data-tema="oscuro"] .inv-aviso.alerta { color: #fcd34d; }
+        .inv-aviso .btn-secundario { flex-shrink: 0; }
+
+        .inv-tabla { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+        .inv-tabla th {
+            position: sticky; top: 0; z-index: 1; background: var(--superficie); text-align: left; white-space: nowrap;
+            font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--texto-suave);
+            padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--borde);
+        }
+        .inv-tabla td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+        .inv-tabla tbody tr:hover td { background: var(--superficie-2); }
+        .inv-tabla .num { text-align: right; white-space: nowrap; }
+        .inv-nombre b { display: block; font-weight: 500; }
+        .inv-nombre small { display: block; max-width: 26rem; font-size: 0.74rem; color: var(--texto-suave); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .inv-cat { display: inline-block; font-size: 0.72rem; padding: 0.1rem 0.55rem; border-radius: 999px; background: var(--verde-suave); color: var(--verde-texto); white-space: nowrap; }
+        .inv-celda { width: 6rem; padding: 0.3rem 0.5rem; font-size: 0.84rem; text-align: right; }
+        .inv-unidad { font-size: 0.72rem; color: var(--texto-tenue); margin-left: 0.3rem; }
+        .inv-agotado { display: block; font-size: 0.66rem; font-weight: 600; color: #dc2626; margin-top: 0.15rem; }
+        :root[data-tema="oscuro"] .inv-agotado { color: #fca5a5; }
+        .inv-acciones { display: flex; gap: 0.3rem; justify-content: flex-end; }
+        .inv-acciones .btn-icon { width: 1.8rem; height: 1.8rem; }
+        .btn-icon.peligro:hover { background: rgba(239, 68, 68, 0.1); color: var(--rojo); border-color: rgba(239, 68, 68, 0.35); }
+
+        .metodos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
+        .metodo {
+            display: flex; flex-direction: column; gap: 0.45rem; text-align: left; padding: 1.1rem;
+            border: 1px solid var(--borde); border-radius: 0.9rem; background: var(--superficie-2); transition: border-color 0.15s, background 0.15s;
+        }
+        .metodo:hover { border-color: var(--verde); background: var(--verde-suave); }
+        .metodo .card-icono { width: 2.3rem; height: 2.3rem; background: var(--verde); color: #fff; }
+        .metodo b { font-size: 0.92rem; font-weight: 600; }
+        .metodo small { font-size: 0.76rem; color: var(--texto-suave); line-height: 1.45; }
+        .inv-inicio { padding: 1.5rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+        .inv-inicio h3 { margin: 0; font-size: 1.05rem; font-weight: 600; }
+
+        .mapeo { display: grid; grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr)); gap: 0.6rem; }
+        .mapeo .input { padding: 0.45rem 0.6rem; font-size: 0.82rem; }
+        .previa-tabla { overflow-x: auto; border: 1px solid var(--borde); border-radius: 0.75rem; }
+        .previa-tabla .inv-tabla td { white-space: nowrap; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; }
+        .previa-tabla .inv-tabla tr:last-child td { border-bottom: 0; }
+        .grupo > .segmentado { align-self: flex-start; }
+        .import-pie { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+        .ayuda.error { color: #dc2626; }
+        :root[data-tema="oscuro"] .ayuda.error { color: #fca5a5; }
+
+        .conexion-estado {
+            display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+            padding: 0.85rem 1rem; border-radius: 0.85rem; border: 1px solid var(--borde-fuerte); background: var(--verde-suave);
+        }
+        .conexion-estado b { display: block; font-size: 0.9rem; }
+        .conexion-estado small { display: block; font-size: 0.75rem; color: var(--texto-suave); }
+
+        .dialogo {
+            border: 0; padding: 0; border-radius: 1rem; width: min(580px, calc(100vw - 2rem));
+            background: var(--superficie); color: var(--texto); box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3);
+        }
+        .dialogo::backdrop { background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(3px); }
+        .dialogo-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--borde); font-weight: 600; }
+        .dialogo-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.8rem; max-height: 65vh; overflow-y: auto; }
+        .dialogo-body textarea.input { min-height: 4.5rem; }
+
         /* ---------- Responsivo ---------- */
         /* Calendario angosto: puntos en vez de títulos */
         @media (max-width: 1100px) and (min-width: 901px) {
@@ -600,7 +676,7 @@
             #chatPanel { grid-row: 1 / span 2; }
             #lateral { grid-template-rows: none; grid-template-columns: 1fr 1fr; }
             #fechaHoy { display: none; }
-            #empresa { grid-template-columns: 220px minmax(0, 1fr); }
+            #empresa, #inventario { grid-template-columns: 220px minmax(0, 1fr); }
             .asistente-layout { grid-template-columns: minmax(0, 1fr) 260px; }
         }
         /* Tablet y móvil: todo se apila y la página hace scroll */
@@ -611,13 +687,13 @@
             .tab { flex: 1; justify-content: center; padding: 0.5rem 0.5rem; }
             #fechaHoy { display: none; }
             main { padding: 0 0.75rem 0.75rem; }
-            #panel, #empresa { display: flex; flex-direction: column; }
+            #panel, #empresa, #inventario { display: flex; flex-direction: column; }
             #lateral { display: flex; flex-direction: column; }
             #chatPanel { height: 75vh; }
             #calendarPanel { height: 78vh; }
             #proximosPanel { max-height: 50vh; }
             #notifPanel { max-height: 50vh; }
-            #empresaNav { flex-direction: row; overflow-x: auto; padding: 0.4rem; flex-shrink: 0; }
+            #empresaNav, #inventarioNav { flex-direction: row; overflow-x: auto; padding: 0.4rem; flex-shrink: 0; }
             .subnav-titulo, .subnav-item small, .resumen { display: none; }
             .subnav-item { width: auto; flex-shrink: 0; padding: 0.45rem 0.7rem; }
             .subnav-item.activa::before { display: none; }
@@ -636,6 +712,9 @@
             .canales { grid-template-columns: 1fr; }
             .campos-2 { grid-template-columns: 1fr; }
             .leyenda { display: none; }
+            .metodos { grid-template-columns: 1fr; }
+            .inv-herramientas { width: 100%; }
+            .inv-herramientas .buscador { flex: 1; }
         }
         @media (max-width: 600px) {
             .doc { flex-wrap: wrap; row-gap: 0.4rem; }
@@ -643,6 +722,15 @@
             .doc > .estado { margin-right: auto; }
             .card-title .card-sub { display: none; }
             .bib-imagenes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .inv-tabla .col-opc, .inv-unidad, .inv-nombre small { display: none; }
+            .inv-tabla th, .inv-tabla td { padding: 0.5rem 0.4rem; }
+            .inv-tabla th:first-child, .inv-tabla td:first-child { padding-left: 0.8rem; }
+            .inv-celda { width: 4.3rem; }
+            #inv-productos .card-body { overflow-x: auto; }
+            .campos-3 { grid-template-columns: 1fr 1fr; }
+            /* Ventana de producto: botones a lo ancho, el principal arriba */
+            .dialogo .form-pie, .dialogo .form-pie > div { flex-direction: column-reverse; align-items: stretch; gap: 0.5rem; }
+            .dialogo .form-pie button { padding: 0.6rem 1rem; text-align: center; }
         }
         @media (max-width: 520px) {
             .tab svg { display: none; }
@@ -672,6 +760,10 @@
             <button class="tab" role="tab" data-tab="empresa" aria-selected="false">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V5a1 1 0 011-1h8a1 1 0 011 1v16M15 9h3a1 1 0 011 1v11M9 8h2m-2 4h2m-2 4h2"/></svg>
                 Empresa
+            </button>
+            <button class="tab" role="tab" data-tab="inventario" aria-selected="false">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                Inventario
             </button>
             <button class="tab" role="tab" data-tab="conexiones" aria-selected="false">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.8 10.2a4 4 0 010 5.6l-2 2a4 4 0 01-5.6-5.6l1-1m3-3l1-1a4 4 0 015.6 5.6l-1 1"/></svg>
@@ -814,6 +906,7 @@
                 <div class="resumen-dato">Perfil completo <b id="resumenPerfil">0%</b></div>
                 <div class="resumen-dato">Documentos <b id="resumenDocs">0</b></div>
                 <div class="resumen-dato">Imágenes <b id="resumenImgs">0</b></div>
+                <div class="resumen-dato">Productos <b id="resumenProductos">0</b></div>
                 <div class="resumen-dato">Tono <b id="resumenTono">Profesional</b></div>
             </div>
         </nav>
@@ -1100,6 +1193,217 @@
         </dialog>
     </main>
 
+    <!-- ================= INVENTARIO ================= -->
+    <main id="inventario" class="hidden">
+
+        <!-- Menú: las tres formas de armar el inventario -->
+        <nav id="inventarioNav" class="card" aria-label="Formas de armar el inventario">
+            <div class="subnav-titulo">Inventario</div>
+            <button type="button" class="subnav-item activa" data-inv-vista="productos">
+                <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></span>
+                <span class="min-w-0"><b>Crear en el sistema</b><small>Agrega y edita productos aquí</small></span>
+                <span id="invNumNav" class="subnav-num">0</span>
+            </button>
+            <button type="button" class="subnav-item" data-inv-vista="conectar">
+                <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.8 10.2a4 4 0 010 5.6l-2 2a4 4 0 01-5.6-5.6l1-1m3-3l1-1a4 4 0 015.6 5.6l-1 1"/></svg></span>
+                <span class="min-w-0"><b>Conectar</b><small>Google Sheets o un enlace</small></span>
+                <span id="invConectadoPunto" class="subnav-punto ok hidden" title="Conexión activa"></span>
+            </button>
+            <button type="button" class="subnav-item" data-inv-vista="archivo">
+                <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg></span>
+                <span class="min-w-0"><b>Subir archivo</b><small>Excel, CSV o JSON</small></span>
+            </button>
+
+            <div class="resumen">
+                <div class="resumen-titulo"><span class="orbe-mini"></span><span>Lo que ofrece <span data-nombre-ia>ANA</span></span></div>
+                <div class="resumen-dato">Productos <b id="invResProductos">0</b></div>
+                <div class="resumen-dato">Categorías <b id="invResCategorias">0</b></div>
+                <div class="resumen-dato">Agotados <b id="invResAgotados">0</b></div>
+                <div class="resumen-dato">Origen <b id="invResOrigen">—</b></div>
+                <div class="resumen-dato">Servidor <b id="invResServidor">—</b></div>
+            </div>
+        </nav>
+
+        <!-- Vista: productos (crear y editar en el sistema) -->
+        <section id="inv-productos" class="card apartado">
+            <div class="card-head">
+                <div class="card-title">
+                    <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></span>
+                    <span>Productos <span id="invConteo" class="card-sub"></span></span>
+                </div>
+                <div class="inv-herramientas">
+                    <div class="buscador">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M20 20l-3.5-3.5"/></svg>
+                        <input id="invBuscar" class="input" type="search" placeholder="Buscar producto..." aria-label="Buscar producto">
+                    </div>
+                    <select id="invFiltroCategoria" class="input" aria-label="Filtrar por categoría"></select>
+                    <button type="button" id="invNuevo" class="btn-verde">+ Nuevo producto</button>
+                </div>
+            </div>
+            <div id="invAviso" class="inv-aviso hidden"></div>
+            <div class="card-body">
+                <div id="invInicio" class="inv-inicio hidden">
+                    <div>
+                        <h3>Arma el inventario de <span data-nombre-ia>ANA</span></h3>
+                        <p class="ayuda">Con él puede responder qué vendes, a qué precio y si hay existencias. Elige cómo quieres empezar:</p>
+                    </div>
+                    <div class="metodos">
+                        <button type="button" class="metodo" data-inv-ir="nuevo">
+                            <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></span>
+                            <b>Crear en el sistema</b>
+                            <small>Agrega tus productos uno por uno desde aquí.</small>
+                        </button>
+                        <button type="button" class="metodo" data-inv-ir="conectar">
+                            <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.8 10.2a4 4 0 010 5.6l-2 2a4 4 0 01-5.6-5.6l1-1m3-3l1-1a4 4 0 015.6 5.6l-1 1"/></svg></span>
+                            <b>Conectar</b>
+                            <small>Enlaza tu hoja de Google Sheets y se mantiene actualizado solo.</small>
+                        </button>
+                        <button type="button" class="metodo" data-inv-ir="archivo">
+                            <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg></span>
+                            <b>Subir archivo</b>
+                            <small>Importa un Excel, CSV o JSON que ya tengas.</small>
+                        </button>
+                    </div>
+                </div>
+                <table id="invTabla" class="inv-tabla hidden">
+                    <thead>
+                        <tr><th>Producto</th><th class="col-opc">Categoría</th><th class="num">Precio</th><th class="num">Existencias</th><th class="col-opc">Sección</th><th><span class="sr-only">Acciones</span></th></tr>
+                    </thead>
+                    <tbody id="invCuerpo"></tbody>
+                </table>
+            </div>
+            <div class="form-pie">
+                <span id="invEstado" class="estado-form"></span>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="invReintentar" class="btn-secundario hidden">Reintentar envío</button>
+                    <button type="button" id="invExportar" class="btn-texto">Descargar CSV</button>
+                    <button type="button" id="invVaciar" class="btn-texto">Vaciar</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vista: conectar una hoja o un enlace -->
+        <section id="inv-conectar" class="card apartado hidden">
+            <div class="card-head">
+                <div class="card-title">
+                    <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.8 10.2a4 4 0 010 5.6l-2 2a4 4 0 01-5.6-5.6l1-1m3-3l1-1a4 4 0 015.6 5.6l-1 1"/></svg></span>
+                    <span>Conectar inventario <span class="card-sub">· se mantiene actualizado solo</span></span>
+                </div>
+            </div>
+            <div class="card-body apartado-body">
+                <div id="invConexionActiva" class="conexion-estado hidden"></div>
+                <div class="grupo">
+                    <div class="grupo-titulo">Fuente</div>
+                    <p class="ayuda">Pega el enlace de una hoja de Google Sheets compartida como “Cualquier persona con el enlace puede ver”, o de un archivo CSV o JSON publicado en internet. La primera fila debe tener los nombres de las columnas.</p>
+                    <div class="destino">
+                        <div>
+                            <label class="label" for="invUrl">Enlace del inventario</label>
+                            <input id="invUrl" class="input" type="url" placeholder="https://docs.google.com/spreadsheets/d/...">
+                        </div>
+                        <button type="button" id="invLeerEnlace" class="btn-secundario" style="height: 2.6rem;">Leer enlace</button>
+                    </div>
+                    <p id="invUrlError" class="ayuda error hidden"></p>
+                </div>
+                <div class="grupo">
+                    <div class="grupo-titulo">Actualización automática</div>
+                    <div class="segmentado">
+                        <label><input type="radio" name="invIntervalo" value="0"><span>Solo manual</span></label>
+                        <label><input type="radio" name="invIntervalo" value="15" checked><span>Cada 15 minutos</span></label>
+                        <label><input type="radio" name="invIntervalo" value="60"><span>Cada hora</span></label>
+                    </div>
+                    <p class="ayuda">Mientras el panel esté abierto, revisa la hoja y envía los cambios a <span data-nombre-ia>ANA</span>.</p>
+                </div>
+                <div id="invConexionMapeo" class="grupo hidden"></div>
+            </div>
+        </section>
+
+        <!-- Vista: subir un archivo -->
+        <section id="inv-archivo" class="card apartado hidden">
+            <div class="card-head">
+                <div class="card-title">
+                    <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg></span>
+                    <span>Subir archivo de inventario <span class="card-sub">· Excel, CSV o JSON</span></span>
+                </div>
+            </div>
+            <div class="card-body apartado-body">
+                <div id="invDrop" class="zona-subida" tabindex="0" role="button" aria-label="Elegir archivo de inventario">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+                    <div class="drop-titulo">Arrastra aquí tu inventario o haz clic para elegirlo</div>
+                    <div class="drop-sub">La primera fila debe tener los nombres de las columnas: Producto, Precio, Existencias…</div>
+                    <div class="tipos-archivo">
+                        <span class="etiqueta-chip">Excel (.xlsx, .xls)</span><span class="etiqueta-chip">CSV</span><span class="etiqueta-chip">JSON</span>
+                    </div>
+                    <input type="file" id="invArchivoInput" class="hidden" accept=".xlsx,.xls,.ods,.csv,.tsv,.txt,.json">
+                </div>
+                <div class="import-pie">
+                    <span class="ayuda">¿No tienes un archivo? Descarga la plantilla, llénala en Excel y súbela aquí.</span>
+                    <button type="button" id="invPlantilla" class="btn-secundario">Descargar plantilla</button>
+                </div>
+                <p id="invArchivoError" class="ayuda error hidden"></p>
+                <div id="invArchivoMapeo" class="grupo hidden"></div>
+            </div>
+        </section>
+
+        <!-- Ventana para crear o editar un producto -->
+        <dialog id="invDialogo" class="dialogo" aria-labelledby="invDialogoTitulo">
+            <form id="invProductoForm" autocomplete="off">
+                <div class="dialogo-head">
+                    <span id="invDialogoTitulo">Nuevo producto</span>
+                    <button type="button" class="btn-icon" data-cerrar-dialogo title="Cerrar"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                </div>
+                <div class="dialogo-body">
+                    <div class="campos-2">
+                        <div>
+                            <label class="label" for="invPItem">Producto *</label>
+                            <input id="invPItem" class="input" required maxlength="120" placeholder="Ej. Pan de masa madre">
+                        </div>
+                        <div>
+                            <label class="label" for="invPId">Código <span class="texto-tenue">(opcional)</span></label>
+                            <input id="invPId" class="input" maxlength="40" placeholder="Se asigna solo si lo dejas vacío">
+                        </div>
+                    </div>
+                    <div class="campos-2">
+                        <div>
+                            <label class="label" for="invPCategory">Categoría</label>
+                            <input id="invPCategory" class="input" list="invCategorias" maxlength="60" placeholder="Ej. Panadería">
+                            <datalist id="invCategorias"></datalist>
+                        </div>
+                        <div>
+                            <label class="label" for="invPSection">Sección o ubicación</label>
+                            <input id="invPSection" class="input" maxlength="80" placeholder="Ej. Vitrina principal">
+                        </div>
+                    </div>
+                    <div class="campos-3">
+                        <div>
+                            <label class="label" for="invPPrice">Precio</label>
+                            <input id="invPPrice" class="input" inputmode="decimal" maxlength="30" placeholder="Ej. 12.000">
+                        </div>
+                        <div>
+                            <label class="label" for="invPStock">Existencias</label>
+                            <input id="invPStock" class="input" inputmode="decimal" maxlength="20" placeholder="Ej. 25">
+                        </div>
+                        <div>
+                            <label class="label" for="invPUnit">Unidad</label>
+                            <input id="invPUnit" class="input" maxlength="30" placeholder="Ej. unidad, kg">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label" for="invPDescription">Descripción</label>
+                        <textarea id="invPDescription" class="input" rows="3" maxlength="500" placeholder="Lo que ANA debe saber: tamaño, sabor, capacidad, garantía…"></textarea>
+                    </div>
+                    <p id="invPError" class="ayuda error hidden"></p>
+                </div>
+                <div class="form-pie">
+                    <button type="button" class="btn-texto" data-cerrar-dialogo>Cancelar</button>
+                    <div class="flex items-center gap-2">
+                        <button type="submit" id="invGuardarOtro" class="btn-secundario" data-otro="1">Guardar y agregar otro</button>
+                        <button type="submit" class="btn-verde">Guardar producto</button>
+                    </div>
+                </div>
+            </form>
+        </dialog>
+    </main>
+
     <!-- ================= CONEXIONES ================= -->
     <main id="conexiones" class="hidden">
 
@@ -1187,6 +1491,10 @@
         //                            o eventos [{ fecha: "2026-10-15", titulo }] (calendario), el panel ya los muestra.
         //   POST /empresa/carga            -> crea la ficha de la empresa (409 si ya existe)
         //   PUT  /empresa/update/<empresa> -> la actualiza. Cuerpo de ambas: ver empresaParaServidor()
+        //   POST   /inventario/load            -> FormData con 'inventory': archivo JSON { companies: [{ name_company, sector,
+        //                                         details: { description, employees_count, location }, inventory: [productos] }] } (409 si ya existe)
+        //   PUT    /inventario/update/<empresa> -> el mismo JSON en el cuerpo.  Producto: { id, item, category, price, stock, unit, section, description }
+        //   GET    /inventario/search/<empresa> -> inventario guardado;  DELETE /inventario/delete/<empresa> -> lo borra
         //   GET/POST /message_into         -> webhook de Instagram (se pega en Meta for Developers)
         // Rutas que el panel usa pero el servidor todavía no tiene (responden 404 y el panel lo indica):
         //   POST /query/upload    -> FormData con 'archivo', 'carpeta' (nombre de la carpeta), 'tipo' ('documento'|'imagen') y 'empresa'
@@ -1594,7 +1902,7 @@
             if (!APARTADOS.includes(nombre)) nombre = 'perfil';
             apartadoActivo = nombre;
             APARTADOS.forEach((a) => $(`apartado-${a}`).classList.toggle('hidden', a !== nombre));
-            document.querySelectorAll('.subnav-item').forEach((b) => b.classList.toggle('activa', b.dataset.apartado === nombre));
+            document.querySelectorAll('#empresaNav .subnav-item').forEach((b) => b.classList.toggle('activa', b.dataset.apartado === nombre));
             guardar('ana_empresa_apartado', nombre);
         }
         $('empresaNav').addEventListener('click', (e) => {
@@ -1713,6 +2021,8 @@
             boton.disabled = true;
             const ok = await enviarEmpresaAlServidor();
             boton.disabled = false;
+            renderAvisoInventario();
+            if (inventario.actualizado) { inventario.enServidor = null; enviarInventario(); }
             notificar(ok ? 'ok' : 'alerta', ok
                 ? `Datos de ${empresa.nombre} guardados y enviados. ${nombreIA()} ya los usa para responder.`
                 : `Datos de ${empresa.nombre} guardados en este navegador, pero no llegaron al servidor. Vuelve a guardar para reintentar.`);
@@ -2563,9 +2873,732 @@
 
 
         // ==========================================
+        // INVENTARIO: crear en el sistema, conectar una hoja o subir un archivo
+        // Las tres formas terminan en la misma lista de productos, que se envía a /inventario
+        // (POST /inventario/load o PUT /inventario/update/<empresa>) y que ANA consulta desde el chat.
+        // ==========================================
+        // Campos de cada producto tal como los lee el backend (into_vector_in.py) y nombres de columna que se reconocen
+        const CAMPOS_PRODUCTO = [
+            { k: 'item', nombre: 'Producto', claves: ['producto', 'nombre', 'item', 'articulo', 'name', 'product', 'servicio'] },
+            { k: 'category', nombre: 'Categoría', claves: ['categoria', 'category', 'tipo', 'familia', 'linea', 'grupo'] },
+            { k: 'price', nombre: 'Precio', claves: ['precio', 'price', 'valor', 'pvp', 'tarifa', 'costo'] },
+            { k: 'stock', nombre: 'Existencias', claves: ['existencias', 'stock', 'cantidad', 'disponible', 'disponibles', 'unidades', 'inventario', 'qty', 'quantity'] },
+            { k: 'unit', nombre: 'Unidad', claves: ['unidad', 'unit', 'medida', 'um'] },
+            { k: 'section', nombre: 'Sección', claves: ['seccion', 'section', 'ubicacion', 'pasillo', 'bodega', 'location', 'estante'] },
+            { k: 'description', nombre: 'Descripción', claves: ['descripcion', 'description', 'detalle', 'detalles', 'caracteristicas', 'notas'] },
+            { k: 'id', nombre: 'Código', claves: ['id', 'codigo', 'sku', 'code', 'referencia', 'ref', 'cod'] },
+            { k: 'image_product', nombre: 'Imagen', claves: ['image product', 'imagen', 'foto', 'image', 'picture'] }
+        ];
+        const CLAVES_PRODUCTO = CAMPOS_PRODUCTO.map((c) => c.k);
+        const COLUMNAS_CSV = ['id', 'item', 'category', 'price', 'stock', 'unit', 'section', 'description'];
+        const NOMBRE_ORIGEN = { manual: 'Creado aquí', archivo: 'Archivo', conexion: 'Conexión', servidor: 'Servidor' };
+        const NOMBRE_FUENTE = { sheets: 'Google Sheets', enlace: 'un enlace' };
+        const XLSX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+
+        let inventario = { productos: [], origen: '', actualizado: null, enServidor: null, ...cargar('ana_inventario', {}) };
+        let conexionInv = cargar('ana_inventario_conexion', null); // { url, fuente, mapeo, intervalo, ultima, error }
+        const importaciones = { archivo: null, conexion: null };   // lectura en curso: { nombre, cabeceras, filas, mapeo, modo, url }
+        let invBusqueda = '', invCategoria = '*', invEditando = null, invSincronizando = false, invEnviando = false, invAvisoFallo = false;
+
+        const normalizarClave = (t) => String(t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9ñ]+/g, ' ').trim();
+        const estaAgotado = (p) => typeof p.stock === 'number' && p.stock <= 0;
+
+        // "12.000", "$ 1.234,50", "12,5" -> número. Si no hay cifras (ej. "A consultar") se deja el texto.
+        function aNumero(v) {
+            if (typeof v === 'number') return Number.isFinite(v) ? v : '';
+            const s = String(v ?? '').trim();
+            if (!s) return '';
+            let n = s.replace(/[^\d.,-]/g, '');
+            if (!/\d/.test(n)) return s;
+            const punto = n.lastIndexOf('.'), coma = n.lastIndexOf(',');
+            if (punto > -1 && coma > -1) n = coma > punto ? n.replace(/\./g, '').replace(',', '.') : n.replace(/,/g, '');
+            else if (coma > -1) n = /^-?\d{1,3}(,\d{3})+$/.test(n) ? n.replace(/,/g, '') : n.replace(',', '.');
+            else if (/^-?\d{1,3}(\.\d{3})+$/.test(n)) n = n.replace(/\./g, '');
+            const num = Number(n);
+            return Number.isFinite(num) ? num : s;
+        }
+        // es-CO agrupa también los miles de 4 cifras (4.500), así todos los precios se leen igual
+        const mostrarNumero = (v) => (typeof v === 'number' ? v.toLocaleString('es-CO', { maximumFractionDigits: 2 }) : String(v ?? ''));
+
+        // Deja el producto con los campos del backend, sin vacíos (el backend usa sus valores por defecto)
+        function limpiarProducto(p) {
+            const out = {};
+            const id = String(p.id ?? '').trim();
+            if (id) out.id = /^\d+$/.test(id) ? Number(id) : id;
+            ['item', 'category', 'description', 'section', 'unit', 'image_product'].forEach((k) => { const v = String(p[k] ?? '').trim(); if (v) out[k] = v; });
+            ['price', 'stock'].forEach((k) => { const v = aNumero(p[k]); if (v !== '') out[k] = v; });
+            // Campos extra que ya traía el producto (ej. image_product) se conservan
+            Object.keys(p).forEach((k) => { if (!CLAVES_PRODUCTO.includes(k) && p[k] !== '' && p[k] != null) out[k] = p[k]; });
+            return out;
+        }
+
+        // Cada producto necesita un id único (el backend lo usa para indexarlo)
+        function asegurarIds(lista) {
+            const vistos = new Set();
+            let max = lista.reduce((m, p) => Math.max(m, Number(p.id) || 0), 0);
+            lista.forEach((p) => {
+                if (p.id === undefined || p.id === '' || vistos.has(String(p.id))) p.id = ++max;
+                vistos.add(String(p.id));
+            });
+            return lista;
+        }
+
+        // Agregar y actualizar: coincide por nombre o por un código propio (ej. "P-10"); lo demás se agrega.
+        // Los códigos numéricos no sirven para coincidir: 1, 2, 3… también son los que se asignan solos.
+        function combinarProductos(actuales, nuevos) {
+            const resultado = actuales.map((p) => ({ ...p }));
+            const esCodigo = (id) => id !== undefined && !/^\d+$/.test(String(id));
+            nuevos.forEach((n) => {
+                const existente = resultado.find((p) => normalizarClave(p.item) === normalizarClave(n.item))
+                    || (esCodigo(n.id) && resultado.find((p) => String(p.id) === String(n.id)));
+                if (existente) Object.assign(existente, n, { id: existente.id });
+                else resultado.push({ ...n });
+            });
+            return asegurarIds(resultado);
+        }
+
+        // ---------- Lectura de archivos y enlaces ----------
+        function tablaAObjetos(filas) {
+            if (!filas.length) return { cabeceras: [], filas: [] };
+            const usadas = {};
+            const cabeceras = filas[0].map((h, i) => {
+                let nombre = String(h ?? '').trim() || `Columna ${i + 1}`;
+                usadas[nombre] = (usadas[nombre] || 0) + 1;
+                if (usadas[nombre] > 1) nombre += ` (${usadas[nombre]})`;
+                return nombre;
+            });
+            return {
+                cabeceras,
+                filas: filas.slice(1)
+                    .filter((f) => f.some((v) => String(v ?? '').trim()))
+                    .map((f) => Object.fromEntries(cabeceras.map((h, i) => [h, f[i] ?? ''])))
+            };
+        }
+
+        // CSV con comillas; detecta si el separador es coma, punto y coma o tabulador
+        function parsearCsv(texto) {
+            texto = String(texto).replace(/^﻿/, '');
+            const primera = texto.split(/\r?\n/, 1)[0] || '';
+            const sep = [';', '\t', ','].reduce((a, b) => (primera.split(b).length > primera.split(a).length ? b : a), ',');
+            const filas = [];
+            let fila = [], campo = '', comillas = false;
+            for (let i = 0; i < texto.length; i++) {
+                const c = texto[i];
+                if (comillas) {
+                    if (c === '"' && texto[i + 1] === '"') { campo += '"'; i++; }
+                    else if (c === '"') comillas = false;
+                    else campo += c;
+                } else if (c === '"') comillas = true;
+                else if (c === sep) { fila.push(campo); campo = ''; }
+                else if (c === '\n' || c === '\r') {
+                    if (c === '\r' && texto[i + 1] === '\n') i++;
+                    fila.push(campo); filas.push(fila); fila = []; campo = '';
+                } else campo += c;
+            }
+            if (campo || fila.length) { fila.push(campo); filas.push(fila); }
+            return tablaAObjetos(filas);
+        }
+
+        // JSON: el formato del backend ({ companies: [{ inventory: [...] }] }) o una lista de productos
+        function leerJsonInventario(datos) {
+            const lista = Array.isArray(datos) ? datos
+                : datos?.companies?.[0]?.inventory ?? datos?.inventory ?? datos?.inventario ?? datos?.productos ?? datos?.products ?? datos?.items ?? datos?.data;
+            if (!Array.isArray(lista)) throw new Error('El JSON no tiene una lista de productos.');
+            const filas = lista.filter((p) => p && typeof p === 'object');
+            return { cabeceras: [...new Set(filas.flatMap(Object.keys))], filas };
+        }
+
+        // El lector de Excel (SheetJS) solo se descarga la primera vez que se sube un Excel
+        let cargaXlsx = null;
+        function cargarLectorExcel() {
+            if (window.XLSX) return Promise.resolve(window.XLSX);
+            cargaXlsx = cargaXlsx || new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = XLSX_URL;
+                script.onload = () => resolve(window.XLSX);
+                script.onerror = () => { cargaXlsx = null; reject(new Error('No se pudo cargar el lector de Excel. Revisa la conexión a internet o sube el archivo como CSV.')); };
+                document.head.appendChild(script);
+            });
+            return cargaXlsx;
+        }
+
+        async function leerArchivoInventario(file) {
+            const ext = extensionDe(file.name).toLowerCase();
+            if (['xlsx', 'xls', 'ods'].includes(ext)) {
+                const XLSX = await cargarLectorExcel();
+                const libro = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+                const hoja = libro.Sheets[libro.SheetNames[0]];
+                return tablaAObjetos(XLSX.utils.sheet_to_json(hoja, { header: 1, defval: '', raw: true, blankrows: false }));
+            }
+            const texto = await file.text();
+            if (ext === 'json' || /^\s*[[{]/.test(texto)) return leerJsonInventario(JSON.parse(texto));
+            return parsearCsv(texto);
+        }
+
+        // Google Sheets: el enlace normal se convierte en su versión CSV (gviz permite leerla desde el navegador)
+        function urlDeDatos(url) {
+            const m = url.match(/docs\.google\.com\/spreadsheets\/d\/(e\/)?([\w-]+)/);
+            if (!m) return { urlDatos: url, fuente: 'enlace' };
+            const gid = (url.match(/[#&?]gid=(\d+)/) || [])[1];
+            const hoja = gid ? `&gid=${gid}` : '';
+            return {
+                urlDatos: m[1] ? `https://docs.google.com/spreadsheets/d/e/${m[2]}/pub?output=csv${hoja}`
+                               : `https://docs.google.com/spreadsheets/d/${m[2]}/gviz/tq?tqx=out:csv${hoja}`,
+                fuente: 'sheets'
+            };
+        }
+
+        async function leerEnlace(url) {
+            const { urlDatos, fuente } = urlDeDatos(url);
+            let res;
+            try { res = await fetch(urlDatos, { cache: 'no-store' }); }
+            catch (_) { throw new Error('No se pudo abrir el enlace. Si es Google Sheets, compártelo como “Cualquier persona con el enlace”; si es otro servidor, debe permitir que el panel lo lea (CORS).'); }
+            if (!res.ok) throw new Error(`El enlace respondió con error ${res.status}.`);
+            const texto = await res.text();
+            if (/^\s*<(!doctype|html)/i.test(texto)) throw new Error('El enlace devuelve una página web en lugar de datos. Si es Google Sheets, compártelo como “Cualquier persona con el enlace”.');
+            const tabla = /^\s*[[{]/.test(texto) ? leerJsonInventario(JSON.parse(texto)) : parsearCsv(texto);
+            return { ...tabla, urlDatos, fuente };
+        }
+
+        // Asocia cada campo con la columna más parecida: igual, empieza por, contiene
+        function detectarMapeo(cabeceras) {
+            const norm = cabeceras.map(normalizarClave);
+            const usadas = new Set(), mapeo = {};
+            [(h, c) => h === c, (h, c) => h.startsWith(c), (h, c) => h.includes(c)].forEach((coincide) => {
+                CAMPOS_PRODUCTO.forEach((campo) => {
+                    if (mapeo[campo.k]) return;
+                    const i = norm.findIndex((h, j) => !usadas.has(j) && campo.claves.some((c) => coincide(h, c)));
+                    if (i > -1) { mapeo[campo.k] = cabeceras[i]; usadas.add(i); }
+                });
+            });
+            return mapeo;
+        }
+
+        function filasAProductos(filas, mapeo) {
+            return filas.map((f) => {
+                const p = {};
+                CLAVES_PRODUCTO.forEach((k) => { if (mapeo[k]) p[k] = f[mapeo[k]]; });
+                return limpiarProducto(p);
+            }).filter((p) => p.item);
+        }
+
+        // ---------- Envío al backend ----------
+        function inventarioParaServidor() {
+            return {
+                companies: [{
+                    name_company: empresa.nombre,
+                    sector: empresa.sector || '',
+                    details: { description: unirFrases(empresa.sector, empresa.productos), employees_count: '', location: empresa.ubicacion || '' },
+                    inventory: inventario.productos
+                }]
+            };
+        }
+
+        // Crea el inventario (POST /inventario/load, como archivo 'inventory') o lo actualiza si ya existe (409 -> PUT).
+        // Si quedó vacío se borra del servidor.
+        async function enviarInventario() {
+            if (invEnviando) return false; // al terminar el envío en curso se reenvía si hubo cambios
+            if (!empresa.nombre) { renderEstadoInventario(); return false; }
+            invEnviando = true;
+            const version = inventario.actualizado;
+            const nombre = encodeURIComponent(empresa.nombre);
+            renderEstadoInventario('Enviando al servidor...');
+            let ok = false;
+            try {
+                let res;
+                if (!inventario.productos.length) {
+                    res = await fetch(`${API_RAIZ}/inventario/delete/${nombre}`, { method: 'DELETE', headers: { ...NGROK_HEADERS } });
+                    if (res.status === 404) res = { ok: true, status: 200 }; // ya no había inventario en el servidor
+                } else {
+                    const json = JSON.stringify(inventarioParaServidor());
+                    const formData = new FormData();
+                    formData.append('inventory', new Blob([json], { type: 'application/json' }), 'inventario.json');
+                    res = await fetch(`${API_RAIZ}/inventario/load`, { method: 'POST', headers: { ...NGROK_HEADERS }, body: formData });
+                    if (res.status === 409) res = await fetch(`${API_RAIZ}/inventario/update/${nombre}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...NGROK_HEADERS }, body: json });
+                }
+                marcarServidor(res.status < 500);
+                if (!res.ok) throw new Error(`Error en /inventario: ${res.status}`);
+                if (inventario.actualizado === version) inventario.enServidor = new Date().toISOString();
+                ok = true;
+                invAvisoFallo = false;
+            } catch (err) {
+                console.error('No se pudo enviar el inventario:', err);
+                if (err instanceof TypeError) marcarServidor(false);
+                inventario.enServidor = null;
+                if (!invAvisoFallo) notificar('alerta', 'El inventario quedó guardado en este navegador, pero no llegó al servidor. Usa “Reintentar envío” cuando el servidor esté activo.');
+                invAvisoFallo = true;
+            } finally {
+                invEnviando = false;
+            }
+            guardar('ana_inventario', inventario);
+            renderEstadoInventario();
+            renderResumenInventario();
+            if (ok && inventario.actualizado !== version) enviarInventario(); // hubo cambios mientras se enviaba
+            return ok;
+        }
+
+        // Guarda en el navegador y envía al servidor poco después (así varias ediciones seguidas van en un solo envío)
+        let invTemporizador = null;
+        function guardarInventario(origen, inmediato = false) {
+            if (origen) inventario.origen = origen;
+            inventario.actualizado = new Date().toISOString();
+            inventario.enServidor = null;
+            guardar('ana_inventario', inventario);
+            renderInventario();
+            clearTimeout(invTemporizador);
+            invTemporizador = setTimeout(enviarInventario, inmediato ? 0 : 1200);
+        }
+
+        // Si el navegador está vacío pero el servidor ya tiene inventario de esta empresa, se trae
+        let invRevisadoServidor = false;
+        async function traerInventarioDelServidor() {
+            if (invRevisadoServidor || !empresa.nombre || inventario.productos.length) return;
+            invRevisadoServidor = true;
+            try {
+                const res = await fetch(`${API_RAIZ}/inventario/search/${encodeURIComponent(empresa.nombre)}`, { headers: { ...NGROK_HEADERS } });
+                if (!res.ok) return;
+                const lista = (await res.json())?.companies?.[0]?.inventory;
+                if (!Array.isArray(lista) || !lista.length || inventario.productos.length) return;
+                inventario.productos = asegurarIds(lista.map(limpiarProducto).filter((p) => p.item));
+                inventario.origen = 'servidor';
+                inventario.actualizado = inventario.enServidor = new Date().toISOString();
+                guardar('ana_inventario', inventario);
+                renderInventario();
+                notificar('info', `Se cargaron ${inventario.productos.length} productos que ya estaban en el servidor.`);
+            } catch (_) { /* sin servidor: se sigue con el inventario del navegador */ }
+        }
+
+        // ---------- Vistas ----------
+        const VISTAS_INV = ['productos', 'conectar', 'archivo'];
+        let vistaInv = cargar('ana_inv_vista', 'productos');
+
+        function mostrarVistaInv(nombre) {
+            if (!VISTAS_INV.includes(nombre)) nombre = 'productos';
+            vistaInv = nombre;
+            VISTAS_INV.forEach((v) => $(`inv-${v}`).classList.toggle('hidden', v !== nombre));
+            document.querySelectorAll('#inventarioNav .subnav-item').forEach((b) => b.classList.toggle('activa', b.dataset.invVista === nombre));
+            guardar('ana_inv_vista', nombre);
+        }
+        $('inventarioNav').addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-inv-vista]');
+            if (btn) mostrarVistaInv(btn.dataset.invVista);
+        });
+
+        function renderInventario() {
+            renderTablaInventario();
+            renderAvisoInventario();
+            renderResumenInventario();
+            renderEstadoInventario();
+        }
+
+        function filaProducto(p) {
+            const id = escaparHtml(String(p.id));
+            const nombre = escaparHtml(p.item);
+            return `<tr data-id="${id}">
+                <td><div class="inv-nombre"><b>${nombre}</b>${p.description ? `<small title="${escaparHtml(p.description)}">${escaparHtml(p.description)}</small>` : ''}</div></td>
+                <td class="col-opc">${p.category ? `<span class="inv-cat">${escaparHtml(p.category)}</span>` : '<span class="texto-tenue">—</span>'}</td>
+                <td class="num"><input class="input inv-celda" data-campo="price" inputmode="decimal" value="${escaparHtml(mostrarNumero(p.price))}" placeholder="—" aria-label="Precio de ${nombre}"></td>
+                <td class="num"><input class="input inv-celda" data-campo="stock" inputmode="decimal" value="${escaparHtml(mostrarNumero(p.stock))}" placeholder="—" aria-label="Existencias de ${nombre}">${p.unit ? `<span class="inv-unidad">${escaparHtml(p.unit)}</span>` : ''}${estaAgotado(p) ? '<span class="inv-agotado">Agotado</span>' : ''}</td>
+                <td class="col-opc texto-suave">${escaparHtml(p.section || '')}</td>
+                <td><div class="inv-acciones">
+                    <button type="button" class="btn-icon" data-editar title="Editar"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.2 5.2l3.6 3.6M4 20l4.2-1 10.6-10.6a2.5 2.5 0 00-3.6-3.6L4.6 15.4 4 20z"/></svg></button>
+                    <button type="button" class="btn-icon peligro" data-borrar title="Eliminar"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 7h14M10 11v6m4-6v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
+                </div></td>
+            </tr>`;
+        }
+
+        function renderTablaInventario() {
+            const lista = inventario.productos;
+            const categorias = [...new Set(lista.map((p) => p.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+            if (invCategoria !== '*' && !categorias.includes(invCategoria)) invCategoria = '*';
+            const filtro = $('invFiltroCategoria');
+            filtro.innerHTML = '<option value="*">Todas las categorías</option>' + categorias.map((c) => `<option value="${escaparHtml(c)}">${escaparHtml(c)}</option>`).join('');
+            filtro.value = invCategoria;
+            $('invCategorias').innerHTML = categorias.map((c) => `<option value="${escaparHtml(c)}"></option>`).join('');
+            $('invNumNav').textContent = lista.length;
+
+            const vacio = !lista.length;
+            $('invInicio').classList.toggle('hidden', !vacio);
+            $('invTabla').classList.toggle('hidden', vacio);
+            ['invBuscar', 'invFiltroCategoria'].forEach((id) => { $(id).disabled = vacio; });
+            if (vacio) { $('invConteo').textContent = ''; $('invCuerpo').innerHTML = ''; return; }
+
+            const q = normalizarClave(invBusqueda);
+            const visibles = lista.filter((p) => (invCategoria === '*' || p.category === invCategoria)
+                && (!q || normalizarClave(`${p.item} ${p.category || ''} ${p.description || ''} ${p.section || ''} ${p.id}`).includes(q)));
+            $('invConteo').textContent = visibles.length === lista.length ? `· ${lista.length} en total` : `· ${visibles.length} de ${lista.length}`;
+            $('invCuerpo').innerHTML = visibles.length ? visibles.map(filaProducto).join('')
+                : '<tr><td colspan="6" class="vacio">Ningún producto coincide con la búsqueda.</td></tr>';
+        }
+
+        function renderAvisoInventario() {
+            const aviso = $('invAviso');
+            if (!empresa.nombre) {
+                aviso.className = 'inv-aviso alerta';
+                aviso.innerHTML = `<span>Para que ${escaparHtml(nombreIA())} use este inventario, guarda el nombre de la empresa en la pestaña Empresa.</span><button type="button" class="btn-secundario" data-ir-tab="empresa">Ir a Empresa</button>`;
+            } else if (conexionInv && inventario.productos.length) {
+                aviso.className = 'inv-aviso';
+                aviso.innerHTML = `<span>Este inventario se sincroniza desde ${escaparHtml(NOMBRE_FUENTE[conexionInv.fuente] || 'un enlace')}. Lo que cambies aquí se reemplazará en la próxima sincronización: edítalo en la hoja original.</span><button type="button" class="btn-secundario" data-inv-ir="conectar">Ver conexión</button>`;
+            } else {
+                aviso.className = 'inv-aviso hidden';
+                aviso.innerHTML = '';
+            }
+        }
+
+        function renderResumenInventario() {
+            const lista = inventario.productos;
+            $('invResProductos').textContent = lista.length;
+            $('invResCategorias').textContent = new Set(lista.map((p) => p.category).filter(Boolean)).size;
+            $('invResAgotados').textContent = lista.filter(estaAgotado).length;
+            $('invResOrigen').textContent = lista.length ? (NOMBRE_ORIGEN[inventario.origen] || '—') : '—';
+            $('invResServidor').textContent = inventario.enServidor ? `Al día · ${horaCorta(inventario.enServidor)}` : inventario.actualizado ? 'Sin enviar' : '—';
+            $('resumenProductos').textContent = lista.length;
+        }
+
+        function renderEstadoInventario(texto) {
+            const estado = $('invEstado');
+            const sinEnviar = !!inventario.actualizado && !inventario.enServidor;
+            estado.textContent = texto || (!inventario.actualizado ? 'Aún no hay inventario'
+                : !empresa.nombre ? 'Guardado en este navegador · falta el nombre de la empresa'
+                : sinEnviar ? 'Guardado solo en este navegador: no llegó al servidor'
+                : `Enviado al servidor ${horaCorta(inventario.enServidor)} · ${nombreIA()} ya lo consulta`);
+            estado.classList.toggle('pendiente', !texto && sinEnviar);
+            $('invReintentar').classList.toggle('hidden', !!texto || !sinEnviar || !empresa.nombre || invEnviando);
+        }
+
+        // Atajos: botones que llevan a otra vista o pestaña
+        document.addEventListener('click', (e) => {
+            const ir = e.target.closest('[data-inv-ir]');
+            if (ir) {
+                if (ir.dataset.invIr === 'nuevo') abrirDialogoProducto();
+                else mostrarVistaInv(ir.dataset.invIr);
+            }
+            const tab = e.target.closest('[data-ir-tab]');
+            if (tab) mostrarPestana(tab.dataset.irTab);
+        });
+
+        // ---------- Crear en el sistema: tabla y ventana de producto ----------
+        $('invBuscar').addEventListener('input', (e) => { invBusqueda = e.target.value; renderTablaInventario(); });
+        $('invFiltroCategoria').addEventListener('change', (e) => { invCategoria = e.target.value; renderTablaInventario(); });
+        $('invNuevo').addEventListener('click', () => abrirDialogoProducto());
+        $('invReintentar').addEventListener('click', () => enviarInventario());
+
+        const productoDeFila = (el) => inventario.productos.find((p) => String(p.id) === el.closest('tr').dataset.id);
+
+        // Precio y existencias se editan en la misma fila
+        $('invCuerpo').addEventListener('change', (e) => {
+            const celda = e.target.closest('.inv-celda');
+            if (!celda) return;
+            const p = productoDeFila(celda);
+            if (!p) return;
+            const valor = aNumero(celda.value);
+            if (valor === '') delete p[celda.dataset.campo]; else p[celda.dataset.campo] = valor;
+            guardarInventario(inventario.origen || 'manual');
+        });
+        $('invCuerpo').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.closest('.inv-celda')) e.target.blur(); });
+        $('invCuerpo').addEventListener('click', (e) => {
+            const editar = e.target.closest('[data-editar]');
+            const borrar = e.target.closest('[data-borrar]');
+            if (editar) abrirDialogoProducto(productoDeFila(editar));
+            else if (borrar) {
+                const p = productoDeFila(borrar);
+                if (!p || !confirm(`¿Eliminar "${p.item}" del inventario?`)) return;
+                inventario.productos = inventario.productos.filter((x) => x !== p);
+                guardarInventario(inventario.origen || 'manual');
+                notificar('info', `Se eliminó "${p.item}" del inventario.`);
+            }
+        });
+
+        const invDialogo = $('invDialogo');
+        const CAMPOS_DIALOGO = { item: 'invPItem', id: 'invPId', category: 'invPCategory', section: 'invPSection', price: 'invPPrice', stock: 'invPStock', unit: 'invPUnit', description: 'invPDescription' };
+
+        function abrirDialogoProducto(p = null) {
+            invEditando = p;
+            $('invDialogoTitulo').textContent = p ? 'Editar producto' : 'Nuevo producto';
+            $('invGuardarOtro').classList.toggle('hidden', !!p);
+            Object.entries(CAMPOS_DIALOGO).forEach(([k, id]) => { $(id).value = p ? mostrarNumero(p[k] ?? '') : ''; });
+            $('invPError').classList.add('hidden');
+            invDialogo.showModal();
+            $('invPItem').focus();
+        }
+        invDialogo.addEventListener('click', (e) => {
+            if (e.target.closest('[data-cerrar-dialogo]') || e.target === invDialogo) invDialogo.close();
+        });
+
+        $('invProductoForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const datos = {};
+            Object.entries(CAMPOS_DIALOGO).forEach(([k, id]) => { datos[k] = $(id).value; });
+            const nuevo = limpiarProducto(datos);
+            if (!nuevo.item) return;
+            const repetido = nuevo.id !== undefined && inventario.productos.some((p) => p !== invEditando && String(p.id) === String(nuevo.id));
+            if (repetido) {
+                $('invPError').textContent = `Ya hay otro producto con el código "${nuevo.id}".`;
+                $('invPError').classList.remove('hidden');
+                return;
+            }
+            if (invEditando) {
+                // Se reemplazan los campos de la ventana y se conservan los demás (ej. image_product)
+                const idAnterior = invEditando.id;
+                Object.keys(CAMPOS_DIALOGO).forEach((k) => delete invEditando[k]);
+                Object.assign(invEditando, nuevo, { id: nuevo.id ?? idAnterior });
+            } else {
+                inventario.productos.push(nuevo);
+            }
+            asegurarIds(inventario.productos);
+            guardarInventario(inventario.origen || 'manual');
+            const otro = !invEditando && e.submitter && e.submitter.dataset.otro;
+            if (otro) {
+                // Se deja la categoría, la sección y la unidad para cargar varios parecidos seguidos
+                ['invPItem', 'invPId', 'invPPrice', 'invPStock', 'invPDescription'].forEach((id) => { $(id).value = ''; });
+                $('invPItem').focus();
+            } else {
+                invDialogo.close();
+            }
+        });
+
+        // Descargar CSV (con ; y BOM para que Excel en español lo abra bien)
+        function descargarCsv(nombre, filas) {
+            const celda = (v) => { const s = String(v ?? ''); return /[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+            const csv = '﻿' + filas.map((f) => f.map(celda).join(';')).join('\r\n');
+            const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+            const a = Object.assign(document.createElement('a'), { href: url, download: nombre });
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+        const cabeceraCsv = (columnas = COLUMNAS_CSV) => columnas.map((k) => CAMPOS_PRODUCTO.find((c) => c.k === k).nombre);
+        const numeroCsv = (v) => (typeof v === 'number' ? String(v).replace('.', ',') : v);
+
+        $('invExportar').addEventListener('click', () => {
+            if (!inventario.productos.length) { notificar('info', 'El inventario está vacío: no hay nada que descargar.'); return; }
+            // La columna de imagen solo se incluye si algún producto la tiene
+            const columnas = inventario.productos.some((p) => p.image_product) ? [...COLUMNAS_CSV, 'image_product'] : COLUMNAS_CSV;
+            descargarCsv(`inventario-${normalizarClave(empresa.nombre || 'empresa').replace(/ /g, '-')}.csv`,
+                [cabeceraCsv(columnas), ...inventario.productos.map((p) => columnas.map((k) => numeroCsv(p[k])))]);
+        });
+        $('invPlantilla').addEventListener('click', () => {
+            descargarCsv('plantilla-inventario.csv', [cabeceraCsv(),
+                ['1', 'Pan de masa madre', 'Panadería', '12000', '25', 'unidad', 'Vitrina principal', 'Pan artesanal de 500 g'],
+                ['2', 'Café americano', 'Bebidas', '4500', '100', 'taza', 'Barra', 'Café de origen colombiano']]);
+        });
+        $('invVaciar').addEventListener('click', () => {
+            const n = inventario.productos.length;
+            if (!n || !confirm(`¿Vaciar el inventario? Se quitarán ${n} productos${empresa.nombre ? ', también del servidor' : ''}.`)) return;
+            inventario.productos = [];
+            inventario.origen = '';
+            if (conexionInv) desconectarInventario();
+            guardarInventario('', true);
+            notificar('info', 'Inventario vaciado.');
+        });
+
+        // ---------- Importación (subir archivo y conectar comparten la revisión de columnas) ----------
+        function renderMapeo(tipo) {
+            const imp = importaciones[tipo];
+            const cont = $(tipo === 'archivo' ? 'invArchivoMapeo' : 'invConexionMapeo');
+            cont.classList.toggle('hidden', !imp);
+            if (!imp) { cont.innerHTML = ''; return; }
+            const productos = filasAProductos(imp.filas, imp.mapeo);
+            const columnas = CAMPOS_PRODUCTO.filter((c) => imp.mapeo[c.k]);
+            const opciones = (k) => '<option value="">— No usar —</option>' + imp.cabeceras.map((h) => `<option value="${escaparHtml(h)}"${imp.mapeo[k] === h ? ' selected' : ''}>${escaparHtml(h)}</option>`).join('');
+            const modos = tipo === 'archivo' && inventario.productos.length
+                ? `<div class="segmentado">${[['reemplazar', 'Reemplazar inventario'], ['combinar', 'Agregar y actualizar']].map(([v, t]) =>
+                    `<label><input type="radio" name="invModo" value="${v}"${(imp.modo || 'reemplazar') === v ? ' checked' : ''}><span>${t}</span></label>`).join('')}</div>`
+                : '<span></span>';
+            cont.innerHTML = `
+                <div class="grupo-titulo">Columnas de ${escaparHtml(imp.nombre)} · ${imp.filas.length} filas</div>
+                <p class="ayuda">Revisa qué columna corresponde a cada dato. Solo “Producto” es obligatorio.</p>
+                <div class="mapeo">${CAMPOS_PRODUCTO.map((c) => `<div><label class="label" for="map-${tipo}-${c.k}">${c.nombre}${c.k === 'item' ? ' *' : ''}</label><select id="map-${tipo}-${c.k}" class="input" data-mapeo="${c.k}">${opciones(c.k)}</select></div>`).join('')}</div>
+                <div class="grupo-titulo">Vista previa · ${productos.length} productos válidos</div>
+                ${productos.length
+                    ? `<div class="previa-tabla"><table class="inv-tabla"><thead><tr>${columnas.map((c) => `<th>${c.nombre}</th>`).join('')}</tr></thead>
+                       <tbody>${productos.slice(0, 5).map((p) => `<tr>${columnas.map((c) => `<td title="${escaparHtml(mostrarNumero(p[c.k] ?? ''))}">${escaparHtml(mostrarNumero(p[c.k] ?? ''))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+                       ${productos.length > 5 ? `<p class="ayuda">… y ${productos.length - 5} más.</p>` : ''}`
+                    : '<div class="vacio">Elige la columna que tiene el nombre del producto para ver la vista previa.</div>'}
+                <div class="import-pie">
+                    ${modos}
+                    <div class="flex items-center gap-2">
+                        <button type="button" class="btn-texto" data-cancelar-import>Cancelar</button>
+                        <button type="button" class="btn-verde" data-confirmar-import ${productos.length ? '' : 'disabled'}>${tipo === 'archivo' ? 'Importar' : 'Conectar e importar'} ${productos.length} productos</button>
+                    </div>
+                </div>`;
+        }
+
+        ['archivo', 'conexion'].forEach((tipo) => {
+            const cont = $(tipo === 'archivo' ? 'invArchivoMapeo' : 'invConexionMapeo');
+            cont.addEventListener('change', (e) => {
+                const imp = importaciones[tipo];
+                if (!imp) return;
+                if (e.target.dataset.mapeo) { imp.mapeo[e.target.dataset.mapeo] = e.target.value; renderMapeo(tipo); }
+                if (e.target.name === 'invModo') imp.modo = e.target.value;
+            });
+            cont.addEventListener('click', (e) => {
+                if (e.target.closest('[data-cancelar-import]')) { importaciones[tipo] = null; renderMapeo(tipo); }
+                if (e.target.closest('[data-confirmar-import]')) confirmarImportacion(tipo);
+            });
+        });
+
+        function confirmarImportacion(tipo) {
+            const imp = importaciones[tipo];
+            const productos = filasAProductos(imp.filas, imp.mapeo);
+            if (!productos.length) return;
+            if (tipo === 'archivo') {
+                const combinar = inventario.productos.length && imp.modo === 'combinar';
+                inventario.productos = combinar ? combinarProductos(inventario.productos, productos) : asegurarIds(productos);
+                if (conexionInv) { desconectarInventario(); notificar('info', 'Se desconectó la hoja: ahora el inventario viene del archivo.'); }
+                guardarInventario('archivo', true);
+                notificar('ok', `${combinar ? 'Se agregaron o actualizaron' : 'Se importaron'} ${productos.length} productos de "${imp.nombre}".`);
+            } else {
+                conexionInv = { url: imp.url, fuente: imp.fuente, mapeo: { ...imp.mapeo }, intervalo: intervaloElegido(), ultima: new Date().toISOString(), error: null };
+                guardar('ana_inventario_conexion', conexionInv);
+                inventario.productos = asegurarIds(productos);
+                guardarInventario('conexion', true);
+                renderConexion();
+                notificar('ok', `Inventario conectado a ${NOMBRE_FUENTE[imp.fuente]}: ${productos.length} productos importados.`);
+            }
+            importaciones[tipo] = null;
+            renderMapeo(tipo);
+            mostrarVistaInv('productos');
+        }
+
+        // ---------- Subir archivo ----------
+        const invDrop = $('invDrop');
+        const invArchivoInput = $('invArchivoInput');
+
+        async function procesarArchivoInventario(file) {
+            const error = $('invArchivoError');
+            error.classList.add('hidden');
+            try {
+                const tabla = await leerArchivoInventario(file);
+                if (!tabla.filas.length) throw new Error('El archivo no tiene filas con productos.');
+                importaciones.archivo = { nombre: file.name, cabeceras: tabla.cabeceras, filas: tabla.filas, mapeo: detectarMapeo(tabla.cabeceras), modo: 'reemplazar' };
+                renderMapeo('archivo');
+            } catch (err) {
+                console.error('No se pudo leer el inventario:', err);
+                error.textContent = err instanceof SyntaxError ? `"${file.name}" no es un JSON válido.` : `No se pudo leer "${file.name}": ${err.message}`;
+                error.classList.remove('hidden');
+                importaciones.archivo = null;
+                renderMapeo('archivo');
+            }
+        }
+        invDrop.addEventListener('click', () => invArchivoInput.click());
+        invDrop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); invArchivoInput.click(); } });
+        invArchivoInput.addEventListener('change', () => { if (invArchivoInput.files[0]) procesarArchivoInventario(invArchivoInput.files[0]); invArchivoInput.value = ''; });
+        ['dragenter', 'dragover'].forEach((ev) => invDrop.addEventListener(ev, (e) => { e.preventDefault(); invDrop.classList.add('sobre'); }));
+        ['dragleave', 'drop'].forEach((ev) => invDrop.addEventListener(ev, (e) => { e.preventDefault(); invDrop.classList.remove('sobre'); }));
+        invDrop.addEventListener('drop', (e) => { if (e.dataTransfer.files[0]) procesarArchivoInventario(e.dataTransfer.files[0]); });
+
+        // ---------- Conectar ----------
+        const intervaloElegido = () => Number((document.querySelector('input[name="invIntervalo"]:checked') || {}).value || 0);
+        const TEXTO_INTERVALO = { 0: 'solo manual', 15: 'cada 15 minutos', 60: 'cada hora' };
+
+        $('invLeerEnlace').addEventListener('click', async () => {
+            const url = $('invUrl').value.trim();
+            const error = $('invUrlError'), boton = $('invLeerEnlace');
+            error.classList.add('hidden');
+            if (!/^https?:\/\/\S+$/i.test(url)) {
+                error.textContent = 'Escribe un enlace completo, que empiece por https://';
+                error.classList.remove('hidden');
+                return;
+            }
+            boton.disabled = true;
+            boton.textContent = 'Leyendo...';
+            try {
+                const tabla = await leerEnlace(url);
+                if (!tabla.filas.length) throw new Error('El enlace no tiene filas con productos.');
+                importaciones.conexion = { nombre: tabla.fuente === 'sheets' ? 'tu hoja de Google Sheets' : 'tu enlace', url, fuente: tabla.fuente, cabeceras: tabla.cabeceras, filas: tabla.filas, mapeo: detectarMapeo(tabla.cabeceras) };
+                renderMapeo('conexion');
+            } catch (err) {
+                console.error('No se pudo leer el enlace del inventario:', err);
+                error.textContent = err instanceof SyntaxError ? 'El enlace no devuelve un JSON válido.' : err.message;
+                error.classList.remove('hidden');
+            } finally {
+                boton.disabled = false;
+                boton.textContent = 'Leer enlace';
+            }
+        });
+        $('invUrl').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('invLeerEnlace').click(); } });
+
+        document.querySelectorAll('input[name="invIntervalo"]').forEach((r) => r.addEventListener('change', () => {
+            if (!conexionInv) return;
+            conexionInv.intervalo = intervaloElegido();
+            guardar('ana_inventario_conexion', conexionInv);
+            renderConexion();
+        }));
+
+        function renderConexion() {
+            const caja = $('invConexionActiva');
+            $('invConectadoPunto').classList.toggle('hidden', !conexionInv);
+            if (!conexionInv) { caja.classList.add('hidden'); caja.innerHTML = ''; return; }
+            const radio = document.querySelector(`input[name="invIntervalo"][value="${conexionInv.intervalo}"]`);
+            if (radio) radio.checked = true;
+            caja.classList.remove('hidden');
+            caja.innerHTML = `
+                <span class="card-icono"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.8 10.2a4 4 0 010 5.6l-2 2a4 4 0 01-5.6-5.6l1-1m3-3l1-1a4 4 0 015.6 5.6l-1 1"/></svg></span>
+                <div class="flex-1 min-w-0">
+                    <b>Conectado a ${escaparHtml(NOMBRE_FUENTE[conexionInv.fuente] || 'un enlace')}</b>
+                    <small class="truncate" title="${escaparHtml(conexionInv.url)}">${escaparHtml(conexionInv.url)}</small>
+                    <small>${invSincronizando ? 'Sincronizando...' : `Última lectura ${conexionInv.ultima ? horaCorta(conexionInv.ultima) : '—'} · ${TEXTO_INTERVALO[conexionInv.intervalo] || ''}`}</small>
+                    ${conexionInv.error ? `<small class="ayuda error">Último intento falló: ${escaparHtml(conexionInv.error)}</small>` : ''}
+                </div>
+                <button type="button" class="btn-secundario" data-sincronizar ${invSincronizando ? 'disabled' : ''}>Sincronizar ahora</button>
+                <button type="button" class="btn-texto" data-desconectar>Desconectar</button>`;
+        }
+        $('invConexionActiva').addEventListener('click', (e) => {
+            if (e.target.closest('[data-sincronizar]')) sincronizarConexion(true);
+            if (e.target.closest('[data-desconectar]') && confirm('¿Desconectar la hoja? Los productos se quedan y podrás editarlos aquí.')) {
+                desconectarInventario();
+                notificar('info', 'Inventario desconectado. Los productos se conservan.');
+            }
+        });
+
+        function desconectarInventario() {
+            conexionInv = null;
+            guardar('ana_inventario_conexion', null);
+            renderConexion();
+            renderAvisoInventario();
+        }
+
+        // Vuelve a leer la hoja; si algo cambió, reemplaza el inventario y lo envía a ANA
+        async function sincronizarConexion(manual = false) {
+            if (!conexionInv || invSincronizando) return;
+            invSincronizando = true;
+            renderConexion();
+            const conexion = conexionInv;
+            try {
+                const tabla = await leerEnlace(conexion.url);
+                const productos = asegurarIds(filasAProductos(tabla.filas, conexion.mapeo));
+                if (!productos.length) throw new Error('La hoja no tiene productos con las columnas elegidas.');
+                if (conexionInv !== conexion) return; // se desconectó mientras se leía
+                conexion.ultima = new Date().toISOString();
+                conexion.error = null;
+                const cambio = JSON.stringify(productos) !== JSON.stringify(inventario.productos);
+                if (cambio) {
+                    inventario.productos = productos;
+                    guardarInventario('conexion', true);
+                }
+                if (manual || cambio) notificar(cambio ? 'ok' : 'info', cambio ? `Inventario actualizado desde ${NOMBRE_FUENTE[conexion.fuente]}: ${productos.length} productos.` : 'El inventario ya estaba al día con la hoja.');
+            } catch (err) {
+                const yaFallaba = !!conexion.error;
+                conexion.error = err.message;
+                if (manual || !yaFallaba) notificar('alerta', `No se pudo sincronizar el inventario: ${err.message}`);
+            } finally {
+                invSincronizando = false;
+                if (conexionInv === conexion) guardar('ana_inventario_conexion', conexionInv);
+                renderConexion();
+            }
+        }
+        // Revisa cada minuto si toca leer la hoja (solo con la pestaña del navegador visible)
+        function revisarSincronizacion() {
+            if (!conexionInv || !conexionInv.intervalo || document.hidden) return;
+            if (Date.now() - new Date(conexionInv.ultima || 0).getTime() >= conexionInv.intervalo * 60000) sincronizarConexion();
+        }
+
+        // ==========================================
         // PESTAÑAS
         // ==========================================
-        const PESTANAS = { principal: $('panel'), empresa: $('empresa'), conexiones: $('conexiones') };
+        const PESTANAS = { principal: $('panel'), empresa: $('empresa'), inventario: $('inventario'), conexiones: $('conexiones') };
         let pestanaActiva = null;
 
         function mostrarPestana(nombre) {
@@ -2579,6 +3612,7 @@
             });
             guardar('ana_pestana', nombre);
             if (location.hash !== `#${nombre}`) history.replaceState(null, '', `#${nombre}`);
+            if (nombre === 'inventario') traerInventarioDelServidor();
             if (nombre === 'conexiones') {
                 eventosNuevos = 0;
                 renderBadgeConexiones();
@@ -2782,6 +3816,12 @@
         renderVozToggle();
         revisarRecordatorios();
         if (empresa.nombre && !empresa.enServidor) enviarEmpresaAlServidor(); // datos guardados antes de que llegaran al servidor
+        renderInventario();
+        renderConexion();
+        mostrarVistaInv(vistaInv);
+        if (empresa.nombre && inventario.actualizado && !inventario.enServidor) enviarInventario();
+        setInterval(revisarSincronizacion, 60000);
+        setTimeout(revisarSincronizacion, 3000);
         CANALES.forEach(renderCanal);
         refrescarCanales();
         metricsTimer = setInterval(refrescarCanales, METRICS_INTERVALO_MS);
